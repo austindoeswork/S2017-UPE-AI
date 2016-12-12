@@ -4,12 +4,12 @@ import (
 	"flag"
 	"fmt"
 
-	// "github.com/austindoeswork/tower_game/game"
-	"github.com/austindoeswork/tower_game/server"
+	"github.com/austindoeswork/S2017-UPE-AI/server"
 )
 
 var (
-	staticDir = flag.String("static", "/etc/tgww/", "directory of static files")
+	// TODO use a config file
+	staticDir = flag.String("static", "./static/", "directory of static files")
 )
 
 func main() {
@@ -18,11 +18,3 @@ func main() {
 	fmt.Println("server starting 8080")
 	s.Start()
 }
-
-//Game
-//Core loop
-//1 poll input
-//2 calc gamestate
-//3 output
-
-//

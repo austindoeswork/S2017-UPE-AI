@@ -1,21 +1,23 @@
-+-------------------+
-|         1         |
-| a               b |
-|                   |
-|                   |
-|                   |
-|                   |
-|                   |
-|                   |
-|                   |
-| ----------------- |
-|                   |
-|                   |
-|                   |
-|                   |
-|                   |
-|                   |
-|                   |
-| a               b |
-|         2         |
-+-------------------+
+// rough outline for
+2 PLAYER TOWER DEFENSE
+
+2 PHASES
+	BUILD
+	DEPLOY
+
+BUILD
+	players take turns placing towers
+	towers cost monies
+DEPLOY
+	game begins
+	players deploy troops
+
+example map
+		   b---
+		   |   \
+		   |    \
+		   |     \
+A---a      |      b---B <- main objective
+     \     |
+	  \    |
+	   \---a <- these could be sub-goals

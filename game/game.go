@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// TODO abstract, use an interface
 type Game struct {
 	//chan input
 	//chan output //pushes gamestate at framerate?
