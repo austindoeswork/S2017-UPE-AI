@@ -1,19 +1,21 @@
 package game
 
 import (
+	"time"
+
 	"testing"
 	// "github.com/austindoeswork/tower_game/game"
 )
 
-func TestBoard(t *testing.T) {
-	b := Board{
-		name:  "testboard",
-		sizex: 15,
-		sizey: 15,
+func TestPong(t *testing.T) {
+	p := New(100, 100, 10)
+	_, err := p.Start()
+	if err == nil {
+		t.Fatal("Expected err")
 	}
-	b.AddActor(&Actor{"testactor", 5, 5})
-	b.PPrint()
+	p.AddPlayer()
+	p.AddPlayer()
+	p.Start()
 
-	g := New(30)
-	g.Start()
+	// time.Sleep(time.Minute)
 }

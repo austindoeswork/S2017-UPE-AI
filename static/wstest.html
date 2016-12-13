@@ -15,7 +15,6 @@
 window.addEventListener("load", function(evt) {
     var output = document.getElementById("output");
     var input = document.getElementById("input");
-	var wspath = document.getElementById("wspathinput").value;
     var ws;
     var print = function(message) {
         var d = document.createElement("div");
@@ -26,6 +25,7 @@ window.addEventListener("load", function(evt) {
 		output.innerHTML = '';
     };
     document.getElementById("open").onclick = function(evt) {
+		var wspath = document.getElementById("wspathinput").value;
         if (ws) {
             return false;
         }
@@ -60,6 +60,7 @@ window.addEventListener("load", function(evt) {
         if (!ws) {
             return false;
         }
+		console.log("CLOSING WS");
         ws.close();
         return false;
     };
@@ -79,10 +80,10 @@ window.addEventListener("load", function(evt) {
 	<p>Close - close the ws connection</p>
 	<p>Send - send a message through the ws</p>
 <form>
+	<p><input id="wspathinput" type="text" value="ws://austinsland.ottoq.com:8080/wstest"></p>
 	<button id="open">Open</button>
 	<button id="close">Close</button>
 	<p><input id="input" type="text" value="{}"></p>
-	<p><input id="wspathinput" type="text" value="ws://austinsland.ottoq.com:8080/ws"></p>
 	<p>
 	<button id="send">Send</button>
 	<button id="clear">Clear</button>

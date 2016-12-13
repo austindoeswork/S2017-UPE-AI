@@ -1,7 +1,33 @@
-<html>
-	<head>
-	</head>
-	<body>
-		<h3>AUSTIN RULES</h3>
-	</body>
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+	<script src="assets/p5.min.js"></script>
+	<script src="assets/p5.dom.js"></script>
+	<script src="js/ws.js"></script>
+	<script src="js/pong.js"></script>
+<style>
+	body {
+		font-size: 14px;
+		font-family: "Courier New", Courier, monospace;
+	}
+	td {
+		margin: 5px;
+		border: 1px dashed black;
+	}
+</style>
+<script>
+</script>
+</head>
+<body>
+<h3>pong</h3>
+<div id="canvasHolder"></div>
+<div id="gamegrid"></div>
+<h3>controller</h3>
+<form>
+	<p><input id="gamename" type="text" value="gamename"></p>
+	<p><input id="wspathinput" type="text" value="ws://192.168.0.100:8080/ws">
+	<button id="open">Open</button>
+	<button id="close">Close</button>
+</form>
+</body>
 </html>

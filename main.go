@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	_ "net/http/pprof"
 
 	"github.com/austindoeswork/S2017-UPE-AI/server"
 )

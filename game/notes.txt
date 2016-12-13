@@ -13,8 +13,8 @@ DEPLOY
 	players deploy troops
 
 example map
-		   b---
-		   |   \
+
+		   b---\
 		   |    \
 		   |     \
 A---a      |      b---B <- main objective
