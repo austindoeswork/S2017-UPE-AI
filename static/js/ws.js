@@ -1,35 +1,7 @@
 var ws;
 window.addEventListener("load", function(evt) {
-    var output = document.getElementById("output");
-    var input = document.getElementById("input");
-    document.getElementById("open").onclick = function(evt) {
-		var wspath = document.getElementById("wspathinput").value;
-		var gname = document.getElementById("gamename").value;
-        if (ws) {
-            return false;
-        }
-
-		console.log(wspath);
-        ws = new WebSocket(wspath + "?game=" + gname);
-        ws.onopen = function(evt) {
-            console.log("WS CONNECTION OPENED");
-        }
-        ws.onclose = function(evt) {
-            console.log("WS CONNECTION CLOSED");
-            ws = null;
-        }
-        ws.onmessage = function(evt) {
-			//console.log(evt);
-			renderGrid(evt.data);
-        }
-        ws.onerror = function(evt) {
-            console.log("ERR: " + evt.data);
-        }
-        return false;
-    };
-    document.getElementById("send").onclick = function(evt) {
-		return send(evt.data)
-    };
+    document.getElementById("join").onclick = wsjoin;
+    document.getElementById("watch").onclick = wswatch;
     document.getElementById("close").onclick = function(evt) {
         if (!ws) {
             return false;
@@ -38,16 +10,56 @@ window.addEventListener("load", function(evt) {
         ws.close();
         return false;
     };
-
 });
 
+function wsjoin() {
+	var wspath = document.getElementById("wspathinput").value;
+	var wsroute = "/wsjoin"
+	var gname = document.getElementById("gamename").value;
+	wsopen(wspath, wsroute, gname);
+}
+function wswatch() {
+	var wspath = document.getElementById("wspathinput").value;
+	var wsroute = "/wswatch"
+	var gname = document.getElementById("gamename").value;
+	wsopen(wspath, wsroute, gname);
+}
+
+function wsopen(wspath, wsroute, gname) {
+	if (ws) {
+		return false;
+	}
+	ws = new WebSocket(wspath + wsroute + "?game=" + gname);
+	ws.onopen = function(evt) {
+		setstatus("WS CONNECTION OPENED");
+		console.log("WS CONNECTION OPENED");
+	}
+	ws.onclose = function(evt) {
+		setstatus("WS CONNECTION CLOSED");
+		console.log("WS CONNECTION CLOSED");
+		console.log(evt);
+		ws = null;
+	}
+	ws.onmessage = function(evt) {
+		renderGrid(evt.data);
+	}
+	ws.onerror = function(evt) {
+		console.log(evt);
+		setstatus(evt.data);
+	}
+	return false;
+}
 function send(input) {
 	console.log("sending");
         if (!ws) {
-	console.log("failed");
+			console.log("failed");
             return false;
         }
-        ws.send(input);
+	ws.send(input);
 	console.log("success");
         return false;
+}
+function setstatus(statusstring) {
+	s = document.getElementById("status");
+	s.innerHTML = "CONNECTION OPENED";
 }

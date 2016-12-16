@@ -10,26 +10,31 @@ import (
 
 // GameManager holds games and maintains connections between the game and the players
 type GameManager struct {
-	games map[string]*gameWrapper
+	games     map[string]*gameWrapper
+	watcherID int // TODO figure out how to handle watcher identification vs player id
 }
 
 func New() *GameManager {
 	gm := &GameManager{
-		games: make(map[string]*gameWrapper),
+		games:     make(map[string]*gameWrapper),
+		watcherID: -1,
 	}
 
 	go func() {
-		clk := time.NewTicker(10 * time.Second)
+		clk := time.NewTicker(1 * time.Minute)
 		for {
 			select {
 			case <-clk.C:
-				log.Println("game janitor starting")
+				total := len(gm.games)
+				count := 0
 				for name, g := range gm.games {
 					if g.Status() == game.DONE {
 						log.Printf("cleaned: %s\n", name)
 						delete(gm.games, name)
+						count++
 					}
 				}
+				log.Printf("game janitor: cleaned %d/%d games", count, total)
 			}
 		}
 	}()
@@ -39,7 +44,7 @@ func New() *GameManager {
 
 // CONNECT creates a game if it doesn't exist
 // returns an id, input and output channel
-func (gm *GameManager) Connect(name string) (int, chan []byte, chan []byte, error) {
+func (gm *GameManager) Connect(name string) (int, chan<- []byte, <-chan []byte, error) {
 	g, exists := gm.games[name]
 	if !exists {
 		g = NewGameWrapper()
@@ -54,7 +59,7 @@ func (gm *GameManager) Connect(name string) (int, chan []byte, chan []byte, erro
 	outputChan := make(chan []byte)
 	g.AddListener(id, outputChan)
 
-	log.Printf("%s %d: added", name, id)
+	log.Printf("%s %d: connected", name, id)
 	if g.Status() == game.READY {
 		err = g.Start()
 		if err != nil {
@@ -64,8 +69,24 @@ func (gm *GameManager) Connect(name string) (int, chan []byte, chan []byte, erro
 	return id, inputChan, outputChan, nil
 }
 
+func (gm *GameManager) Watch(name string) (int, <-chan []byte, error) {
+	g, exists := gm.games[name]
+	if !exists {
+		return -1, nil, fmt.Errorf("game %s DNE", name)
+	}
+
+	outputChan := make(chan []byte)
+	id := gm.watcherID
+	g.AddListener(id, outputChan)
+	gm.watcherID--
+
+	log.Printf("%s %d(watcher): connected", name, id)
+	return id, outputChan, nil
+}
+
 func (gm *GameManager) Disconnect(name string, id int) error {
 	if g, exists := gm.games[name]; exists {
+		log.Printf("%s %d: disconnected", name, id)
 		return g.DeleteListener(id)
 	}
 	return fmt.Errorf("game %s DNE", name)
@@ -88,11 +109,22 @@ func NewGameWrapper() *gameWrapper {
 
 	// mux output chan
 	go func() {
+		defer gw.cleanup()
+		begin := time.Now()
 		clk := time.NewTicker(10 * time.Second)
 		for {
-			if gw.Status() == game.RUNNING && len(gw.listeners) == 0 {
-				gw.Quit()
-				return
+			if len(gw.listeners) == 0 {
+				if gw.Status() == game.NOTREADY { // TODO think about where to put this
+					if time.Now().Sub(begin).Seconds() > 10 {
+						log.Println("NOTREADY timeout")
+						gw.Quit()
+						return
+					}
+				}
+				if gw.Status() == game.RUNNING {
+					gw.Quit()
+					return
+				}
 			}
 			if gw.Status() == game.DONE {
 				return
@@ -127,5 +159,10 @@ func (gw *gameWrapper) sendListeners(msg []byte) {
 		default:
 		}
 	}
+}
 
+func (gw *gameWrapper) cleanup() {
+	for id, _ := range gw.listeners {
+		gw.DeleteListener(id)
+	}
 }

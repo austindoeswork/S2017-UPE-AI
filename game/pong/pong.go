@@ -20,6 +20,7 @@ type Player struct {
 	x      int
 	y      int //of top of bar
 	length int //above and below center
+	score  int
 }
 
 func (p *Player) Position() (int, int) {
@@ -31,6 +32,13 @@ func (p *Player) SetPosition(x, y int) {
 }
 func (p *Player) Length() int {
 	return p.length
+}
+func (p *Player) Score() int {
+	return p.score
+}
+func (p *Player) Goal() int {
+	p.score += 1
+	return p.score
 }
 
 type Ball struct {
@@ -143,12 +151,6 @@ func (p *Pong) Start() error {
 	go func() {
 		log.Println("GAME STARTED YOO")
 		for {
-			select {
-			case <-p.quit:
-				log.Println("GAME ABORTED")
-				return
-			default:
-			}
 
 			select {
 			case <-clk.C: //nxt frame
@@ -171,6 +173,14 @@ func (p *Pong) Start() error {
 				case p.output <- p.stateJSON(): //send output
 				default:
 				}
+				if p.p1.Score() >= 10 || p.p2.Score() >= 10 {
+					p.status = DONE
+					log.Println("GAME DIED OF NATURAL CAUSES")
+					return
+				}
+			case <-p.quit:
+				log.Println("GAME ABORTED")
+				return
 			}
 		}
 	}()
@@ -180,7 +190,10 @@ func (p *Pong) Start() error {
 func (p *Pong) Quit() {
 	log.Println("ABORTING GAME...")
 	p.status = DONE
-	p.quit <- true
+	select {
+	case p.quit <- true:
+	default:
+	}
 }
 func (p *Pong) Status() int {
 	return p.status
@@ -245,7 +258,14 @@ func (p *Pong) updateGame() {
 		}
 
 		//wall collisions
-		if xnext >= p.width || xnext < 0 {
+		if xnext >= p.width {
+			p1score := p.p1.Goal()
+			log.Printf("p1 scored: %d", p1score)
+			xnext = p.width / 2
+			ynext = p.height / 2
+		} else if xnext < 0 {
+			p2score := p.p2.Goal()
+			log.Printf("p2 scored: %d", p2score)
 			xnext = p.width / 2
 			ynext = p.height / 2
 		}
@@ -305,17 +325,22 @@ func (p *Pong) stateJSON() []byte {
 	l := p.p1.Length()*2 + 1
 	p1x, p1y := p.p1.Position()
 	p2x, p2y := p.p2.Position()
+	p1s := p.p1.Score()
+	p2s := p.p2.Score()
 	bx, by := p.ball.Position()
 	outString := fmt.Sprintf(`{
+	"type": "state",
 	"w": %d,
 	"h": %d,
 	"p1x":%d,
 	"p1y":%d,
+	"p1s": %d,
 	"p2x":%d,
 	"p2y":%d,
+	"p2s":%d,
 	"l": %d,
 	"bx":%d,
 	"by":%d
-}`, p.width, p.height, p1x, p1y, p2x, p2y, l, bx, by)
+}`, p.width, p.height, p1x, p1y, p1s, p2x, p2y, p2s, l, bx, by)
 	return []byte(outString)
 }

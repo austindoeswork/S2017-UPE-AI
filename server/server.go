@@ -35,57 +35,80 @@ func New(port, staticDir string) *Server {
 	}
 }
 
-func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleWatchWS(w http.ResponseWriter, r *http.Request) {
 	gameName := r.FormValue("game")
 	if len(gameName) <= 0 {
-		w.Write([]byte("ERR no gameName provided"))
+		w.Write([]byte("ERR: no gameName provided"))
 		return
 	}
-
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("ERR upgrading websocket:", err)
+		log.Println("ERR: upgrading websocket", err)
 		return
 	}
-	defer func() {
-		conn.Close()
-	}()
+	defer conn.Close()
 
-	id, gameInput, gameOutput, err := s.gm.Connect(gameName)
+	id, gameOutput, err := s.gm.Watch(gameName)
 	if err != nil {
-		log.Println("ERROR: could not add player", err)
+		log.Println("ERR: could not add watcher", err)
 		return
 	}
 	defer s.gm.Disconnect(gameName, id)
 
 	// handle output
-	go func() {
-		for {
-			select {
-			case msg, more := <-gameOutput:
-				if more {
-					err = conn.WriteMessage(TextMessage, msg)
-					if err != nil {
-						log.Printf("%s %d: %s", gameName, id, "output socket closed")
-						return
-					}
-				} else {
-					log.Printf("%s %d: %s", gameName, id, "output channel closed")
-					return
-				}
-				// TODO add efficient timeout
-			}
-		}
-	}()
+	chanToWS(gameOutput, conn)
+}
+func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
+	gameName := r.FormValue("game")
+	if len(gameName) <= 0 {
+		w.Write([]byte("ERR: no gameName provided"))
+		return
+	}
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("ERR: upgrading websocket", err)
+		return
+	}
+	defer conn.Close()
+
+	id, gameInput, gameOutput, err := s.gm.Connect(gameName)
+	if err != nil {
+		log.Println("ERR: could not add player", err)
+		return
+	}
+	defer s.gm.Disconnect(gameName, id)
+
+	// handle output
+	go chanToWS(gameOutput, conn)
 
 	// handle input
 	for {
 		mt, message, err := conn.ReadMessage()
 		if err != nil || mt == CloseMessage {
-			log.Println("ERR reading websocket:", err)
+			log.Println("ERR: reading websocket", err)
 			return
 		}
 		gameInput <- message
+	}
+}
+
+func chanToWS(gameOutput <-chan []byte, conn *websocket.Conn) {
+	for {
+		select {
+		case msg, more := <-gameOutput:
+			if more {
+				err := conn.WriteMessage(TextMessage, msg)
+				if err != nil {
+					log.Println("output socket closed")
+					return
+				}
+			} else { // chan has been closed
+				log.Println("output channel closed")
+				conn.Close()
+				return
+			}
+			// TODO add efficient timeout
+		}
 	}
 }
 
@@ -93,7 +116,8 @@ func (s *Server) Start() {
 	// http.Handle("/asdf/", http.StripPrefix("/asdf/", http.FileServer(http.Dir(staticdir))))
 
 	http.Handle("/", http.FileServer(http.Dir(s.staticDir)))
-	http.HandleFunc("/ws", s.handleWS)
+	http.HandleFunc("/wsjoin", s.handleJoinWS)
+	http.HandleFunc("/wswatch", s.handleWatchWS)
 
 	// echo ws for testing
 	http.HandleFunc("/wstest", func(w http.ResponseWriter, r *http.Request) {

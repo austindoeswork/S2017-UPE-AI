@@ -19,15 +19,17 @@
 </script>
 </head>
 <body>
-<h3>pong</h3>
+<h3>pong is right below this header if you look closely</h3>
 <div id="canvasHolder"></div>
-<div id="gamegrid"></div>
+<div id="score"><span id="p1score">:)</span>to<span id="p2score">:(</span></div>
+<p id="status">join/watch a game dawg.</p>
 <h3>controller</h3>
-<form>
-	<p><input id="gamename" type="text" value="gamename"></p>
-	<p><input id="wspathinput" type="text" value="ws://129.161.65.238:8080/ws">
-	<button id="open">Open</button>
+<div>
+	<p><input id="gamename" type="text" value="gamename">
+	<button id="join">Join</button>
+	<button id="watch">Watch</button>
+	<p><input id="wspathinput" type="text" value="ws://129.161.88.62:8080">
 	<button id="close">Close</button>
-</form>
+</div>
 </body>
 </html>
