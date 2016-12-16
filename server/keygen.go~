@@ -1,0 +1,80 @@
+package server
+
+import (
+	"bufio"
+	"os"
+	"math/rand"
+	"log"
+	"strconv"
+	// "https://github.com/gtank/bloomfilter/blob/master/bloomfilter"
+)
+
+func toUpper(x byte) byte {
+	if x >= 'a' && x <= 'z' {
+		return x - 'a' + 'A'
+	} else {
+		return x
+	}
+}
+
+// TODO add uint count as arg to get multiple bools
+func getWordsFromFile(path string) []byte {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	
+	// first, use counter to find length of file
+	counter := 0
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		scanner.Text()
+		counter++
+	}
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+	// log.Println("counter: " + strconv.Itoa(counter))
+	// use random to find a line to grab
+	selected := rand.Intn(counter)
+	file.Seek(0, 0)
+	counter = 0
+	scanner = bufio.NewScanner(file)
+	for scanner.Scan() {
+		text := scanner.Text()
+		if selected == counter { // is this the line? return
+			bytetext := append([]byte{toUpper(text[0])}, []byte(text[1:])...)
+			return bytetext
+		}
+		counter++
+	}
+	// log.Println("read file " + string(path[:]) + ", length = " + string(counter))
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return nil // we should never be reaching here, otherwise counter is outside file range
+}
+
+// TODO change adj to uint to allow for grabbing multiple adjectives from file without
+// opening/closing the files unnecessarily
+func GenerateKey(name bool, adverbs bool, adj bool, noun bool) []byte {
+	var key []byte
+	if (name) {
+		key = append(key, append(getWordsFromFile("server/words/names.txt"), byte('s'))...)
+	}
+	if (adverbs) {
+		key = append(key, getWordsFromFile("server/words/adverbs.txt")...)
+	}
+	if (adj) {
+		key = append(key, getWordsFromFile("server/words/adjs.txt")...)
+	}
+	if (noun) {
+		key = append(key, getWordsFromFile("server/words/nouns.txt")...)
+	}
+	// log.Println("current key: " + string(key[:]))
+	return key
+}
+
+
+

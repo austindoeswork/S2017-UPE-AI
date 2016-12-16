@@ -39,6 +39,10 @@ func New(port, staticDir string, db *sql.DB) *Server {
 	}
 }
 
+func getKey() {
+	log.Println(string(GenerateUniqueKey(true,true,true,true)))
+}
+
 func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
 		http.ServeFile(res, req, "./static/login.html")
@@ -77,8 +81,7 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 
 	err := s.db.QueryRow("SELECT username FROM users WHERE username=?", username).Scan(&user)
 
-	switch {
-		// Username is available
+	switch { // Username is available
 	case err == sql.ErrNoRows:
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
@@ -158,7 +161,15 @@ func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) Start() {
 	// http.Handle("/asdf/", http.StripPrefix("/asdf/", http.FileServer(http.Dir(staticdir))))
+	// testing keygen
+	i := 0
+	for i < 1000 {
+		// GenerateUniqueKey(true, true, true, true)
+		getKey()
+		i++
+	}
 	http.Handle("/", http.FileServer(http.Dir(s.staticDir)))
+	// http.HandleFunc("/keygen", getKey)
 	http.HandleFunc("/login", s.handleLogin)
 	http.HandleFunc("/signup", s.handleSignup)
 	http.HandleFunc("/ws", s.handleWS)

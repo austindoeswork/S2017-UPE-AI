@@ -7,6 +7,8 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 
+	"math/rand" // testing seeding once on startup
+	"time" // used for seeding
 
 	"github.com/austindoeswork/S2017-UPE-AI/server"
 )
@@ -24,6 +26,8 @@ var (
 */
 
 func main() {
+	rand.Seed(time.Now().UTC().UnixNano()) // seed on startup to current time
+
      	db, err = sql.Open("mysql", "root@/aicomp")
 	if err != nil {
 	        panic(err.Error())    
