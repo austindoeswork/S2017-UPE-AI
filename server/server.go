@@ -1,13 +1,14 @@
 package server
 
 import (
-	"log"
-	"net/http"
-	// "time"
+	"database/sql"
 	"github.com/gorilla/websocket"
 	"golang.org/x/crypto/bcrypt"
-	"database/sql"
-		
+	"log"
+	"net/http"
+
+	"time"
+
 	"github.com/austindoeswork/S2017-UPE-AI/gamemanager"
 )
 
@@ -26,15 +27,15 @@ var upgrader = websocket.Upgrader{
 type Server struct {
 	port      string
 	staticDir string
-	db	  *sql.DB
-	gm *gamemanager.GameManager
+	db        *sql.DB
+	gm        *gamemanager.GameManager
 }
 
 func New(port, staticDir string, db *sql.DB) *Server {
 	return &Server{
 		port:      port,
 		staticDir: staticDir,
-		db:	   db,
+		db:        db,
 		gm:        gamemanager.New(),
 	}
 }
@@ -47,8 +48,8 @@ func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 	}
 	username := req.FormValue("username")
 	password := req.FormValue("password")
-	var databaseUsername  string
-	var databasePassword  string
+	var databaseUsername string
+	var databasePassword string
 	var apikey string
 
 	err := s.db.QueryRow("SELECT username, password, apikey FROM users WHERE username=?", username).Scan(&databaseUsername, &databasePassword, &apikey)
@@ -60,19 +61,19 @@ func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 	err = bcrypt.CompareHashAndPassword([]byte(databasePassword), []byte(password))
 	if err != nil {
 		http.Redirect(res, req, "/login", 301)
-		return		   
+		return
 	}
-	res.Write([]byte("Hello " + databaseUsername + ", your apikey is " + apikey))   
+	res.Write([]byte("Hello " + databaseUsername + ", your apikey is " + apikey))
 }
 
 // TODO: move to database interface file
 func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 	// Serve signup.html to get requests to /signup
-     	if req.Method != "POST" {
+	if req.Method != "POST" {
 		http.ServeFile(res, req, "./static/signup.html")
 		return
 	}
-	
+
 	username := req.FormValue("username")
 	password := req.FormValue("password")
 
@@ -85,77 +86,142 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		apikey := string(GenerateUniqueKey(true, true, true, true))
 		if err != nil {
-			http.Error(res, "Server error, unable to create your account.", 500)    
+			http.Error(res, "Server error, unable to create your account.", 500)
 			return
-		} 
+		}
 
 		_, err = s.db.Exec("INSERT INTO users(username, password, apikey) VALUES(?, ?, ?)", username, hashedPassword, apikey)
 		if err != nil {
-			http.Error(res, "Server error, unable to create your account.", 500)    
+			http.Error(res, "Server error, unable to create your account.", 500)
 			return
 		}
 
 		res.Write([]byte("User created! Your apikey is " + apikey))
 		return
-	case err != nil: 
-		http.Error(res, "Server error, unable to create your account.", 500)    
+	case err != nil:
+		http.Error(res, "Server error, unable to create your account.", 500)
 		return
-	default: 
+	default:
 		http.Redirect(res, req, "/", 301)
 	}
 }
 
-func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleWatchWS(w http.ResponseWriter, r *http.Request) {
 	gameName := r.FormValue("game")
 	if len(gameName) <= 0 {
-		w.Write([]byte("ERR no gameName provided"))
+		w.Write([]byte("ERR: no gameName provided"))
 		return
 	}
-
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("ERR upgrading websocket:", err)
+		log.Println("ERR: upgrading websocket", err)
+		return
+	}
+	defer conn.Close()
+
+	quit := make(chan bool)
+	gameOutput, err := s.gm.WatchGame(gameName, quit)
+	if err != nil {
+		log.Println("ERR: could not add watcher", err)
 		return
 	}
 	defer func() {
-		conn.Close()
-	}()
-
-	id, gameInput, gameOutput, err := s.gm.Connect(gameName)
-	if err != nil {
-		log.Println("ERROR: could not add player", err)
-		return
-	}
-	defer s.gm.Disconnect(gameName, id)
-
-	// handle output
-	go func() {
-		for {
-			select {
-			case msg, more := <-gameOutput:
-				if more {
-					err = conn.WriteMessage(TextMessage, msg)
-					if err != nil {
-						log.Printf("%s %d: %s", gameName, id, "output socket closed")
-						return
-					}
-				} else {
-					log.Printf("%s %d: %s", gameName, id, "output channel closed")
-					return
-				}
-				// TODO add efficient timeout
-			}
+		select {
+		case quit <- true:
+		default:
 		}
 	}()
+
+	// handle output
+	chanToWS(gameOutput, conn)
+}
+func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
+	gameName := r.FormValue("game")
+	if len(gameName) <= 0 {
+		w.Write([]byte("ERR: no gameName provided"))
+		return
+	}
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("ERR: upgrading websocket", err)
+		return
+	}
+	defer conn.Close()
+
+	// TODO sanitization on gameName
+	if !s.gm.HasGame(gameName) {
+		err = s.gm.NewGame(gameName)
+		if err != nil {
+			log.Println("ERR: creating game", err)
+		}
+	}
+
+	quitIn := make(chan bool)
+	gameInput, err := s.gm.ControlGame(gameName, quitIn)
+	if err != nil {
+		log.Println("ERR: could not add controller", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitIn <- true:
+		default:
+		}
+	}()
+
+	quitOut := make(chan bool)
+	gameOutput, err := s.gm.WatchGame(gameName, quitOut)
+	if err != nil {
+		log.Println("ERR: could not add watcher", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitOut <- true:
+		default:
+		}
+	}()
+
+	// handle output
+	go chanToWS(gameOutput, conn)
 
 	// handle input
 	for {
 		mt, message, err := conn.ReadMessage()
 		if err != nil || mt == CloseMessage {
-			log.Println("ERR reading websocket:", err)
+			log.Println("ERR: reading websocket", err)
 			return
 		}
 		gameInput <- message
+	}
+}
+
+func chanToWS(gameOutput <-chan []byte, conn *websocket.Conn) {
+	defer conn.Close()
+	for {
+		t := time.NewTimer(time.Second * 10)
+		select {
+		case msg, more := <-gameOutput:
+			if !t.Stop() {
+				<-t.C
+			}
+			if more {
+				t.Reset(time.Second * 10)
+
+				err := conn.WriteMessage(TextMessage, msg)
+				if err != nil {
+					log.Println("output socket closed")
+					return
+				}
+			} else { // chan has been closed
+				log.Println("output channel closed")
+				return
+			}
+			// TODO add efficient timeout
+		case <-t.C:
+			log.Println("chanToWS timeout")
+			return
+		}
 	}
 }
 
@@ -164,7 +230,8 @@ func (s *Server) Start() {
 	http.Handle("/", http.FileServer(http.Dir(s.staticDir)))
 	http.HandleFunc("/login", s.handleLogin)
 	http.HandleFunc("/signup", s.handleSignup)
-	http.HandleFunc("/ws", s.handleWS)
+	http.HandleFunc("/wsjoin", s.handleJoinWS)
+	http.HandleFunc("/wswatch", s.handleWatchWS)
 
 	// echo ws for testing
 	http.HandleFunc("/wstest", func(w http.ResponseWriter, r *http.Request) {

@@ -49,9 +49,14 @@ function renderGrid(data) {
 
   p1x = d.p1x;
   p1y = d.p1y;
+  p1s = d.p1s;
   p2x = d.p2x;
   p2y = d.p2y;
+  p2s = d.p2s;
   plength = d.l;
+
+  document.getElementById("p1score").innerHTML = p1s
+  document.getElementById("p2score").innerHTML = p2s
 
   redraw();
 

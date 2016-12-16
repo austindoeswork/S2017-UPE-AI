@@ -1,7 +1,7 @@
 package pong
 
 import (
-	"errors"
+	// "errors"
 	"fmt"
 	"log"
 	"time"
@@ -20,6 +20,7 @@ type Player struct {
 	x      int
 	y      int //of top of bar
 	length int //above and below center
+	score  int
 }
 
 func (p *Player) Position() (int, int) {
@@ -31,6 +32,13 @@ func (p *Player) SetPosition(x, y int) {
 }
 func (p *Player) Length() int {
 	return p.length
+}
+func (p *Player) Score() int {
+	return p.score
+}
+func (p *Player) Goal() int {
+	p.score += 1
+	return p.score
 }
 
 type Ball struct {
@@ -90,51 +98,46 @@ type Pong struct {
 	winner int
 }
 
-func New(width, height, fps int) (*Pong, chan []byte) {
+func New(width, height, fps int) (*Pong, []chan<- []byte, <-chan []byte) {
 	outputChan := make(chan []byte)
+	p1 := &Player{
+		id:     1,
+		x:      0,
+		y:      height / 2,
+		length: 2,
+	}
+	p2 := &Player{
+		id:     2,
+		x:      width - 1,
+		y:      height / 2,
+		length: 2,
+	}
+	p1input := make(chan []byte, 5)
+	p2input := make(chan []byte, 5)
 	return &Pong{
-		p1input: make(chan []byte, 5),
-		p2input: make(chan []byte, 5),
+		p1input: p1input,
+		p2input: p2input,
 		output:  outputChan,
 		quit:    make(chan bool),
-		status:  NOTREADY,
+		status:  READY,
+		p1:      p1,
+		p2:      p2,
 		ball:    NewBall(width/2, height/2, 4),
 		width:   width,
 		height:  height,
 		fps:     fps,
 		frame:   0,
 		winner:  -1,
-	}, outputChan
+	}, []chan<- []byte{p1input, p2input}, outputChan
 }
 
-// AddPlayer returns an error or 1 or 2 corresponding to the player added
-func (p *Pong) AddPlayer() (int, chan []byte, error) {
-	if p.p1 == nil {
-		p.p1 = &Player{
-			id:     1,
-			x:      0,
-			y:      p.height / 2,
-			length: 2,
-		}
-		return 1, p.p1input, nil
-	} else if p.p2 == nil {
-		p.p2 = &Player{
-			id:     2,
-			x:      p.width - 1,
-			y:      p.height / 2,
-			length: 2,
-		}
-		p.status = READY
-		return 2, p.p2input, nil
-	} else {
-		return -1, nil, errors.New("ERROR: 2 Players already joined")
-	}
+func (p *Pong) MinPlayers() int {
+	return 2
 }
 
-// Start returns an output chan and a done chan? TODO, or nil and an error
 func (p *Pong) Start() error {
-	if p.p1 == nil || p.p2 == nil {
-		return errors.New("ERROR: not enough players")
+	if p.status == RUNNING {
+		return fmt.Errorf("ERR game already running")
 	}
 	p.status = RUNNING
 
@@ -144,23 +147,20 @@ func (p *Pong) Start() error {
 		log.Println("GAME STARTED YOO")
 		for {
 			select {
-			case <-p.quit:
-				log.Println("GAME ABORTED")
-				return
-			default:
-			}
-
-			select {
 			case <-clk.C: //nxt frame
+				if p.status == DONE {
+					log.Println("GAME DIED OF UNNATURAL CAUSES")
+					return
+				}
 				p.frame++
 				p.updateInputs()
 
-				if p.p1cmd != nil {
-					log.Println("1", p.p1cmd)
-				}
-				if p.p2cmd != nil {
-					log.Println("2", p.p2cmd)
-				}
+				// if p.p1cmd != nil {
+				// log.Println("1", p.p1cmd)
+				// }
+				// if p.p2cmd != nil {
+				// log.Println("2", p.p2cmd)
+				// }
 
 				p.updateGame()
 
@@ -171,6 +171,12 @@ func (p *Pong) Start() error {
 				case p.output <- p.stateJSON(): //send output
 				default:
 				}
+				if p.p1.Score() >= 10 || p.p2.Score() >= 10 {
+					p.status = DONE
+					log.Println("GAME DIED OF NATURAL CAUSES")
+					close(p.output)
+					return
+				}
 			}
 		}
 	}()
@@ -178,9 +184,9 @@ func (p *Pong) Start() error {
 }
 
 func (p *Pong) Quit() {
-	log.Println("ABORTING GAME...")
+	log.Println("ABORTING GAME.")
+	close(p.output)
 	p.status = DONE
-	p.quit <- true
 }
 func (p *Pong) Status() int {
 	return p.status
@@ -245,7 +251,12 @@ func (p *Pong) updateGame() {
 		}
 
 		//wall collisions
-		if xnext >= p.width || xnext < 0 {
+		if xnext >= p.width {
+			p.p1.Goal()
+			xnext = p.width / 2
+			ynext = p.height / 2
+		} else if xnext < 0 {
+			p.p2.Goal()
 			xnext = p.width / 2
 			ynext = p.height / 2
 		}
@@ -305,17 +316,22 @@ func (p *Pong) stateJSON() []byte {
 	l := p.p1.Length()*2 + 1
 	p1x, p1y := p.p1.Position()
 	p2x, p2y := p.p2.Position()
+	p1s := p.p1.Score()
+	p2s := p.p2.Score()
 	bx, by := p.ball.Position()
 	outString := fmt.Sprintf(`{
+	"type": "state",
 	"w": %d,
 	"h": %d,
 	"p1x":%d,
 	"p1y":%d,
+	"p1s": %d,
 	"p2x":%d,
 	"p2y":%d,
+	"p2s":%d,
 	"l": %d,
 	"bx":%d,
 	"by":%d
-}`, p.width, p.height, p1x, p1y, p2x, p2y, l, bx, by)
+}`, p.width, p.height, p1x, p1y, p1s, p2x, p2y, p2s, l, bx, by)
 	return []byte(outString)
 }

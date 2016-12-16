@@ -8,124 +8,220 @@ import (
 	"github.com/austindoeswork/S2017-UPE-AI/game"
 )
 
-// GameManager holds games and maintains connections between the game and the players
+type GM interface {
+	// NewGame creates a new game object and starts it when it has
+	// enough controllers
+	NewGame(gameName string) error
+
+	// ControlGame returns the input channel to a game if it exists
+	ControlGame(gameName string, quit chan bool) (chan<- []byte, error)
+
+	// WatchGame returns the output channel to a game if it exists
+	WatchGame(gameName string, quit chan bool) (<-chan []byte, error)
+}
+
 type GameManager struct {
-	games map[string]*gameWrapper
+	games map[string]*GameWrapper
 }
 
 func New() *GameManager {
 	gm := &GameManager{
-		games: make(map[string]*gameWrapper),
+		games: make(map[string]*GameWrapper),
 	}
-
 	go func() {
-		clk := time.NewTicker(10 * time.Second)
-		for {
-			select {
-			case <-clk.C:
-				log.Println("game janitor starting")
-				for name, g := range gm.games {
-					if g.Status() == game.DONE {
-						log.Printf("cleaned: %s\n", name)
-						delete(gm.games, name)
-					}
-				}
-			}
-		}
+		gm.Janitor()
 	}()
-
 	return gm
 }
 
-// CONNECT creates a game if it doesn't exist
-// returns an id, input and output channel
-func (gm *GameManager) Connect(name string) (int, chan []byte, chan []byte, error) {
-	g, exists := gm.games[name]
-	if !exists {
-		g = NewGameWrapper()
-		gm.games[name] = g
-	}
-
-	id, inputChan, err := g.AddPlayer()
-	if err != nil {
-		return -1, nil, nil, err
-	}
-
-	outputChan := make(chan []byte)
-	g.AddListener(id, outputChan)
-
-	log.Printf("%s %d: added", name, id)
-	if g.Status() == game.READY {
-		err = g.Start()
-		if err != nil {
-			log.Fatal("GAME SAID IT WAS READY WHEN IT WASN'T")
+func (gm *GameManager) Janitor() {
+	clk := time.NewTicker(time.Second * 120)
+	for {
+		select {
+		case <-clk.C:
+			total := len(gm.games)
+			count := 0
+			for gameName, gw := range gm.games {
+				if gw.Status() == game.DONE {
+					count++
+					delete(gm.games, gameName)
+				}
+			}
+			log.Printf("janitor: cleaned %d/%d games yo.", count, total)
 		}
 	}
-	return id, inputChan, outputChan, nil
 }
 
-func (gm *GameManager) Disconnect(name string, id int) error {
-	if g, exists := gm.games[name]; exists {
-		return g.DeleteListener(id)
+func (gm *GameManager) HasGame(gameName string) bool {
+	_, exists := gm.games[gameName]
+	return exists
+}
+
+func (gm *GameManager) NewGame(gameName string) error {
+	if _, exists := gm.games[gameName]; exists {
+		return fmt.Errorf("ERR game already exists")
 	}
-	return fmt.Errorf("game %s DNE", name)
+	gw := NewGameWrapper()
+	gm.games[gameName] = gw
 
-}
-
-// gameWrapper handles output comms with the listeners
-type gameWrapper struct {
-	game.Game
-	listeners map[int]chan []byte
-}
-
-// TODO think of a way to handle multiple types of games
-func NewGameWrapper() *gameWrapper {
-	g, gchan := game.NewPong()
-	gw := &gameWrapper{
-		g,
-		make(map[int]chan []byte),
-	}
-
-	// mux output chan
 	go func() {
-		clk := time.NewTicker(10 * time.Second)
-		for {
-			if gw.Status() == game.RUNNING && len(gw.listeners) == 0 {
+		time.AfterFunc(time.Second*10, func() {
+			if gw.Status() != game.RUNNING && gw.Status() != game.DONE {
+				log.Printf("game: %s timed out.", gameName)
 				gw.Quit()
-				return
 			}
-			if gw.Status() == game.DONE {
-				return
+		})
+	}()
+	return nil
+}
+
+func (gm *GameManager) ControlGame(gameName string, quit chan bool) (chan<- []byte, error) {
+	gw, exists := gm.games[gameName]
+	if !exists {
+		return nil, fmt.Errorf("ERR no such game")
+	}
+	if gw.Status() == game.DONE {
+		return nil, fmt.Errorf("ERR game over")
+	}
+	input, err := gw.getOpenInput()
+	if err != nil {
+		return nil, err
+	}
+
+	go func() {
+		select {
+		case <-quit:
+			log.Printf("game: %s controller QUIT", gameName)
+			err := gw.closeInput(input)
+			if err != nil {
+				log.Panic(err) // TODO idiomatic way to log unexpected errors?
 			}
-			select {
-			case out := <-gchan:
-				gw.sendListeners(out)
-			case <-clk.C: //reset loop
-			}
+			return
 		}
 	}()
 
+	log.Printf("game: %s controller GIVEN", gameName)
+	return input, nil
+}
+func (gm *GameManager) WatchGame(gameName string, quit chan bool) (<-chan []byte, error) {
+	gw, exists := gm.games[gameName]
+	if !exists {
+		return nil, fmt.Errorf("ERR no such game")
+	}
+	if gw.Status() == game.DONE {
+		return nil, fmt.Errorf("ERR game over")
+	}
+	output := gw.getOutput()
+
+	go func() {
+		select {
+		case <-quit:
+			log.Printf("game: %s watcher QUIT", gameName)
+			err := gw.closeOutput(output)
+			if err != nil {
+				log.Panic(err) // TODO idiomatic way to log unexpected errors?
+			}
+			return
+		}
+	}()
+
+	log.Printf("game: %s watcher GIVEN", gameName)
+	return output, nil
+}
+
+type GameWrapper struct {
+	game.Game
+	// TODO think about resetting connections
+	// gameInput maps an input to whether they are connected
+	gameInputMap map[chan<- []byte]bool
+	activeInputs int
+	gameOutput   <-chan []byte
+	listenerMap  map[chan []byte]bool
+}
+
+// TODO allow creation of different games (pong, scrabble, whatever)
+func NewGameWrapper() *GameWrapper {
+	g, inputs, output := game.NewPong()
+	gameInputMap := make(map[chan<- []byte]bool)
+	listenerMap := make(map[chan []byte]bool)
+
+	for _, in := range inputs {
+		gameInputMap[in] = false
+	}
+
+	gw := &GameWrapper{
+		g,
+		gameInputMap,
+		0,
+		output,
+		listenerMap,
+	}
+
+	go gw.multiplex() // start sending output to listeners
 	return gw
 }
 
-func (gw *gameWrapper) AddListener(id int, listener chan []byte) {
-	gw.listeners[id] = listener
-}
-func (gw *gameWrapper) DeleteListener(id int) error {
-	if listener, exists := gw.listeners[id]; exists {
-		close(listener)
-		delete(gw.listeners, id)
-		return nil
-	}
-	return fmt.Errorf("listener %d DNE", id)
-}
-
-func (gw *gameWrapper) sendListeners(msg []byte) {
-	for _, listener := range gw.listeners {
+func (gw *GameWrapper) multiplex() {
+	for {
 		select {
-		case listener <- msg:
-		default:
+		case msg, more := <-gw.gameOutput:
+			if more {
+				for listener, _ := range gw.listenerMap {
+					select {
+					case listener <- msg: // dont block on a listener
+					default:
+					}
+				}
+			} else {
+				log.Println("stopping the multiplex")
+				for listener, _ := range gw.listenerMap {
+					close(listener)
+				}
+				return
+			}
 		}
 	}
+}
 
+func (gw *GameWrapper) Ready() bool {
+	return gw.activeInputs == gw.MinPlayers()
+}
+
+// getOpenInput returns the first open input chan it encounters
+func (gw *GameWrapper) getOpenInput() (chan<- []byte, error) {
+	for input, assigned := range gw.gameInputMap {
+		if !assigned {
+			gw.gameInputMap[input] = true
+			gw.activeInputs++
+			if gw.activeInputs == gw.MinPlayers() {
+				gw.Start()
+			}
+			return input, nil
+		}
+	}
+	return nil, fmt.Errorf("ERR no open input chan")
+}
+func (gw *GameWrapper) closeInput(input chan<- []byte) error {
+	if _, exists := gw.gameInputMap[input]; !exists {
+		return fmt.Errorf("ERR no such input chan")
+	}
+	gw.activeInputs--
+	if gw.activeInputs == 0 && gw.Status() != game.DONE {
+		gw.Quit()
+	}
+	gw.gameInputMap[input] = false
+	return nil
+}
+func (gw *GameWrapper) getOutput() chan []byte {
+	output := make(chan []byte)
+	gw.listenerMap[output] = true
+
+	return output
+}
+func (gw *GameWrapper) closeOutput(output chan []byte) error {
+	if _, exists := gw.listenerMap[output]; !exists {
+		return fmt.Errorf("ERR no such output chan")
+	}
+	delete(gw.listenerMap, output)
+	return nil
 }
