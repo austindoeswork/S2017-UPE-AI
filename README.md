@@ -2,6 +2,18 @@
 
 ## Installation
 
+Note that this server uses MySQL as its database, make sure mysql-server is installed.
+Additionally, the current implementation requires that there exists an aicomp database with a single table called "users". The following command was used to create the database. On my machine I use the username root with no password, although you will need to change the internals of main.go if your MySQL creds are different.
+
+```
+CREATE TABLE users(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50),
+    password VARCHAR(120),
+    apikey VARCHAR(50)
+);
+```
+
 - Get the code
 
 ```

@@ -1,2 +1,10 @@
+// ignore wonky dev files
+.go~
+#*.go#
+.txt~
+
+// ignore binary
+S2017-UPE-AI
+
 // ignore used key files
 server/words/used/*.txt

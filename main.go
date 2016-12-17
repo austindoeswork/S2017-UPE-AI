@@ -28,7 +28,7 @@ var (
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano()) // seed on startup to current time
 
-     	db, err = sql.Open("mysql", "root@/aicomp")
+     	db, err = sql.Open("mysql", "root@/aicomp") // assumes there is a local MySQL database with user root and no password
 	if err != nil {
 	        panic(err.Error())    
 	}
