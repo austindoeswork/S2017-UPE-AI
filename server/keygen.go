@@ -51,7 +51,6 @@ func getWordsFromFile(path string) []byte {
 		}
 		counter++
 	}
-	// log.Println("read file " + string(path[:]) + ", length = " + string(counter))
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
@@ -59,23 +58,21 @@ func getWordsFromFile(path string) []byte {
 }
 
 // TODO change adj to uint to allow for grabbing multiple adjectives from file without
-// opening/closing the files unnecessarily
 // note the difference between generating A key and generating a UNIQUE key (different functions)
 func generateKey(name bool, adverbs bool, adj bool, noun bool) []byte {
 	var key []byte
-	if (name) {
+	if (name) { // Darwins
 		key = append(key, append(getWordsFromFile("server/words/names.txt"), byte('s'))...)
 	}
-	if (adverbs) {
+	if (adverbs) { // eagerly
 		key = append(key, getWordsFromFile("server/words/adverbs.txt")...)
 	}
-	if (adj) {
+	if (adj) { // fresh
 		key = append(key, getWordsFromFile("server/words/adjs.txt")...)
 	}
-	if (noun) {
+	if (noun) { // toenail
 		key = append(key, getWordsFromFile("server/words/nouns.txt")...)
 	}
-	// log.Println("current key: " + string(key[:]))
 	return key
 }
 
@@ -107,14 +104,16 @@ func addKey(key []byte) bool {
 			}
 		}
 		// did not find in corresponding file, add and return true
-		file, err = os.Create(path)
+		f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer file.Close()
-		
-		file.Write(append(key, []byte("\n")...)) // TODO currently overrides entire file :(
-		file.Sync()
+		defer f.Close()
+
+		if _, err = f.WriteString(string(key) + "\n"); err != nil {
+			log.Fatal(err)
+		}
+		// file.Sync()
 		return true
 	}
 	return false // shouldn't really be returning here except when it panics?

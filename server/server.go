@@ -39,10 +39,7 @@ func New(port, staticDir string, db *sql.DB) *Server {
 	}
 }
 
-func getKey() {
-	log.Println(string(GenerateUniqueKey(true,true,true,true)))
-}
-
+// TODO: move to database interface file
 func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
 		http.ServeFile(res, req, "./static/login.html")
@@ -52,8 +49,9 @@ func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 	password := req.FormValue("password")
 	var databaseUsername  string
 	var databasePassword  string
+	var apikey string
 
-	err := s.db.QueryRow("SELECT username, password FROM users WHERE username=?", username).Scan(&databaseUsername, &databasePassword)
+	err := s.db.QueryRow("SELECT username, password, apikey FROM users WHERE username=?", username).Scan(&databaseUsername, &databasePassword, &apikey)
 	if err != nil {
 		http.Redirect(res, req, "/login", 301)
 		return
@@ -64,9 +62,10 @@ func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 		http.Redirect(res, req, "/login", 301)
 		return		   
 	}
-	res.Write([]byte("Hello " + databaseUsername))   
+	res.Write([]byte("Hello " + databaseUsername + ", your apikey is " + apikey))   
 }
 
+// TODO: move to database interface file
 func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 	// Serve signup.html to get requests to /signup
      	if req.Method != "POST" {
@@ -84,18 +83,19 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 	switch { // Username is available
 	case err == sql.ErrNoRows:
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		apikey := string(GenerateUniqueKey(true, true, true, true))
 		if err != nil {
 			http.Error(res, "Server error, unable to create your account.", 500)    
 			return
 		} 
 
-		_, err = s.db.Exec("INSERT INTO users(username, password) VALUES(?, ?)", username, hashedPassword)
+		_, err = s.db.Exec("INSERT INTO users(username, password, apikey) VALUES(?, ?, ?)", username, hashedPassword, apikey)
 		if err != nil {
 			http.Error(res, "Server error, unable to create your account.", 500)    
 			return
 		}
 
-		res.Write([]byte("User created!"))
+		res.Write([]byte("User created! Your apikey is " + apikey))
 		return
 	case err != nil: 
 		http.Error(res, "Server error, unable to create your account.", 500)    
@@ -161,15 +161,7 @@ func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) Start() {
 	// http.Handle("/asdf/", http.StripPrefix("/asdf/", http.FileServer(http.Dir(staticdir))))
-	// testing keygen
-	i := 0
-	for i < 1000 {
-		// GenerateUniqueKey(true, true, true, true)
-		getKey()
-		i++
-	}
 	http.Handle("/", http.FileServer(http.Dir(s.staticDir)))
-	// http.HandleFunc("/keygen", getKey)
 	http.HandleFunc("/login", s.handleLogin)
 	http.HandleFunc("/signup", s.handleSignup)
 	http.HandleFunc("/ws", s.handleWS)
