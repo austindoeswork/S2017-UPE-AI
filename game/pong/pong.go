@@ -1,7 +1,7 @@
 package pong
 
 import (
-	"errors"
+	// "errors"
 	"fmt"
 	"log"
 	"time"
@@ -98,51 +98,46 @@ type Pong struct {
 	winner int
 }
 
-func New(width, height, fps int) (*Pong, chan []byte) {
+func New(width, height, fps int) (*Pong, []chan<- []byte, <-chan []byte) {
 	outputChan := make(chan []byte)
+	p1 := &Player{
+		id:     1,
+		x:      0,
+		y:      height / 2,
+		length: 2,
+	}
+	p2 := &Player{
+		id:     2,
+		x:      width - 1,
+		y:      height / 2,
+		length: 2,
+	}
+	p1input := make(chan []byte, 5)
+	p2input := make(chan []byte, 5)
 	return &Pong{
-		p1input: make(chan []byte, 5),
-		p2input: make(chan []byte, 5),
+		p1input: p1input,
+		p2input: p2input,
 		output:  outputChan,
 		quit:    make(chan bool),
-		status:  NOTREADY,
+		status:  READY,
+		p1:      p1,
+		p2:      p2,
 		ball:    NewBall(width/2, height/2, 4),
 		width:   width,
 		height:  height,
 		fps:     fps,
 		frame:   0,
 		winner:  -1,
-	}, outputChan
+	}, []chan<- []byte{p1input, p2input}, outputChan
 }
 
-// AddPlayer returns an error or 1 or 2 corresponding to the player added
-func (p *Pong) AddPlayer() (int, chan []byte, error) {
-	if p.p1 == nil {
-		p.p1 = &Player{
-			id:     1,
-			x:      0,
-			y:      p.height / 2,
-			length: 2,
-		}
-		return 1, p.p1input, nil
-	} else if p.p2 == nil {
-		p.p2 = &Player{
-			id:     2,
-			x:      p.width - 1,
-			y:      p.height / 2,
-			length: 2,
-		}
-		p.status = READY
-		return 2, p.p2input, nil
-	} else {
-		return -1, nil, errors.New("ERROR: 2 Players already joined")
-	}
+func (p *Pong) MinPlayers() int {
+	return 2
 }
 
-// Start returns an output chan and a done chan? TODO, or nil and an error
 func (p *Pong) Start() error {
-	if p.p1 == nil || p.p2 == nil {
-		return errors.New("ERROR: not enough players")
+	if p.status == RUNNING {
+		return fmt.Errorf("ERR game already running")
 	}
 	p.status = RUNNING
 
@@ -151,18 +146,17 @@ func (p *Pong) Start() error {
 	go func() {
 		log.Println("GAME STARTED YOO")
 		for {
-
 			select {
 			case <-clk.C: //nxt frame
 				p.frame++
 				p.updateInputs()
 
-				if p.p1cmd != nil {
-					log.Println("1", p.p1cmd)
-				}
-				if p.p2cmd != nil {
-					log.Println("2", p.p2cmd)
-				}
+				// if p.p1cmd != nil {
+				// log.Println("1", p.p1cmd)
+				// }
+				// if p.p2cmd != nil {
+				// log.Println("2", p.p2cmd)
+				// }
 
 				p.updateGame()
 
@@ -176,11 +170,13 @@ func (p *Pong) Start() error {
 				if p.p1.Score() >= 10 || p.p2.Score() >= 10 {
 					p.status = DONE
 					log.Println("GAME DIED OF NATURAL CAUSES")
+					close(p.output)
 					return
 				}
-			case <-p.quit:
-				log.Println("GAME ABORTED")
-				return
+				if p.status == DONE {
+					log.Println("GAME DIED OF UNNATURAL CAUSES")
+					return
+				}
 			}
 		}
 	}()
@@ -188,12 +184,9 @@ func (p *Pong) Start() error {
 }
 
 func (p *Pong) Quit() {
-	log.Println("ABORTING GAME...")
+	log.Println("ABORTING GAME.")
+	close(p.output)
 	p.status = DONE
-	select {
-	case p.quit <- true:
-	default:
-	}
 }
 func (p *Pong) Status() int {
 	return p.status
@@ -259,13 +252,13 @@ func (p *Pong) updateGame() {
 
 		//wall collisions
 		if xnext >= p.width {
-			p1score := p.p1.Goal()
-			log.Printf("p1 scored: %d", p1score)
+			// p1score := p.p1.Goal()
+			// log.Printf("p1 scored: %d", p1score)
 			xnext = p.width / 2
 			ynext = p.height / 2
 		} else if xnext < 0 {
-			p2score := p.p2.Goal()
-			log.Printf("p2 scored: %d", p2score)
+			// p2score := p.p2.Goal()
+			// log.Printf("p2 scored: %d", p2score)
 			xnext = p.width / 2
 			ynext = p.height / 2
 		}

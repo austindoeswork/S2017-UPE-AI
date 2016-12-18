@@ -1,10 +1,10 @@
 package server
 
 import (
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
-	// "time"
-	"github.com/gorilla/websocket"
+	"time"
 
 	"github.com/austindoeswork/S2017-UPE-AI/gamemanager"
 )
@@ -48,12 +48,18 @@ func (s *Server) handleWatchWS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	id, gameOutput, err := s.gm.Watch(gameName)
+	quit := make(chan bool)
+	gameOutput, err := s.gm.WatchGame(gameName, quit)
 	if err != nil {
 		log.Println("ERR: could not add watcher", err)
 		return
 	}
-	defer s.gm.Disconnect(gameName, id)
+	defer func() {
+		select {
+		case quit <- true:
+		default:
+		}
+	}()
 
 	// handle output
 	chanToWS(gameOutput, conn)
@@ -71,12 +77,39 @@ func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	id, gameInput, gameOutput, err := s.gm.Connect(gameName)
+	// TODO sanitization on gameName
+	if !s.gm.HasGame(gameName) {
+		err = s.gm.NewGame(gameName)
+		if err != nil {
+			log.Println("ERR: creating game", err)
+		}
+	}
+
+	quitIn := make(chan bool)
+	gameInput, err := s.gm.ControlGame(gameName, quitIn)
 	if err != nil {
-		log.Println("ERR: could not add player", err)
+		log.Println("ERR: could not add controller", err)
 		return
 	}
-	defer s.gm.Disconnect(gameName, id)
+	defer func() {
+		select {
+		case quitIn <- true:
+		default:
+		}
+	}()
+
+	quitOut := make(chan bool)
+	gameOutput, err := s.gm.WatchGame(gameName, quitOut)
+	if err != nil {
+		log.Println("ERR: could not add watcher", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitOut <- true:
+		default:
+		}
+	}()
 
 	// handle output
 	go chanToWS(gameOutput, conn)
@@ -93,10 +126,17 @@ func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
 }
 
 func chanToWS(gameOutput <-chan []byte, conn *websocket.Conn) {
+	defer conn.Close()
 	for {
+		t := time.NewTimer(time.Second * 10)
 		select {
 		case msg, more := <-gameOutput:
+			if !t.Stop() {
+				<-t.C
+			}
 			if more {
+				t.Reset(time.Second * 10)
+
 				err := conn.WriteMessage(TextMessage, msg)
 				if err != nil {
 					log.Println("output socket closed")
@@ -104,10 +144,12 @@ func chanToWS(gameOutput <-chan []byte, conn *websocket.Conn) {
 				}
 			} else { // chan has been closed
 				log.Println("output channel closed")
-				conn.Close()
 				return
 			}
 			// TODO add efficient timeout
+		case <-t.C:
+			log.Println("chanToWS timeout")
+			return
 		}
 	}
 }

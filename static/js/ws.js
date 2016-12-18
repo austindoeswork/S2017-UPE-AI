@@ -61,5 +61,5 @@ function send(input) {
 }
 function setstatus(statusstring) {
 	s = document.getElementById("status");
-	s.innerHTML = "CONNECTION OPENED";
+	s.innerHTML = statusstring;
 }
