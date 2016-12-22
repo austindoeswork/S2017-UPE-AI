@@ -141,7 +141,7 @@ type GameWrapper struct {
 
 // TODO allow creation of different games (pong, scrabble, whatever)
 func NewGameWrapper() *GameWrapper {
-	g, inputs, output := game.NewPong()
+	g, inputs, output := game.NewTowerDef()
 	gameInputMap := make(map[chan<- []byte]bool)
 	listenerMap := make(map[chan []byte]bool)
 

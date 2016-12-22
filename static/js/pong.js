@@ -3,18 +3,15 @@ xbuffer = 10
 canvasw = 30 + 2 * xbuffer;
 canvash = 20;
 
-
-ballx = canvasw/2 - xbuffer;
-bally = canvash/2;
-
 pwidth = 3;
 plength = 5;
 
-p1x = -100;
-p1y = -100;
+p1x = -1;
+p1hp = -1;
+p2x = -1;
+p2hp = -1;
 
-p2x = -100;
-p2y = -100;
+units = [];
 
 function setup(){
   mycanvas = createCanvas(canvasw, canvash);
@@ -27,17 +24,40 @@ function draw(){
   background(100);
 
   // ball
-  rect(xbuffer + ballx-1, bally-1, 3, 3);
+  // rect(xbuffer + ballx-1, bally-1, 3, 3);
 
   // p1
-  rect(xbuffer + p1x - pwidth + 1, p1y, pwidth, plength);
+  rect(xbuffer + p1x + 1, 10, 2, 10);
   // p2
-  rect(xbuffer + p2x, p2y, pwidth, plength);
+  rect(xbuffer + p2x, 10, 2, 10);
+
+  // units
+  for (i = 0; i < units.length; i++) {
+      rect(xbuffer + units[i].x, 15, 2, 5);
+  }
 }
 
-
 function renderGrid(data) {
+    // console.log(data);
+    d = JSON.parse(data);
+    // console.log(d);
+    if (canvasw != d.w+2*xbuffer || canvash != d.h) { // ?
+	  canvasw = d.w+2*xbuffer
+	  canvash = d.h
+	  mycanvas.size(canvasw, canvash)
+    }
+    p1x = d.p1.x;
+    p2x = d.p2.x;
+    units = d.units;
+    // console.log(units);
+    document.getElementById("p1hp").innerHTML = d.p1.hp
+    document.getElementById("p2hp").innerHTML = d.p2.hp
+    redraw();
+}
+
+/* function renderGrid(data) {
   d = JSON.parse(data);
+  console.log(d);
   if (canvasw != d.w+2*xbuffer || canvash != d.h) {
 	  canvasw = d.w+2*xbuffer
 	  canvash = d.h
@@ -60,7 +80,7 @@ function renderGrid(data) {
 
   redraw();
 
-}
+} */
 
 // 38 up
 // 37 left

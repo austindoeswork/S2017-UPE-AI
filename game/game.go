@@ -1,7 +1,8 @@
 package game
 
 import (
-	"github.com/austindoeswork/S2017-UPE-AI/game/pong"
+	// "github.com/austindoeswork/S2017-UPE-AI/game/pong"
+	"github.com/austindoeswork/S2017-UPE-AI/game/tdef"
 )
 
 // TODO cleanup
@@ -28,7 +29,13 @@ type Game interface {
 	MinPlayers() int
 }
 
-func NewPong() (*pong.Pong, []chan<- []byte, <-chan []byte) {
-	p, inArr, out := pong.New(30, 20, 100)
+func NewTowerDef() (*tdef.TowerDefense, []chan<- []byte, <-chan []byte) {
+	p, inArr, out := tdef.New(30, 20, 10)
 	return p, inArr, out
 }
+
+// uncomment and change in gamemanager.go to test with pong.go
+/* func NewPong() (*pong.Pong, []chan<- []byte, <-chan []byte) {
+	p, inArr, out := pong.New(30, 20, 100)
+	return p, inArr, out
+} */
