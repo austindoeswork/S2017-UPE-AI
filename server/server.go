@@ -50,9 +50,8 @@ func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 	password := req.FormValue("password")
 	var databaseUsername string
 	var databasePassword string
-	var apikey string
 
-	err := s.db.QueryRow("SELECT username, password, apikey FROM users WHERE username=?", username).Scan(&databaseUsername, &databasePassword, &apikey)
+	err := s.db.QueryRow("SELECT username, password FROM users WHERE username=?", username).Scan(&databaseUsername, &databasePassword)
 	if err != nil {
 		http.Redirect(res, req, "/login", 301)
 		return
@@ -63,7 +62,36 @@ func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
-	res.Write([]byte("Hello " + databaseUsername + ", your apikey is " + apikey))
+
+	// create a new cookie
+	// TODO add encryption for username
+	expiration := time.Now().Add(time.Hour) // TODO: when should this expire
+	cookie := http.Cookie{Name: "login", Value: databaseUsername, Expires: expiration}
+	http.SetCookie(res, &cookie)
+
+	http.Redirect(res, req, "./profile", 301)
+}
+
+func (s *Server) handleProfile(res http.ResponseWriter, req *http.Request) {
+	// Serve signup.html to get requests to /signup
+	cookies := req.Cookies()
+	log.Println(cookies)
+	loggedIn := false
+	for i := 0; i < len(cookies); i++ {
+		if cookies[i].Name == "login" {
+			loggedIn = true
+			var apikey string
+			err := s.db.QueryRow("SELECT username, apikey FROM users WHERE username=?", cookies[i].Value).Scan(&cookies[i].Value, &apikey)
+			if err != nil {
+				http.Redirect(res, req, "/login", 301)
+				return
+			}
+			res.Write([]byte("Hello " + cookies[i].Value + ", welcome! Your apikey is " + apikey))
+		}
+	}
+	if !loggedIn {
+		res.Write([]byte("Hello, you are not logged in"))
+	}
 }
 
 // TODO: move to database interface file
@@ -230,6 +258,7 @@ func (s *Server) Start() {
 	http.Handle("/", http.FileServer(http.Dir(s.staticDir)))
 	http.HandleFunc("/login", s.handleLogin)
 	http.HandleFunc("/signup", s.handleSignup)
+	http.HandleFunc("/profile", s.handleProfile)
 	http.HandleFunc("/wsjoin", s.handleJoinWS)
 	http.HandleFunc("/wswatch", s.handleWatchWS)
 

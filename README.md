@@ -5,6 +5,8 @@
 Note that this server uses MySQL as its database, make sure mysql-server is installed.
 Additionally, the current implementation requires that there exists an aicomp database with a single table called "users". The following command was used to create the database. On my machine I use the username root with no password, although you will need to change the internals of main.go if your MySQL creds are different.
 
+(Coming soon: bash script that will create new DB, or server automatically creates MySQL db on startup)
+
 ```
 CREATE TABLE users(
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -38,6 +40,16 @@ Currently overly coupled with the actual MySQL database, this will be decoupled 
 
 ## ROUTES
 
+/ = index, you can play matches of tower defense (press up to spawn unit, colors correspond to %hp of unit)
+
 /signup = create new account given username, password, will give you an apikey
 
-/login = login using existing username, password details, will show you apikey
+/login = login using existing username, password details, will redirect to /profile
+
+/profile = shows you apikey as long as you have a valid login cookie
+
+## TODO LIST
+
+* secure cookies from login using encryption (gorilla has securecookie toolkit)
+
+* clean up tdef collision detection (find a good way to figure out if a unit should fire faster than N^2 time)
