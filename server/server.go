@@ -2,6 +2,7 @@ package server
 
 import (
 	"database/sql"
+	"github.com/gorilla/securecookie"
 	"github.com/gorilla/websocket"
 	"golang.org/x/crypto/bcrypt"
 	"log"
@@ -27,9 +28,15 @@ var upgrader = websocket.Upgrader{
 type Server struct {
 	port      string
 	staticDir string
-	db        *sql.DB
+	db        *sql.DB // TODO change to database interface eventually
 	gm        *gamemanager.GameManager
+	sc        *securecookie.SecureCookie // encrypts/decrypts cookies to check for validity
 }
+
+/*
+When the server starts up, it generates a random key that will be used to both encrypt and decrypt cookie values.
+It works as a basic form of encryption, but it is still symmetric.
+*/
 
 func New(port, staticDir string, db *sql.DB) *Server {
 	return &Server{
@@ -37,6 +44,7 @@ func New(port, staticDir string, db *sql.DB) *Server {
 		staticDir: staticDir,
 		db:        db,
 		gm:        gamemanager.New(),
+		sc:        securecookie.New(GenerateKey(true, true, true, true), nil), // uses keygen from same pkg
 	}
 }
 
@@ -63,35 +71,49 @@ func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// create a new cookie
-	// TODO add encryption for username
-	expiration := time.Now().Add(time.Hour) // TODO: when should this expire
-	cookie := http.Cookie{Name: "login", Value: databaseUsername, Expires: expiration}
-	http.SetCookie(res, &cookie)
+	// create a new cookie with name login and value of encoded username (with secret key generated auto on startup)
+	// when saving a cookie, it will automatically overwrite the cookie of the same name, so login should be the name always.
+	expiration := time.Now().Add(365 * 24 * time.Hour) // expires in 1 year
+	if encoded, err := s.sc.Encode("login", databaseUsername); err == nil {
+		cookie := &http.Cookie{
+			Name:    "login",
+			Value:   encoded,
+			Path:    "/",
+			Expires: expiration,
+		}
+		http.SetCookie(res, cookie)
+	}
 
 	http.Redirect(res, req, "./profile", 301)
 }
 
+func (s *Server) handleLogout(res http.ResponseWriter, req *http.Request) {
+	cookie := &http.Cookie{
+		Name:    "login",
+		Value:   "",
+		Path:    "/",
+		Expires: time.Now(),
+	}
+	http.SetCookie(res, cookie)
+
+	http.Redirect(res, req, "/", 301)
+}
+
 func (s *Server) handleProfile(res http.ResponseWriter, req *http.Request) {
-	// Serve signup.html to get requests to /signup
-	cookies := req.Cookies()
-	log.Println(cookies)
-	loggedIn := false
-	for i := 0; i < len(cookies); i++ {
-		if cookies[i].Name == "login" {
-			loggedIn = true
+	if cookie, err := req.Cookie("login"); err == nil {
+		var username string
+		if err = s.sc.Decode("login", cookie.Value, &username); err == nil {
 			var apikey string
-			err := s.db.QueryRow("SELECT username, apikey FROM users WHERE username=?", cookies[i].Value).Scan(&cookies[i].Value, &apikey)
+			err := s.db.QueryRow("SELECT username, apikey FROM users WHERE username=?", username).Scan(&username, &apikey)
 			if err != nil {
 				http.Redirect(res, req, "/login", 301)
 				return
 			}
-			res.Write([]byte("Hello " + cookies[i].Value + ", welcome! Your apikey is " + apikey))
+			res.Write([]byte("Hello " + username + ", welcome! Your apikey is " + apikey))
+			return
 		}
 	}
-	if !loggedIn {
-		res.Write([]byte("Hello, you are not logged in"))
-	}
+	res.Write([]byte("Hello, you are not logged in"))
 }
 
 // TODO: move to database interface file
@@ -254,9 +276,9 @@ func chanToWS(gameOutput <-chan []byte, conn *websocket.Conn) {
 }
 
 func (s *Server) Start() {
-	// http.Handle("/asdf/", http.StripPrefix("/asdf/", http.FileServer(http.Dir(staticdir))))
 	http.Handle("/", http.FileServer(http.Dir(s.staticDir)))
 	http.HandleFunc("/login", s.handleLogin)
+	http.HandleFunc("/logout", s.handleLogout)
 	http.HandleFunc("/signup", s.handleSignup)
 	http.HandleFunc("/profile", s.handleProfile)
 	http.HandleFunc("/wsjoin", s.handleJoinWS)

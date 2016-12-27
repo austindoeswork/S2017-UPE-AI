@@ -28,6 +28,14 @@ git clone https://github.com/austindoeswork/S2017-UPE-AI.git
 go run main.go
 ```
 
+- To build a binary, run in this order:
+
+```
+go get
+go build
+./S2017-UPE-AI
+```
+
 ## FOLDER SPECIFICS
 
 /game = Game objects are the representations of the internals of games (currently pong).
@@ -46,10 +54,6 @@ Currently overly coupled with the actual MySQL database, this will be decoupled 
 
 /login = login using existing username, password details, will redirect to /profile
 
+/logout = logs account out
+
 /profile = shows you apikey as long as you have a valid login cookie
-
-## TODO LIST
-
-* secure cookies from login using encryption (gorilla has securecookie toolkit)
-
-* clean up tdef collision detection (find a good way to figure out if a unit should fire faster than N^2 time)

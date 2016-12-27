@@ -2,10 +2,10 @@ package server
 
 import (
 	"bufio"
-	"os"
-	"math/rand"
-	"log"
 	"io/ioutil"
+	"log"
+	"math/rand"
+	"os"
 	// "strconv"
 	// "https://github.com/gtank/bloomfilter/blob/master/bloomfilter"
 )
@@ -25,7 +25,7 @@ func getWordsFromFile(path string) []byte {
 		log.Fatal(err)
 	}
 	defer file.Close()
-	
+
 	// first, use counter to find length of file
 	// TODO split from this function so in the case of duplicate keys, this isn't called twice
 	counter := 0
@@ -59,18 +59,19 @@ func getWordsFromFile(path string) []byte {
 
 // TODO change adj to uint to allow for grabbing multiple adjectives from file without
 // note the difference between generating A key and generating a UNIQUE key (different functions)
-func generateKey(name bool, adverbs bool, adj bool, noun bool) []byte {
+// also note that this function is also exported to allow server to generate a random key for hashing
+func GenerateKey(name bool, adverbs bool, adj bool, noun bool) []byte {
 	var key []byte
-	if (name) { // Darwins
+	if name { // Darwins
 		key = append(key, append(getWordsFromFile("server/words/names.txt"), byte('s'))...)
 	}
-	if (adverbs) { // eagerly
+	if adverbs { // eagerly
 		key = append(key, getWordsFromFile("server/words/adverbs.txt")...)
 	}
-	if (adj) { // fresh
+	if adj { // fresh
 		key = append(key, getWordsFromFile("server/words/adjs.txt")...)
 	}
-	if (noun) { // toenail
+	if noun { // toenail
 		key = append(key, getWordsFromFile("server/words/nouns.txt")...)
 	}
 	return key
@@ -83,7 +84,7 @@ func addKey(key []byte) bool {
 	path := "server/words/used/" + string(key[0]) + ".txt"
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		// file does not exist, init
-		err = ioutil.WriteFile(path, append(key, []byte{'\\','n'}...), 0777)
+		err = ioutil.WriteFile(path, append(key, []byte{'\\', 'n'}...), 0777)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -95,7 +96,7 @@ func addKey(key []byte) bool {
 			log.Fatal(err)
 		}
 		defer file.Close()
-		
+
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			text := scanner.Text()
@@ -121,9 +122,9 @@ func addKey(key []byte) bool {
 
 // main generate key function, guarantees uniqueness
 func GenerateUniqueKey(name bool, adverbs bool, adj bool, noun bool) []byte {
-	key := generateKey(name, adverbs, adj, noun)
+	key := GenerateKey(name, adverbs, adj, noun)
 	for !addKey(key) {
-		key = generateKey(name, adverbs, adj, noun)
+		key = GenerateKey(name, adverbs, adj, noun)
 	}
 	return key
 }
