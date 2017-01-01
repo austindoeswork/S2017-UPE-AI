@@ -1,35 +1,37 @@
 <!DOCTYPE html>
 <head>
-<meta charset="utf-8">
-	<script src="assets/p5.min.js"></script>
-	<script src="assets/p5.dom.js"></script>
-	<script src="js/ws.js"></script>
-	<script src="js/tdef.js"></script>
-<style>
-	body {
-		font-size: 14px;
-		font-family: "Courier New", Courier, monospace;
-	}
-	td {
-		margin: 5px;
-		border: 1px dashed black;
-	}
-</style>
-<script>
-</script>
+  <meta charset="utf-8">
+  <script src="assets/p5.min.js"></script>
+  <script src="assets/p5.dom.js"></script>
+  <script src="js/ws.js"></script>
+  <script src="js/tdef.js"></script>
+  <style>
+    body {
+    font-size: 14px;
+    font-family: "Courier New", Courier, monospace;
+    }
+    td {
+    margin: 5px;
+    border: 1px dashed black;
+    }
+  </style>
+  <script>
+  </script>
 </head>
 <body>
-<h3>tower defense is right below this header if you look closely</h3>
-<div id="canvasHolder"></div>
-<div id="score"><span id="p1hp">:)</span>to<span id="p2hp">:(</span><br><span id="p1coins">:)</span>to<span id="p2coins">:(</span></div>
-<p id="status">join/watch a game dawg.</p>
-<h3>controller</h3>
-<div>
-	<p><input id="gamename" type="text" value="gamename">
-	<button id="join">Join</button>
-	<button id="watch">Watch</button>
-	<p><input id="wspathinput" type="text" value="ws://localhost:8080">
-	<button id="close">Close</button>
-</div>
+  <h3>tower defense is right below this header if you look closely</h3>
+  <div id="canvasHolder"></div>
+  <div id="score">
+    HP: <span id="p1hp">:)</span> to <span id="p2hp">:(</span>
+    <br>Coins: <span id="p1coins">:)</span>to<span id="p2coins">:(</span></div>
+  <p id="status">join/watch a game dawg.</p>
+  <h3>controller</h3>
+  <div>
+    <p><input id="gamename" type="text" value="gamename">
+      <button id="join">Join</button>
+      <button id="watch">Watch</button>
+    <p><input id="wspathinput" type="text" value="ws://localhost:8080">
+      <button id="close">Close</button>
+  </div>
 </body>
 </html>

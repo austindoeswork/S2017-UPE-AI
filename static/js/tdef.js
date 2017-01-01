@@ -1,5 +1,3 @@
-// TODO get some sort of formatter for js
-
 var mycanvas;
 xbuffer = 10
 canvasw = 30 + 2 * xbuffer;
@@ -16,50 +14,49 @@ p2hp = -1;
 units = [];
 
 function setup(){
-  mycanvas = createCanvas(canvasw, canvash);
-  mycanvas.parent('canvasHolder')
-  background(100);
-  noLoop();
+    mycanvas = createCanvas(canvasw, canvash);
+    mycanvas.parent('canvasHolder')
+    background(100);
+    noLoop();
 }
 
 function draw(){
-  background(100);
+    background(100);
 
-  // units
-  for (i = 0; i < units.length; i++) {
-      var c;
-      if (units[i].hp/units[i].maxhp > .5) {
-	  c = color('green');
-      }
-      else if (units[i].hp/units[i].maxhp > .3) {
-	  c = color('yellow');
-      }
-      else {
-	  c = color('red');
-      }
-      fill(c);
-      if (units[i].maxhp == 1000) { // temporary workaround until we add ids or something
-	  rect(xbuffer + units[i].x-5, canvash - units[i].y+40, 10, 40);
-      }
-      else {
-	  rect(xbuffer + units[i].x-5, canvash - units[i].y+40, 10, 40);
-      }
-  }
+    // units
+    for (i = 0; i < units.length; i++) {
+	var c;
+	if (units[i].hp/units[i].maxhp > .5) {
+	    c = color('green');
+	}
+	else if (units[i].hp/units[i].maxhp > .3) {
+	    c = color('yellow');
+	}
+	else {
+	    c = color('red');
+	}
+	fill(c);
+	if (units[i].maxhp == 1000) { // temporary workaround until we add ids or something
+	    rect(xbuffer + units[i].x-5, canvash - units[i].y+40, 10, 200);
+	}
+	else {
+	    rect(xbuffer + units[i].x-5, canvash - units[i].y+40, 10, 40);
+	}
+    }
 }
 
 function renderGrid(data) {
     d = JSON.parse(data);
     if (canvasw != d.w+2*xbuffer || canvash != d.h) { // ?
-	  canvasw = d.w+2*xbuffer
-	  canvash = d.h
-	  mycanvas.size(canvasw, canvash)
+	canvasw = d.w+2*xbuffer
+	canvash = d.h
+	mycanvas.size(canvasw, canvash)
     }
     p1x = d.p1.mainTower.x;
     p2x = d.p2.mainTower.x;
     units = d.p1.units.concat(d.p2.units);
     units.push(d.p1.mainTower);
     units.push(d.p2.mainTower);
-    // console.log(units);
     document.getElementById("p1hp").innerHTML = d.p1.mainTower.hp
     document.getElementById("p2hp").innerHTML = d.p2.mainTower.hp
     document.getElementById("p1coins").innerHTML = d.p1.coins
@@ -73,16 +70,16 @@ function renderGrid(data) {
 // 40 down
 // 39 right
 function keyPressed() {
-  console.log("p5 key: " + keyCode);
-  if (keyCode == 38) {
-	  send("up");
-  }
-  else if (keyCode == 40) {
-	  send("down");
-  }
-  else if (keyCode == 39) {
-      send("right");
-  }
+    console.log("p5 key: " + keyCode);
+    if (keyCode == 38) {
+	send("up");
+    }
+    else if (keyCode == 40) {
+	send("down");
+    }
+    else if (keyCode == 39) {
+	send("right");
+    }
 }
 
 new p5();
