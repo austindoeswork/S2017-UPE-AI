@@ -30,7 +30,7 @@ type Game interface {
 }
 
 func NewTowerDef() (*tdef.TowerDefense, []chan<- []byte, <-chan []byte) {
-	p, inArr, out := tdef.New(30, 20, 10)
+	p, inArr, out := tdef.New(800, 500, 60)
 	return p, inArr, out
 }
 
