@@ -5,7 +5,6 @@ package tdef
 import (
 	"fmt"
 	"log"
-	// "math"
 	"time"
 )
 
