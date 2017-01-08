@@ -29,6 +29,7 @@ var (
 */
 
 func main() {
+	// TODO move this seed to init
 	rand.Seed(time.Now().UTC().UnixNano()) // seed on startup to current time
 
 	db, err = sql.Open("mysql", "root@/aicomp") // assumes there is a local MySQL database with user root and no password
@@ -42,12 +43,14 @@ func main() {
 		panic(err.Error())
 	}
 
+	// when running with the bash script, this will save the commit hash for binary debugging
 	flag.Parse()
 	if *versionFlag {
 		fmt.Println(commithash)
 		return
 	}
 	fmt.Println("version: " + commithash)
+	// end bash script help
 
 	s := server.New(":8080", *staticDir, db)
 	fmt.Println("server starting 8080")

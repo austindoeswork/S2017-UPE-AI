@@ -1,4 +1,11 @@
-// TODO: split tdef.go into unit.go, player.go, etc
+/*
+TODO:
+Troops should have their own targetting and behaviors and such
+Add deploy time
+Add towers and plots
+Add actual troop ideas
+Change unit list to sorted tower/troop lanes
+*/
 
 package tdef
 
@@ -26,10 +33,12 @@ const (
 	DONE     = 3 // done, clean me up
 
 	GAMEWIDTH  = 800 // temporarily hardcoded until i figure out a work around (DD)
-	GAMEHEIGHT = 500
+	GAMEHEIGHT = 600
 	TOPY       = GAMEHEIGHT * 3 / 4 // y coordinate of top lane
 	MIDY       = GAMEHEIGHT / 2     // ditto above but for mid
 	BOTY       = GAMEHEIGHT / 4     // ditto
+	LEFTX      = GAMEWIDTH / 4
+	RIGHTX     = GAMEWIDTH * 3 / 4
 )
 
 type TowerDefense struct {

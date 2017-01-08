@@ -48,7 +48,7 @@ Currently overly coupled with the actual MySQL database, this will be decoupled 
 
 ## ROUTES
 
-/ = index, you can play matches of tower defense (press up to spawn unit, colors correspond to %hp of unit)
+/ = index, you can play matches of tower defense (press up/right/down to spawn unit in top/mid/bot lane, colors correspond to %hp of unit)
 
 /signup = create new account given username, password, will give you an apikey
 
