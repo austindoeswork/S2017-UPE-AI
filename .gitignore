@@ -3,6 +3,7 @@
 #*.go#
 .txt~
 *.js~
+*.html~
 
 // ignore binary
 S2017-UPE-AI
