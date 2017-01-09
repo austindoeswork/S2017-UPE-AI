@@ -1,3 +1,4 @@
+// TODO: split into mini handlers
 package server
 
 import (
@@ -35,11 +36,25 @@ type Server struct {
 	templates *template.Template
 }
 
-// TODO add more details to pimp out templates a little more
+// This data is passed into templates so that we can have dynamic information
 type Page struct {
 	Title    string
 	Username string
 	Data     string
+}
+
+// Loads username if possible from cookie, and loads the template
+func (s *Server) ExecuteUserTemplate(res http.ResponseWriter, req *http.Request, template string, data Page) {
+	if cookie, err := req.Cookie("login"); err == nil {
+		var username string
+		if err = s.sc.Decode("login", cookie.Value, &username); err == nil {
+			data.Username = username
+		}
+	}
+	err := s.templates.ExecuteTemplate(res, template, data)
+	if err != nil {
+		log.Fatal("Cannot Get View ", err)
+	}
 }
 
 /*
@@ -60,10 +75,7 @@ func New(port, staticDir string, db *sql.DB) *Server {
 // TODO: move to database interface file
 func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
-		err := s.templates.ExecuteTemplate(res, "login", Page{Title: "Login"})
-		if err != nil {
-			log.Fatal("Cannot Get View ", err)
-		}
+		s.ExecuteUserTemplate(res, req, "login", Page{Title: "Login"})
 		return
 	}
 	username := req.FormValue("username")
@@ -118,33 +130,21 @@ func (s *Server) handleProfile(res http.ResponseWriter, req *http.Request) {
 			var apikey string
 			err := s.db.QueryRow("SELECT username, apikey FROM users WHERE username=?", username).Scan(&username, &apikey)
 			if err != nil {
-				err := s.templates.ExecuteTemplate(res, "login", Page{Title: "Login"})
-				if err != nil {
-					log.Fatal("Cannot Get View ", err)
-				}
+				s.ExecuteUserTemplate(res, req, "login", Page{Title: "Login"})
 				return
 			}
-			err = s.templates.ExecuteTemplate(res, "profile", Page{Title: "Profile", Username: username, Data: apikey})
-			if err != nil {
-				log.Fatal("Cannot Get View ", err)
-			}
+			s.ExecuteUserTemplate(res, req, "profile", Page{Title: "Profile", Username: username, Data: apikey})
 			return
 		}
 	}
-	err := s.templates.ExecuteTemplate(res, "signup", Page{Title: "Signup"})
-	if err != nil {
-		log.Fatal("Cannot Get View ", err)
-	}
+	s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
 }
 
 // TODO: move to database interface file
 func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 	// Serve signup.html to get requests to /signup
 	if req.Method != "POST" {
-		err := s.templates.ExecuteTemplate(res, "signup", Page{Title: "Signup"})
-		if err != nil {
-			log.Fatal("Cannot Get View ", err)
-		}
+		s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
 		return
 	}
 
@@ -300,14 +300,11 @@ func chanToWS(gameOutput <-chan []byte, conn *websocket.Conn) {
 }
 
 func (s *Server) handleGame(res http.ResponseWriter, req *http.Request) {
-	err := s.templates.ExecuteTemplate(res, "game", Page{Title: "Game"})
-	if err != nil {
-		log.Fatal("Cannot Get View ", err)
-	}
+	s.ExecuteUserTemplate(res, req, "game", Page{Title: "Game"})
 }
 
 func (s *Server) Start() {
-	s.templates = template.Must(template.ParseGlob("./static/templates/*")) // dynamically load all templates
+	s.templates = template.Must(template.ParseGlob("./static/templates/*.html")) // dynamically load all templates with .html ending
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.staticDir))))
 	http.HandleFunc("/game", s.handleGame)
