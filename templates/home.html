@@ -1,0 +1,93 @@
+{{define "home"}}
+{{template "header" .}}
+<section>
+  <div class="well text-center">
+    <div class="row">
+      <h1>AICOMP.IO</h1>
+    </div>
+    <br>
+    <div class="row">
+      <p class="lead">
+        An AI competition run by UPE at RPI.<br><b>Prize information coming soon!</b>
+      </p>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row"> 
+      <div class="col-xs-12">
+        <div class="well text-center">
+        <h3>Huge shoutout to our sponsor: Ziwang Xu</h3>
+        This AI competition wouldn't have been able to run without his generosity.
+        </div>
+        <img src="img/docs/sampleboard.png" align="right" width="300px" height="300px" style="margin: 20px">
+        <h3>What is this?</h3>
+        This is UPE's first ever AI competition. Think you can write the best bot at RPI? Prove it.
+        <p>
+        To learn more about how to play and how to connect to the game, check out the <a href="./docs">full documentation and API.</a>
+        <p>This server, equipped with matchmaking capabilities, will be running 24/7 to allow teams to test their AIs against the rest of the competition. By winning games and improving your rating, you can fight your way to the top of our <a href="./leaderboard">leaderboard</a>!
+        <h3>Rules</h3>
+        The competition will be broken down into sections. Quals, Semifinals, Finals, and Boss mode. Code only has to be turned in if you are a finalist. Feel free to modify/improve/train your AI model in between the different competitions. 
+        <dl class="dl-horizontal" style="margin-top: 5%;">
+        <dt>Quals</dt>
+        <dd><p>For Quals, you just have to beat our little dinky practice bot that just runs around doing random moves (except playing a bomb, so it won't kill itself!) Losing, or drawing it won't qualify you, you'll actually have to make it all the way over and kill it. Good luck!
+        </dd>
+        <dt>Semifinals</dt>
+        <dd>Semifinals is a online competition that will will happen on November 30th. You will be given a time slot to compete as well as the link to connect to. This will be a round robin competition where the top 8 teams will move on to the final round.</dd>
+        <dt>Finals</dt>
+        <dd>Finals is bracketed single elimination where the winner will take all. We will be reserving a room, streaming the event, and providing refreshments. The Top three teams will each compete against each other for the cash prizes. <br> <br>
+
+        3rd place: $500 <br>
+        2nd place: $1,000<br>
+        1st place: $1,500<br><br>
+
+        Also, the winner of the Finals will be the only team allowed to move onto Boss Mode...
+        </dd>
+        <dt>Boss Mode</dt>
+        <dd>Think you can write a better bot than UPE can? Then do it. The winner of the final round will be given the chance to face off against the bot developed by UPE. If your bot beats our bot (unlikely) then you will receive a bonus $1,000, for a total of $2,500
+        </dd>
+        </dl>
+        <h3>Timeline</h3>
+        Nov 2nd - Nov 20th: Quals<br>
+        Nov 30th: Semifinals<br>
+        Dec 5th: Finals + Boss Mode
+        <h3>How do I get involved?</h3>
+        <ul>
+          <li>
+            If you're not familiar with Bomberman, rectify that immediately! It's a classic retro game that you may have played when you were a kid. The rules for this competition are somewhat different from traditional Bomberman, so go to <b>Games > Training Mode</b> to play around with it for yourself or read up in the <b>Documentation</b>!
+          </li>
+          <li>
+            Create an account from the Sign Up page, and get started making your AI! The details of testing your AI against the server are in the Documentation!
+          </li>
+          <li>
+            Have fun!
+          </li>
+        </ul>
+        <div class="row">
+        <div class="col-md-3">
+          <h3>Learn</h3>
+          <ul>
+            <li>Read the <a href="./docs">Bomberman documentation</a>
+            <li><a href="./games/training">Play around with the game yourself</a>
+          </ul>
+        </div>
+        <div class="col-md-3">
+          <h3>Develop</h3>
+          <p>Code in your favorite language! The server and AIs communicate using HTTP requests (see the documentation for more details), and pretty much all languages can interface this way. Go nuts!</p>
+        </div>
+        <div class="col-md-3">
+          <h3>Test</h3>
+          <p>Testing your AI against other AIs on the matchmaking server is super easy using our API! You can even test your AI against a sample practice bot that just moves randomly! Check out the Documentation for more details.</p>
+        </div>
+        <div class="col-md-3">
+          <h3>Compete</h3>
+          <p>More on this coming later! There will be a seeding tournament and a main event that's open to entry to all interested RPI teams.</p>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <br><center>Any additional questions? Reach out! Email Darwin Ding at dingd@rpi.edu</center>
+</section>
+{{template "footer" .}}
+{{end}}

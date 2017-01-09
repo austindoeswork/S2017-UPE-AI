@@ -60,6 +60,9 @@ func (s *Server) ExecuteUserTemplate(res http.ResponseWriter, req *http.Request,
 /*
 When the server starts up, it generates a random key that will be used to both encrypt and decrypt cookie values.
 It works as a basic form of encryption, but it is still symmetric.
+
+It should be pretty crackable assuming someone wants to put in the time, but it's very simple to improve the security here
+and the worst case scenario is someone gets to see someone else's apikey, which is not the end of the world.
 */
 
 func New(port, staticDir string, db *sql.DB) *Server {
@@ -108,10 +111,11 @@ func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 		http.SetCookie(res, cookie)
 	}
 
-	http.Redirect(res, req, "./profile", 301)
+	http.Redirect(res, req, "/profile", 302)
 }
 
 func (s *Server) handleLogout(res http.ResponseWriter, req *http.Request) {
+	log.Println("logging out")
 	cookie := &http.Cookie{
 		Name:    "login",
 		Value:   "",
@@ -119,8 +123,7 @@ func (s *Server) handleLogout(res http.ResponseWriter, req *http.Request) {
 		Expires: time.Now(),
 	}
 	http.SetCookie(res, cookie)
-
-	http.Redirect(res, req, "/", 301)
+	http.Redirect(res, req, "/", 302)
 }
 
 func (s *Server) handleProfile(res http.ResponseWriter, req *http.Request) {
@@ -170,7 +173,7 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		res.Write([]byte("User created! Your apikey is " + apikey))
+		http.Redirect(res, req, "/profile", 302)
 		return
 	case err != nil:
 		http.Error(res, "Server error, unable to create your account.", 500)
@@ -303,18 +306,23 @@ func (s *Server) handleGame(res http.ResponseWriter, req *http.Request) {
 	s.ExecuteUserTemplate(res, req, "game", Page{Title: "Game"})
 }
 
+func (s *Server) handleHome(res http.ResponseWriter, req *http.Request) {
+	log.Println("home")
+	s.ExecuteUserTemplate(res, req, "home", Page{Title: "Home"})
+}
+
 func (s *Server) Start() {
-	s.templates = template.Must(template.ParseGlob("./static/templates/*.html")) // dynamically load all templates with .html ending
+	s.templates = template.Must(template.ParseGlob("./templates/*.html")) // dynamically load all templates with .html ending
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.staticDir))))
 	http.HandleFunc("/game", s.handleGame)
+	http.HandleFunc("/signout", s.handleLogout) // ?? for some reason on my machine if this is logout it doesn't detect it...
 	http.HandleFunc("/login", s.handleLogin)
-	http.HandleFunc("/logout", s.handleLogout)
 	http.HandleFunc("/signup", s.handleSignup)
 	http.HandleFunc("/profile", s.handleProfile)
 	http.HandleFunc("/wsjoin", s.handleJoinWS)
 	http.HandleFunc("/wswatch", s.handleWatchWS)
-	http.HandleFunc("/", s.handleSignup)
+	http.HandleFunc("/", s.handleHome)
 
 	// echo ws for testing
 	http.HandleFunc("/wstest", func(w http.ResponseWriter, r *http.Request) {
