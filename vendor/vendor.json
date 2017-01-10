@@ -1,0 +1,37 @@
+{
+	"comment": "",
+	"ignore": "",
+	"package": [
+		{
+			"checksumSHA1": "NQYIoWBakYdfov9GUaSFoZDemr8=",
+			"path": "github.com/go-sql-driver/mysql",
+			"revision": "a0583e0143b1624142adab07e0e97fe106d99561",
+			"revisionTime": "2016-12-01T11:50:36Z"
+		},
+		{
+			"checksumSHA1": "Vun+VSDSYQ7LGOtiLbSVQhJCcwQ=",
+			"path": "github.com/gorilla/securecookie",
+			"revision": "fa5329f913702981df43dcb2a380bac429c810b5",
+			"revisionTime": "2016-10-03T05:16:01Z"
+		},
+		{
+			"checksumSHA1": "HEIBUhiYAFkDKHryux2/ABSB1Vo=",
+			"path": "github.com/gorilla/websocket",
+			"revision": "0868951cdb8e69bc42df4598bdc6164ff2f1a072",
+			"revisionTime": "2016-12-08T00:21:58Z"
+		},
+		{
+			"checksumSHA1": "5HymxKSV8zcw6eiNV5Z/MZBPmuU=",
+			"path": "golang.org/x/crypto/bcrypt",
+			"revision": "9a6f0a01987842989747adff311d80750ba25530",
+			"revisionTime": "2016-12-10T14:54:14Z"
+		},
+		{
+			"checksumSHA1": "nkSU+D5ZACy+jm3aEB+Sr5t0Eqc=",
+			"path": "golang.org/x/crypto/blowfish",
+			"revision": "9a6f0a01987842989747adff311d80750ba25530",
+			"revisionTime": "2016-12-10T14:54:14Z"
+		}
+	],
+	"rootPath": "github.com/austindoeswork/S2017-UPE-AI"
+}
