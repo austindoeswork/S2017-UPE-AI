@@ -2,16 +2,14 @@
 package server
 
 import (
-	"database/sql"
-	"github.com/gorilla/securecookie"
 	"github.com/gorilla/websocket"
-	"golang.org/x/crypto/bcrypt"
 	"html/template"
 	"log"
 	"net/http"
 	// "os" // when calling ExecuteTemplate you can use os.Stdout instead to output to screen
 	"time"
 
+	"github.com/austindoeswork/S2017-UPE-AI/dbinterface"
 	"github.com/austindoeswork/S2017-UPE-AI/gamemanager"
 )
 
@@ -30,9 +28,8 @@ var upgrader = websocket.Upgrader{
 type Server struct {
 	port      string
 	staticDir string
-	db        *sql.DB // TODO change to database interface eventually
+	db        *dbinterface.DB
 	gm        *gamemanager.GameManager
-	sc        *securecookie.SecureCookie // encrypts/decrypts cookies to check for validity
 	templates *template.Template
 }
 
@@ -43,11 +40,11 @@ type Page struct {
 	Data     string
 }
 
+// TODO does it break the server if there is no login cookie? this should be tested
 // Loads username if possible from cookie, and loads the template
 func (s *Server) ExecuteUserTemplate(res http.ResponseWriter, req *http.Request, template string, data Page) {
 	if cookie, err := req.Cookie("login"); err == nil {
-		var username string
-		if err = s.sc.Decode("login", cookie.Value, &username); err == nil {
+		if username, err := s.db.VerifyCookie(cookie); err == nil {
 			data.Username = username
 		}
 	}
@@ -57,25 +54,16 @@ func (s *Server) ExecuteUserTemplate(res http.ResponseWriter, req *http.Request,
 	}
 }
 
-/*
-When the server starts up, it generates a random key that will be used to both encrypt and decrypt cookie values.
-It works as a basic form of encryption, but it is still symmetric.
-
-It should be pretty crackable assuming someone wants to put in the time, but it's very simple to improve the security here
-and the worst case scenario is someone gets to see someone else's apikey, which is not the end of the world.
-*/
-
-func New(port, staticDir string, db *sql.DB) *Server {
+func New(port, staticDir string, db *dbinterface.DB) *Server {
 	return &Server{
 		port:      port,
 		staticDir: staticDir,
 		db:        db,
 		gm:        gamemanager.New(),
-		sc:        securecookie.New(GenerateKey(true, true, true, true), nil), // uses keygen from same pkg
 	}
 }
 
-// TODO: move to database interface file
+// called by /login
 func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
 		s.ExecuteUserTemplate(res, req, "login", Page{Title: "Login"})
@@ -83,40 +71,20 @@ func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 	}
 	username := req.FormValue("username")
 	password := req.FormValue("password")
-	var databaseUsername string
-	var databasePassword string
 
-	err := s.db.QueryRow("SELECT username, password FROM users WHERE username=?", username).Scan(&databaseUsername, &databasePassword)
-	if err != nil {
+	// dbinterface processes login request and returns cookie if valid request
+	cookie, err := s.db.VerifyLogin(username, password)
+	if err != nil { // login failed, send them back to the page
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(databasePassword), []byte(password))
-	if err != nil {
-		http.Redirect(res, req, "/login", 301)
-		return
-	}
-
-	// create a new cookie with name login and value of encoded username (with secret key generated auto on startup)
-	// when saving a cookie, it will automatically overwrite the cookie of the same name, so login should be the name always.
-	expiration := time.Now().Add(365 * 24 * time.Hour) // expires in 1 year
-	if encoded, err := s.sc.Encode("login", databaseUsername); err == nil {
-		cookie := &http.Cookie{
-			Name:    "login",
-			Value:   encoded,
-			Path:    "/",
-			Expires: expiration,
-		}
-		http.SetCookie(res, cookie)
-	}
-
+	http.SetCookie(res, cookie)
 	http.Redirect(res, req, "/profile", 302)
 }
 
+// called by /logout
 func (s *Server) handleLogout(res http.ResponseWriter, req *http.Request) {
-	log.Println("logging out")
-	cookie := &http.Cookie{
+	cookie := &http.Cookie{ // seems a little trivial to put in dbinterface, but can be moved
 		Name:    "login",
 		Value:   "",
 		Path:    "/",
@@ -126,24 +94,20 @@ func (s *Server) handleLogout(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, "/", 302)
 }
 
+// TODO should this be replaced with a try catch block?
+// called by /profile
 func (s *Server) handleProfile(res http.ResponseWriter, req *http.Request) {
 	if cookie, err := req.Cookie("login"); err == nil {
-		var username string
-		if err = s.sc.Decode("login", cookie.Value, &username); err == nil {
-			var apikey string
-			err := s.db.QueryRow("SELECT username, apikey FROM users WHERE username=?", username).Scan(&username, &apikey)
-			if err != nil {
-				s.ExecuteUserTemplate(res, req, "login", Page{Title: "Login"})
+		if username, err := s.db.VerifyCookie(cookie); err == nil {
+			if profile, err := s.db.GetProfile(username); err == nil {
+				s.ExecuteUserTemplate(res, req, "profile", Page{Title: "Profile", Username: username, Data: profile.Apikey})
 				return
 			}
-			s.ExecuteUserTemplate(res, req, "profile", Page{Title: "Profile", Username: username, Data: apikey})
-			return
 		}
 	}
-	s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
+	http.Redirect(res, req, "/signup", 302) // TODO add an "error, incorrect logged in page"
 }
 
-// TODO: move to database interface file
 func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 	// Serve signup.html to get requests to /signup
 	if req.Method != "POST" {
@@ -154,32 +118,13 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 	username := req.FormValue("username")
 	password := req.FormValue("password")
 
-	var user string
-
-	err := s.db.QueryRow("SELECT username FROM users WHERE username=?", username).Scan(&user)
-
-	switch { // Username is available
-	case err == sql.ErrNoRows:
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		apikey := string(GenerateUniqueKey(true, true, true, true))
-		if err != nil {
-			http.Error(res, "Server error, unable to create your account.", 500)
-			return
-		}
-
-		_, err = s.db.Exec("INSERT INTO users(username, password, apikey) VALUES(?, ?, ?)", username, hashedPassword, apikey)
-		if err != nil {
-			http.Error(res, "Server error, unable to create your account.", 500)
-			return
-		}
-
-		http.Redirect(res, req, "/profile", 302)
-		return
-	case err != nil:
+	cookie, err := s.db.SignupUser(username, password)
+	if err != nil { // TODO make errors more verbose
 		http.Error(res, "Server error, unable to create your account.", 500)
 		return
-	default:
-		http.Redirect(res, req, "/", 301)
+	} else {
+		http.SetCookie(res, cookie)
+		http.Redirect(res, req, "/profile", 302)
 	}
 }
 
@@ -307,7 +252,6 @@ func (s *Server) handleGame(res http.ResponseWriter, req *http.Request) {
 }
 
 func (s *Server) handleHome(res http.ResponseWriter, req *http.Request) {
-	log.Println("home")
 	s.ExecuteUserTemplate(res, req, "home", Page{Title: "Home"})
 }
 

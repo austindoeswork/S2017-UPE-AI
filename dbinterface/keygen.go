@@ -1,4 +1,4 @@
-package server
+package dbinterface
 
 import (
 	"bufio"
@@ -6,8 +6,10 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	// "strconv"
-	// "https://github.com/gtank/bloomfilter/blob/master/bloomfilter"
+)
+
+const (
+	wordPath = "dbinterface/words/"
 )
 
 func toUpper(x byte) byte {
@@ -20,7 +22,7 @@ func toUpper(x byte) byte {
 
 // TODO add uint count as arg to get multiple bools
 func getWordsFromFile(path string) []byte {
-	file, err := os.Open(path)
+	file, err := os.Open(wordPath + path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,16 +65,16 @@ func getWordsFromFile(path string) []byte {
 func GenerateKey(name bool, adverbs bool, adj bool, noun bool) []byte {
 	var key []byte
 	if name { // Darwins
-		key = append(key, append(getWordsFromFile("server/words/names.txt"), byte('s'))...)
+		key = append(key, append(getWordsFromFile("names.txt"), byte('s'))...)
 	}
 	if adverbs { // eagerly
-		key = append(key, getWordsFromFile("server/words/adverbs.txt")...)
+		key = append(key, getWordsFromFile("adverbs.txt")...)
 	}
 	if adj { // fresh
-		key = append(key, getWordsFromFile("server/words/adjs.txt")...)
+		key = append(key, getWordsFromFile("adjs.txt")...)
 	}
 	if noun { // toenail
-		key = append(key, getWordsFromFile("server/words/nouns.txt")...)
+		key = append(key, getWordsFromFile("nouns.txt")...)
 	}
 	return key
 }
@@ -81,7 +83,7 @@ func GenerateKey(name bool, adverbs bool, adj bool, noun bool) []byte {
 // returns TRUE if key is unique, will also append if so (if file does not exist, it will initialize it as well)
 // returns FALSE if key is not unique, key has obviously not been added in this case
 func addKey(key []byte) bool {
-	path := "server/words/used/" + string(key[0]) + ".txt"
+	path := wordPath + "used/" + string(key[0]) + ".txt"
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		// file does not exist, init
 		err = ioutil.WriteFile(path, append(key, []byte{'\\', 'n'}...), 0777)

@@ -7,6 +7,7 @@
 
 // ignore binary
 S2017-UPE-AI
+aicomp
 
 // ignore used key files
-server/words/used/*.txt
+dbinterface/words/used/*.txt

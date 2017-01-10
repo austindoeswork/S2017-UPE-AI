@@ -38,22 +38,10 @@ go build
 
 ## FOLDER SPECIFICS
 
-/game = Game objects are the representations of the internals of games (currently pong).
+/game = Game objects are the representations of the internals of games (currently has pong and tdef).
 
 /gamemanager = Contains game wrappers and managers. The former is an object that multiplexes game object output to all available listeners.
 People who want to spectate/play ongoing matches will interface through the game wrappers. Game managers hold all of the wrapper/game pairings.
 
 /server = Server details (routing, etc). Also holds keygen.go, which generates the api keys for players upon signup.
 Currently overly coupled with the actual MySQL database, this will be decoupled into the database interface soon.
-
-## ROUTES
-
-/ = index, you can play matches of tower defense (press up/right/down to spawn unit in top/mid/bot lane, colors correspond to %hp of unit)
-
-/signup = create new account given username, password, will give you an apikey
-
-/login = login using existing username, password details, will redirect to /profile
-
-/logout = logs account out
-
-/profile = shows you apikey as long as you have a valid login cookie
