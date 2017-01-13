@@ -12,6 +12,7 @@ package tdef
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -37,8 +38,7 @@ const (
 	TOPY       = GAMEHEIGHT * 3 / 4 // y coordinate of top lane
 	MIDY       = GAMEHEIGHT / 2     // ditto above but for mid
 	BOTY       = GAMEHEIGHT / 4     // ditto
-	LEFTX      = GAMEWIDTH / 4
-	RIGHTX     = GAMEWIDTH * 3 / 4
+	XOFFSET    = GAMEWIDTH / 4      // used for x-positioning of lane objectives
 )
 
 type TowerDefense struct {
@@ -172,6 +172,29 @@ func (t *TowerDefense) updateGame() {
 }
 
 /*
+Takes in a command, e.g. b01 01
+And outputs <unit type>, <lane>
+
+Remember: top/mid/bot = 1/2/3
+No action = 0
+*/
+func interpretCommand(input string) (int, int) {
+	if len(input) < 6 || input[0] != 'b' {
+		return 0, 0
+	}
+	unitEnum, err := strconv.Atoi(input[1:3])
+	if err != nil {
+		return 0, 0
+	}
+
+	lane, err := strconv.Atoi(input[4:6])
+	if err != nil {
+		return 0, 0
+	}
+	return unitEnum, lane
+}
+
+/*
 Called each turn by updateGame().
 
 Currently, pressing up spawns a unit in top lane, right spawns in mid lane and down spawns
@@ -181,26 +204,16 @@ BuyUnit()).
 If you're going to extend this functionality by adding more keycontrols, note that you need to
 first add the key to /static/js/tdef.js (tdef.js only sends certain keypresses to the server)
 */
+
 func controlPlayer(tdef *TowerDefense, input string, playernum int) {
-	switch input {
-	case "up":
-		if playernum == 1 {
-			tdef.p1.BuyUnit(0, 1)
-		} else {
-			tdef.p2.BuyUnit(tdef.width-1, 1)
-		}
-	case "right":
-		if playernum == 1 {
-			tdef.p1.BuyUnit(0, 2)
-		} else {
-			tdef.p2.BuyUnit(tdef.width-1, 2)
-		}
-	case "down":
-		if playernum == 1 {
-			tdef.p1.BuyUnit(0, 3)
-		} else {
-			tdef.p2.BuyUnit(tdef.width-1, 3)
-		}
+	unitEnum, lane := interpretCommand(input) // only one unit type exists currently
+	if unitEnum == 0 {                        // no move
+		return
+	}
+	if playernum == 1 {
+		tdef.p1.BuyUnit(0, lane)
+	} else {
+		tdef.p2.BuyUnit(tdef.width-1, lane)
 	}
 }
 

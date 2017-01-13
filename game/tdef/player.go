@@ -46,21 +46,22 @@ func (p *Player) AddUnit(unit *Unit) {
 }
 
 func NewPlayer(owner int) *Player {
-	var x int
+	var corex, objx int
 	switch owner {
 	case 1:
-		x = 0
+		corex = 0
+		objx = XOFFSET
 	case 2:
-		x = GAMEWIDTH - 1
+		corex = GAMEWIDTH - 1
+		objx = GAMEWIDTH - 1 - XOFFSET
 	}
-	mainTower := NewTower(x, 2) // need to figure out where maintowers belong, temporarily on midlane
-
+	mainTower := NewTower(corex, 2) // need to figure out where maintowers belong, temporarily on midlane
 	return &Player{
 		owner:     owner,
 		income:    500,
 		coins:     0,
 		MainTower: mainTower,
-		Units:     make([]*Unit, 0),
+		Units:     []*Unit{NewTower(objx, 1), NewTower(objx, 2), NewTower(objx, 3)}, // inits lane objectives
 	}
 }
 

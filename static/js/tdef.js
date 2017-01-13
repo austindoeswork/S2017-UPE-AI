@@ -64,22 +64,4 @@ function renderGrid(data) {
     redraw();
 }
 
-// TODO does this belong here? i guess maybe because commands change depending on game?
-// 38 up
-// 37 left
-// 40 down
-// 39 right
-function keyPressed() {
-    console.log("p5 key: " + keyCode);
-    if (keyCode == 38) {
-	send("up");
-    }
-    else if (keyCode == 40) {
-	send("down");
-    }
-    else if (keyCode == 39) {
-	send("right");
-    }
-}
-
 new p5();
