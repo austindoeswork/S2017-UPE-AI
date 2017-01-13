@@ -4,7 +4,14 @@ import (
 	"fmt"
 )
 
+/*
+Unit enum:
+Main core: -2
+Objective towers: -1
+Footsoldier: 0
+*/
 type Unit struct {
+	enum   int
 	x      int // bottom left = 0, bottom right = max x
 	y      int // bottom left = 0, top left = max y
 	damage int // damage it deals in an attack
@@ -19,9 +26,12 @@ type Unit struct {
 
 // ExportJSON is used for sending information to the front-end
 func (u *Unit) ExportJSON() string { // rest of information is not really important to front-end
-	return fmt.Sprintf(`{"x": %d, "y": %d, "maxhp": %d, "hp": %d}`, u.x, u.y, u.maxhp, u.hp)
+	return fmt.Sprintf(`{"x": %d, "y": %d, "maxhp": %d, "hp": %d, "enum": %d}`, u.x, u.y, u.maxhp, u.hp, u.enum)
 }
 
+func (u *Unit) Enum() int {
+	return u.enum
+}
 func (u *Unit) X() int {
 	return u.x
 }
@@ -76,7 +86,7 @@ func (u *Unit) SetTarget(unit *Unit) {
 
 // this is just temporary, everything so far is a "unit" that can move and everything, although towers are units with 0 stride
 // NOTE that instead of specifying a y coord for a new unit, you specify a LANE #, and lane is auto set.
-func NewUnit(x int, lane int) *Unit {
+func NewUnit(x, lane, enum int) *Unit {
 	var y int
 	switch lane {
 	case 1:
@@ -87,9 +97,10 @@ func NewUnit(x int, lane int) *Unit {
 		y = BOTY
 	}
 	return &Unit{
+		enum:   0,
 		x:      x,
 		y:      y,
-		speed:  3,
+		speed:  5,
 		damage: 10,
 		hp:     100,
 		maxhp:  100,
@@ -98,25 +109,56 @@ func NewUnit(x int, lane int) *Unit {
 	}
 }
 
-// NOTE: you don't specify y-coordinate of towers, only lane
-func NewTower(x int, lane int) *Unit {
-	var y int
-	switch lane {
-	case 1:
-		y = TOPY
-	case 2:
-		y = MIDY
-	case 3:
-		y = BOTY
+// NOTE: you specify y and not LANE # for core towers.
+func NewCoreTower(x, y, enum int) *Unit {
+	var hp, speed, damage, reach int
+	switch enum {
+	case -2:
+		damage = 100
+		hp = 1000
+		speed = 20
+		reach = 300
+	case -1:
+		damage = 40
+		hp = 500
+		speed = 5
+		reach = 100
 	}
 	return &Unit{
+		enum:   enum,
 		x:      x,
 		y:      y,
-		damage: 100,
-		maxhp:  1000,
-		hp:     1000,
-		speed:  20,
+		damage: damage,
+		maxhp:  hp,
+		hp:     hp,
+		speed:  speed,
 		stride: 0,
-		reach:  300,
+		reach:  reach,
+	}
+}
+
+// For lane towers, specify PLOT not x, y
+func NewTower(plot, enum int) *Unit {
+	var x, y int
+	x = GAMEWIDTH*(plot%4)/4 + GAMEWIDTH/8
+	y = GAMEHEIGHT*int(plot/4)/4 + GAMEHEIGHT/8
+	var hp, speed, damage, reach int
+	switch enum {
+	case 10:
+		damage = 50
+		hp = 200
+		speed = 5
+		reach = 200
+	}
+	return &Unit{
+		enum:   enum,
+		x:      x,
+		y:      y,
+		damage: damage,
+		maxhp:  hp,
+		hp:     hp,
+		speed:  speed,
+		stride: 0,
+		reach:  reach,
 	}
 }

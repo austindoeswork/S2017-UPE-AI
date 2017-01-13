@@ -176,7 +176,7 @@ Takes in a command, e.g. b01 01
 And outputs <unit type>, <lane>
 
 Remember: top/mid/bot = 1/2/3
-No action = 0
+No action (lane) = 0
 */
 func interpretCommand(input string) (int, int) {
 	if len(input) < 6 || input[0] != 'b' {
@@ -207,13 +207,21 @@ first add the key to /static/js/tdef.js (tdef.js only sends certain keypresses t
 
 func controlPlayer(tdef *TowerDefense, input string, playernum int) {
 	unitEnum, lane := interpretCommand(input) // only one unit type exists currently
-	if unitEnum == 0 {                        // no move
+	if unitEnum == 0 && lane == 0 {           // no move
 		return
 	}
 	if playernum == 1 {
-		tdef.p1.BuyUnit(0, lane)
+		if unitEnum != 10 {
+			tdef.p1.BuyUnit(0, lane, unitEnum)
+		} else {
+			tdef.p1.BuyTower(lane, unitEnum) // note that lane for towers means plot
+		}
 	} else {
-		tdef.p2.BuyUnit(tdef.width-1, lane)
+		if unitEnum != 10 {
+			tdef.p2.BuyUnit(tdef.width-1, lane, unitEnum)
+		} else {
+			tdef.p2.BuyTower(lane, unitEnum) // note that lane for towers means plot
+		}
 	}
 }
 

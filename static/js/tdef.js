@@ -36,11 +36,17 @@ function draw(){
 	    c = color('red');
 	}
 	fill(c);
-	if (units[i].maxhp == 1000) { // temporary workaround until we add ids or something
+	if (units[i].enum == -2) { // temporary workaround until we add ids or something
 	    rect(xbuffer + units[i].x-5, canvash - units[i].y+40, 10, 200);
 	}
-	else {
+	else if (units[i].enum == -1) {
+	    rect(xbuffer + units[i].x-5, canvash - units[i].y+40, 10, 100);
+	}
+	else if (units[i].enum == 0) {
 	    rect(xbuffer + units[i].x-5, canvash - units[i].y+40, 10, 40);
+	}
+	else if (units[i].enum == 10) {
+	    rect(xbuffer + units[i].x - 50, canvash - units[i].y+40, 50, 50);
 	}
     }
 }

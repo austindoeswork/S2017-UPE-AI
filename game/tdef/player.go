@@ -31,11 +31,25 @@ func (p *Player) SetCoins(coins int) {
 	p.coins = coins
 }
 
+// TODO change terminology, unit should be troop
 // will eventually be a list of some sort
-func (p *Player) BuyUnit(x, lane int) bool {
+// returns true if player can afford unit, false otherwise
+func (p *Player) BuyUnit(x, lane, enum int) bool {
 	if p.coins >= 300 {
-		p.AddUnit(NewUnit(x, lane))
+		p.AddUnit(NewUnit(x, lane, enum))
 		p.coins -= 300
+		return true
+	}
+	return false
+}
+
+// will eventually be a list of some sort
+// returns true if player can afford tower, false otherwise
+func (p *Player) BuyTower(plot, enum int) bool {
+	if p.coins >= 500 && p.income > 100 {
+		p.AddUnit(NewTower(plot, enum))
+		p.coins -= 500
+		p.income -= 100
 		return true
 	}
 	return false
@@ -55,13 +69,13 @@ func NewPlayer(owner int) *Player {
 		corex = GAMEWIDTH - 1
 		objx = GAMEWIDTH - 1 - XOFFSET
 	}
-	mainTower := NewTower(corex, 2) // need to figure out where maintowers belong, temporarily on midlane
+	mainTower := NewCoreTower(corex, MIDY, -2) // need to figure out where maintowers belong, temporarily on midlane
 	return &Player{
 		owner:     owner,
 		income:    500,
 		coins:     0,
 		MainTower: mainTower,
-		Units:     []*Unit{NewTower(objx, 1), NewTower(objx, 2), NewTower(objx, 3)}, // inits lane objectives
+		Units:     []*Unit{NewCoreTower(objx, TOPY, -1), NewCoreTower(objx, MIDY, -1), NewCoreTower(objx, BOTY, -1)}, // inits lane objectives
 	}
 }
 
