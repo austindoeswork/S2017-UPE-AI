@@ -8,10 +8,11 @@ import (
 	"database/sql"
 	"github.com/gorilla/securecookie"
 	"golang.org/x/crypto/bcrypt"
-	// "log"
 	"net/http"
 	"time"
 )
+
+import _ "github.com/go-sql-driver/mysql"
 
 type DB struct {
 	db *sql.DB                    // actual MySQL hook
@@ -26,17 +27,28 @@ It should be pretty crackable assuming someone wants to put in the time, but it'
 and the worst case scenario is someone gets to see someone else's apikey, which is not the end of the world.
 */
 func NewDB() *DB {
-	db, err := sql.Open("mysql", "root@/aicomp") // assumes there is a local MySQL database with user root and no password
+	db, err := sql.Open("mysql", "root:@/") // assumes there is a MySQL instance existing with user root and no password
 	if err != nil {
-		panic(err.Error())
-		return nil
+		panic(err)
 	}
 
-	err = db.Ping() // after opening, just make sure that it works (is this even a necessary step? doesn't hurt at least)
+	// CREATES DATABASE aicomp IF IT DOESN'T EXIST
+	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS aicomp;")
 	if err != nil {
-		panic(err.Error())
-		return nil
+		panic(err)
 	}
+
+	db, err = sql.Open("mysql", "root:@/aicomp")
+	if err != nil {
+		panic(err)
+	}
+
+	// CREATE TABLE users WITHIN aicomp IF IT DOESN'T EXIST
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS users(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50), password VARCHAR(120), apikey VARCHAR(50));`)
+	if err != nil {
+		panic(err)
+	}
+
 	return &DB{
 		db: db,
 		sc: securecookie.New(GenerateKey(true, true, true, true), nil), // uses keygen from same pkg

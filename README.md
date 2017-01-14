@@ -2,19 +2,10 @@
 
 ## Installation
 
-Note that this server uses MySQL as its database, make sure mysql-server is installed.
-Additionally, the current implementation requires that there exists an aicomp database with a single table called "users". The following command was used to create the database. On my machine I use the username root with no password, although you will need to change the internals of main.go if your MySQL creds are different.
-
-(Coming soon: bash script that will create new DB, or server automatically creates MySQL db on startup)
-
-```
-CREATE TABLE users(
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50),
-    password VARCHAR(120),
-    apikey VARCHAR(50)
-);
-```
+Note that this server uses MySQL as its database, make sure mysql-server is installed.	
+Additionally, you may need to edit dbinterface/dbinterface.go to have proper credentials. (i.e. replace "root@/" to "username:password@/" as necessary)
+The server will automatically use that account to create a database called aicomp if it doesn't exist, and a table called users within if that doesn't exist either.
+It will not override existing databases and tables of those names. You may need to drop the database manually if changes occur in the schemas?
 
 - Get the code
 
@@ -38,10 +29,14 @@ go build
 
 ## FOLDER SPECIFICS
 
+/dbinterface = Acts as a wrapper around the MySQL driver
+
 /game = Game objects are the representations of the internals of games (currently has pong and tdef).
 
 /gamemanager = Contains game wrappers and managers. The former is an object that multiplexes game object output to all available listeners.
 People who want to spectate/play ongoing matches will interface through the game wrappers. Game managers hold all of the wrapper/game pairings.
 
 /server = Server details (routing, etc). Also holds keygen.go, which generates the api keys for players upon signup.
-Currently overly coupled with the actual MySQL database, this will be decoupled into the database interface soon.
+
+/templates = These .html files are loaded by the template manager on server startup. (Coming soon: template reloader when these templates change, so that server doesn't need to reload on each startup)
+Note that the header.html and footer.html templates that are included with each of these templates start and end the main container div that are pretty much used everywhere.

@@ -255,6 +255,10 @@ func (s *Server) handleHome(res http.ResponseWriter, req *http.Request) {
 	s.ExecuteUserTemplate(res, req, "home", Page{Title: "Home"})
 }
 
+func (s *Server) handleDocs(res http.ResponseWriter, req *http.Request) {
+	s.ExecuteUserTemplate(res, req, "docs", Page{Title: "Documentation"})
+}
+
 func (s *Server) Start() {
 	s.templates = template.Must(template.ParseGlob("./templates/*.html")) // dynamically load all templates with .html ending
 
@@ -264,6 +268,7 @@ func (s *Server) Start() {
 	http.HandleFunc("/login", s.handleLogin)
 	http.HandleFunc("/signup", s.handleSignup)
 	http.HandleFunc("/profile", s.handleProfile)
+	http.HandleFunc("/docs", s.handleDocs)
 	http.HandleFunc("/wsjoin", s.handleJoinWS)
 	http.HandleFunc("/wswatch", s.handleWatchWS)
 	http.HandleFunc("/", s.handleHome)
