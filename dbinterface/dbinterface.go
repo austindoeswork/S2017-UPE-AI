@@ -27,7 +27,8 @@ It should be pretty crackable assuming someone wants to put in the time, but it'
 and the worst case scenario is someone gets to see someone else's apikey, which is not the end of the world.
 */
 func NewDB() *DB {
-	db, err := sql.Open("mysql", "root:@/") // assumes there is a MySQL instance existing with user root and no password
+	credentials := "root:@/"
+	db, err := sql.Open("mysql", credentials) // assumes there is a MySQL instance existing with user root and no password
 	if err != nil {
 		panic(err)
 	}
@@ -38,7 +39,7 @@ func NewDB() *DB {
 		panic(err)
 	}
 
-	db, err = sql.Open("mysql", "root:@/aicomp")
+	db, err = sql.Open("mysql", credentials+"aicomp")
 	if err != nil {
 		panic(err)
 	}

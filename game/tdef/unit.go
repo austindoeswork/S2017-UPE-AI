@@ -138,6 +138,7 @@ func NewCoreTower(x, y, enum int) *Unit {
 }
 
 // For lane towers, specify PLOT not x, y
+// Note that territory checking should NOT be handled here, this assumes that it is a valid Tower
 func NewTower(plot, enum int) *Unit {
 	var x, y int
 	x = GAMEWIDTH*(plot%4)/4 + GAMEWIDTH/8
@@ -149,6 +150,11 @@ func NewTower(plot, enum int) *Unit {
 		hp = 200
 		speed = 5
 		reach = 200
+	case 11:
+		damage = 0
+		hp = 500
+		speed = 100
+		reach = 0
 	}
 	return &Unit{
 		enum:   enum,

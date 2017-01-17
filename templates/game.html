@@ -17,13 +17,34 @@
   <p><input id="wspathinput" type="text" value="ws://localhost:8080">
     <button id="close">Close</button>
   <p><button onclick="send('b00 01')">send unit top</button><button onclick="send('b00 02')">send unit mid</button><button onclick="send('b00 03')">send unit bot</button>
-    <!-- TODO: prettify -->
-    <button onclick="send('b10 00')">buy p0 tower</button>
-    <button onclick="send('b10 01')">buy p1 tower</button><button onclick="send('b10 02')">buy p2 tower</button><button onclick="send('b10 03')">buy p3 tower</button>
-    <button onclick="send('b10 04')">buy p4 tower</button><button onclick="send('b10 05')">buy p5 tower</button><button onclick="send('b10 06')">buy p6 tower</button>
-    <button onclick="send('b10 07')">buy p7 tower</button><button onclick="send('b10 08')">buy p8 tower</button><button onclick="send('b10 09')">buy p9 tower</button>
-    <button onclick="send('b10 10')">buy p10 tower</button><button onclick="send('b10 11')">buy p11 tower</button><button onclick="send('b10 12')">buy p12 tower</button>
-    <button onclick="send('b10 13')">buy p13 tower</button><button onclick="send('b10 14')">buy p14 tower</button><button onclick="send('b10 15')">buy p15 tower</button>
+    <div>
+      <table class="table">
+	<tr>
+	  <td><INPUT TYPE="Radio" Name="towerEnum" Value="10" checked="checked">Regular Shooting Tower
+	    <INPUT TYPE="Radio" Name="towerEnum" Value="11">Income Tower</td>
+	</tr>
+	<tr>
+	  <td><button onclick="buyTower('00')">buy p0 tower</button>
+	  <button onclick="buyTower('01')">buy p1 tower</button><button onclick="buyTower('02')">buy p2 tower</button><button onclick="buyTower('03')">buy p3 tower</button>
+	  </td>
+	</tr>
+	<tr>
+	  <td><button onclick="buyTower('04')">buy p4 tower</button><button onclick="buyTower('05')">buy p5 tower</button><button onclick="buyTower('06')">buy p6 tower</button>
+	  <button onclick="buyTower('07')">buy p7 tower</button>
+	  </td>
+	</tr>
+	<tr>
+	  <td><button onclick="buyTower('08')">buy p8 tower</button><button onclick="buyTower('09')">buy p9 tower</button>
+	  <button onclick="buyTower('10')">buy p10 tower</button><button onclick="buyTower('11')">buy p11 tower</button>
+	  </td>
+	</tr>
+	<tr>
+	  <td><button onclick="buyTower('12')">buy p12 tower</button>
+	  <button onclick="buyTower('13')">buy p13 tower</button><button onclick="buyTower('14')">buy p14 tower</button><button onclick="buyTower('15')">buy p15 tower</button>
+	  </td>
+	</tr>
+    </table>
+    </div>
 </div>
 
 {{template "footer" .}}

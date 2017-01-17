@@ -211,13 +211,13 @@ func controlPlayer(tdef *TowerDefense, input string, playernum int) {
 		return
 	}
 	if playernum == 1 {
-		if unitEnum != 10 {
+		if unitEnum < 10 {
 			tdef.p1.BuyUnit(0, lane, unitEnum)
 		} else {
 			tdef.p1.BuyTower(lane, unitEnum) // note that lane for towers means plot
 		}
 	} else {
-		if unitEnum != 10 {
+		if unitEnum < 10 {
 			tdef.p2.BuyUnit(tdef.width-1, lane, unitEnum)
 		} else {
 			tdef.p2.BuyTower(lane, unitEnum) // note that lane for towers means plot

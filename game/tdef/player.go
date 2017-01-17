@@ -43,19 +43,37 @@ func (p *Player) BuyUnit(x, lane, enum int) bool {
 	return false
 }
 
+// checks to see if a tower plot is within the player's territory
+func (p *Player) isPlotInTerritory(plot int) bool {
+	var x int
+	x = GAMEWIDTH*(plot%4)/4 + GAMEWIDTH/8
+	if (p.owner == 1 && x > GAMEWIDTH/2) || (p.owner == 2 && x < GAMEWIDTH/2) { // out of territory
+		return false
+	}
+	return true
+}
+
 // will eventually be a list of some sort
 // returns true if player can afford tower, false otherwise
+// enum: 10 = basic shooting tower, 11 = income tower
 func (p *Player) BuyTower(plot, enum int) bool {
-	if p.coins >= 500 && p.income > 100 {
+	if enum == 10 && p.coins >= 500 && p.income >= 100 && p.isPlotInTerritory(plot) == true {
 		p.AddUnit(NewTower(plot, enum))
 		p.coins -= 500
 		p.income -= 100
 		return true
+	} else if enum == 11 && p.coins >= 2000 && p.isPlotInTerritory(plot) == true {
+		p.AddUnit(NewTower(plot, enum))
+		p.coins -= 2000
+		p.income += 100
 	}
 	return false
 }
 
 func (p *Player) AddUnit(unit *Unit) {
+	if unit == nil {
+		return
+	}
 	p.Units = append(p.Units, unit)
 }
 

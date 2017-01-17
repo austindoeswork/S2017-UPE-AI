@@ -20,6 +20,18 @@ function setup(){
     noLoop();
 }
 
+function buyTower(location) {
+    var radioButtons = document.getElementsByName('towerEnum');
+    var enumVal;
+    for(var i = 0; i < radioButtons.length; i++){
+	if(radioButtons[i].checked){
+            enumVal = radioButtons[i].value;
+	}
+    }
+    // console.log('b' + enumVal + ' ' + location)
+    send('b' + enumVal + ' ' + location)
+}
+
 function draw(){
     background(100);
 
@@ -45,7 +57,7 @@ function draw(){
 	else if (units[i].enum == 0) {
 	    rect(xbuffer + units[i].x-5, canvash - units[i].y+40, 10, 40);
 	}
-	else if (units[i].enum == 10) {
+	else if (units[i].enum >= 10) {
 	    rect(xbuffer + units[i].x - 50, canvash - units[i].y+40, 50, 50);
 	}
     }
