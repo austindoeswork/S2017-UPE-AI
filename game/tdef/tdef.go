@@ -52,8 +52,7 @@ type TowerDefense struct {
 	quit    chan bool
 	status  int
 
-	p1 *Player
-	p2 *Player
+	players [2]*Player // in the future perhaps make this another const: NUMPLAYERS
 
 	width  int
 	height int
@@ -75,8 +74,7 @@ func New(width, height, fps int) (*TowerDefense, []chan<- []byte, <-chan []byte)
 		output:  outputChan,
 		quit:    make(chan bool),
 		status:  READY,
-		p1:      p1,
-		p2:      p2,
+		players: [2]*Player{p1, p2},
 		width:   width,
 		height:  height,
 		fps:     fps,
@@ -121,7 +119,7 @@ func (t *TowerDefense) Start() error {
 				case t.output <- t.stateJSON(): //send output
 				default:
 				}
-				if !t.p1.IsAlive() || !t.p2.IsAlive() {
+				if !t.players[0].IsAlive() || !t.players[1].IsAlive() {
 					t.status = DONE
 					log.Println("GAME DIED OF NATURAL CAUSES")
 					close(t.output)
@@ -153,8 +151,9 @@ func (t *TowerDefense) updateGame() {
 	// Note that the first frame that occurs is frame 1 (hence mod = 1 rather than 0)
 	// Every second, award player's income to player's coins
 	if t.frame%int64(t.fps) == 1 {
-		t.p1.SetCoins(t.p1.Coins() + t.p1.Income())
-		t.p2.SetCoins(t.p2.Coins() + t.p2.Income())
+		for _, player := range t.players {
+			player.SetCoins(player.Coins() + player.Income())
+		}
 	}
 	// First, get player's commands and interpret them
 	p1string := string(t.p1cmd)
@@ -163,14 +162,17 @@ func (t *TowerDefense) updateGame() {
 	controlPlayer(t, p2string, 2)
 	// Then, each unit decides whether it's going to shoot or move
 	// It doesn't actually do anything yet, this avoids race conditions
-	t.p1.SetUnitTargets(t.p2, t.frame)
-	t.p2.SetUnitTargets(t.p1, t.frame)
+	for index, player := range t.players {
+		player.SetUnitTargets(t.players[(index+1)%2], t.frame)
+	}
 	// Then, everything acts. Units with sub-zero HP do not die yet, and STILL act.
-	t.p1.IterateUnits(t.frame)
-	t.p2.IterateUnits(t.frame)
+	for _, player := range t.players {
+		player.IterateUnits(t.frame)
+	}
 	// Finally, units with sub-zero HP all are cleared out at once.
-	t.p1.UnitCleanup()
-	t.p2.UnitCleanup()
+	for _, player := range t.players {
+		player.UnitCleanup()
+	}
 }
 
 /*
@@ -212,18 +214,12 @@ func controlPlayer(tdef *TowerDefense, input string, playernum int) {
 	if unitEnum == 0 && lane == 0 {           // no move
 		return
 	}
-	if playernum == 1 {
-		if unitEnum < 10 {
-			tdef.p1.BuyUnit(0, lane, unitEnum)
-		} else {
-			tdef.p1.BuyTower(lane, unitEnum) // note that lane for towers means plot
-		}
+
+	player := tdef.players[playernum-1]
+	if unitEnum < 10 {
+		player.BuyUnit(player.Spawns[lane-1], lane, unitEnum)
 	} else {
-		if unitEnum < 10 {
-			tdef.p2.BuyUnit(tdef.width-1, lane, unitEnum)
-		} else {
-			tdef.p2.BuyTower(lane, unitEnum) // note that lane for towers means plot
-		}
+		player.BuyTower(lane, unitEnum) // note that lane for towers means plot
 	}
 }
 
@@ -250,6 +246,6 @@ func (t *TowerDefense) updateInputs() {
 
 func (t *TowerDefense) stateJSON() []byte {
 	outString := fmt.Sprintf(`{ "w": %d, "h": %d, `, t.width, t.height)
-	outString += `"p1":` + t.p1.ExportJSON() + `, "p2":` + t.p2.ExportJSON() + "}"
+	outString += `"p1":` + t.players[0].ExportJSON() + `, "p2":` + t.players[1].ExportJSON() + "}"
 	return []byte(outString)
 }

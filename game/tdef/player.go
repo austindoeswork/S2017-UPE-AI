@@ -10,6 +10,8 @@ type Player struct {
 	income int // X coins per second
 	coins  int // total number of coins
 
+	Spawns [3]int // X coordinates of the three lanes (0, 1, 2 = x positions for lanes 1, 2, 3)
+
 	MainTower *Unit // if this dies you die
 
 	Units  []*Unit         // list of all units
@@ -87,19 +89,23 @@ func (p *Player) AddUnit(unit *Unit) {
 
 func NewPlayer(owner int) *Player {
 	var corex, objx int
+	var spawns [3]int
 	switch owner {
 	case 1:
 		corex = 0
 		objx = XOFFSET
+		spawns = [3]int{0, 0, 0}
 	case 2:
 		corex = GAMEWIDTH - 1
 		objx = GAMEWIDTH - 1 - XOFFSET
+		spawns = [3]int{GAMEWIDTH - 1, GAMEWIDTH - 1, GAMEWIDTH - 1}
 	}
 	mainTower := NewCoreTower(corex, MIDY, -2) // need to figure out where maintowers belong, temporarily on midlane
 	return &Player{
 		owner:     owner,
 		income:    500,
 		coins:     0,
+		Spawns:    spawns,
 		MainTower: mainTower,
 		Units:     []*Unit{NewCoreTower(objx, TOPY, -1), NewCoreTower(objx, MIDY, -1), NewCoreTower(objx, BOTY, -1)}, // inits lane objectives
 		Towers:    [NUMPLOTS]*Unit{},
@@ -113,6 +119,16 @@ func (p *Player) FindClosestUnit(unit *Unit) (*Unit, float64) {
 	var minDist float64
 
 	for _, element := range p.Units {
+		diffX := intAbsDiff(unit.X(), element.X())
+		diffY := intAbsDiff(unit.Y(), element.Y())
+		dist := math.Pow(float64(unit.X()-element.X()), 2) + math.Pow(float64(unit.Y()-element.Y()), 2)
+		if (minUnit == nil || dist < minDist) && diffX <= unit.Reach() && diffY <= unit.Reach() {
+			minDist = dist
+			minUnit = element
+		}
+	}
+
+	for _, element := range p.Towers {
 		diffX := intAbsDiff(unit.X(), element.X())
 		diffY := intAbsDiff(unit.Y(), element.Y())
 		dist := math.Pow(float64(unit.X()-element.X()), 2) + math.Pow(float64(unit.Y()-element.Y()), 2)
@@ -179,15 +195,14 @@ func (p *Player) IterateUnits(frame int64) {
 
 // units with <=0 hp don't die until this step, they are cleaned up here.
 func (p *Player) UnitCleanup() {
-	for index, element := range p.Units {
-		if element.HP() < 0 {
-			if index == len(p.Units)-1 {
-				p.Units = p.Units[:index]
-			} else {
-				p.Units = append(p.Units[:index], p.Units[index+1:]...)
-			}
+	alive := 0 // number of alive units
+	for _, element := range p.Units {
+		if element.HP() > 0 {
+			p.Units[alive] = element
+			alive++
 		}
 	}
+	p.Units = p.Units[:alive] // delete dead units, but (TODO) i suspect these are still in the memory!!
 	for index, element := range p.Towers {
 		if element == nil { // note that Towers is an array that will always be of size NUMPLOTS, not a slice
 			continue
