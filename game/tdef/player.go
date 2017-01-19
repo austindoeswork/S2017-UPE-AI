@@ -12,7 +12,8 @@ type Player struct {
 
 	MainTower *Unit // if this dies you die
 
-	Units []*Unit // list of all units
+	Units  []*Unit         // list of all units
+	Towers [NUMPLOTS]*Unit // list of all towers (CORE AND OBJECTIVES ARE NOT TOWERS), this is organized by plot
 }
 
 func (p *Player) Owner() int {
@@ -57,15 +58,22 @@ func (p *Player) isPlotInTerritory(plot int) bool {
 // returns true if player can afford tower, false otherwise
 // enum: 10 = basic shooting tower, 11 = income tower
 func (p *Player) BuyTower(plot, enum int) bool {
-	if enum == 10 && p.coins >= 500 && p.income >= 100 && p.isPlotInTerritory(plot) == true {
-		p.AddUnit(NewTower(plot, enum))
-		p.coins -= 500
-		p.income -= 100
-		return true
-	} else if enum == 11 && p.coins >= 2000 && p.isPlotInTerritory(plot) == true {
-		p.AddUnit(NewTower(plot, enum))
-		p.coins -= 2000
-		p.income += 100
+	if p.isPlotInTerritory(plot) == true && p.Towers[plot] == nil {
+		if enum == 10 && p.coins >= 500 && p.income >= 100 {
+			newTower := NewTower(plot, enum)
+			p.AddUnit(newTower)
+			p.Towers[plot] = newTower
+			p.coins -= 500
+			p.income -= 100
+			return true
+		} else if enum == 11 && p.coins >= 2000 {
+			newTower := NewTower(plot, enum)
+			p.AddUnit(newTower)
+			p.Towers[plot] = newTower
+			p.coins -= 2000
+			p.income += 100
+			return true
+		}
 	}
 	return false
 }
@@ -94,6 +102,7 @@ func NewPlayer(owner int) *Player {
 		coins:     0,
 		MainTower: mainTower,
 		Units:     []*Unit{NewCoreTower(objx, TOPY, -1), NewCoreTower(objx, MIDY, -1), NewCoreTower(objx, BOTY, -1)}, // inits lane objectives
+		Towers:    [NUMPLOTS]*Unit{},
 	}
 }
 
@@ -177,6 +186,14 @@ func (p *Player) UnitCleanup() {
 			} else {
 				p.Units = append(p.Units[:index], p.Units[index+1:]...)
 			}
+		}
+	}
+	for index, element := range p.Towers {
+		if element == nil { // note that Towers is an array that will always be of size NUMPLOTS, not a slice
+			continue
+		}
+		if element.HP() < 0 {
+			p.Towers[index] = nil
 		}
 	}
 }

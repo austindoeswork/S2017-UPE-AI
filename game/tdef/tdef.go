@@ -39,6 +39,8 @@ const (
 	MIDY       = GAMEHEIGHT / 2     // ditto above but for mid
 	BOTY       = GAMEHEIGHT / 4     // ditto
 	XOFFSET    = GAMEWIDTH / 4      // used for x-positioning of lane objectives
+
+	NUMPLOTS = 16 // number of plots used for towers
 )
 
 type TowerDefense struct {

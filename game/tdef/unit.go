@@ -1,3 +1,4 @@
+// TODO change unit from just a struct to an INTERFACE
 package tdef
 
 import (
@@ -140,6 +141,10 @@ func NewCoreTower(x, y, enum int) *Unit {
 // For lane towers, specify PLOT not x, y
 // Note that territory checking should NOT be handled here, this assumes that it is a valid Tower
 func NewTower(plot, enum int) *Unit {
+	if plot >= NUMPLOTS { // error checking should really not have to be done here
+		return nil
+	}
+
 	var x, y int
 	x = GAMEWIDTH*(plot%4)/4 + GAMEWIDTH/8
 	y = GAMEHEIGHT*int(plot/4)/4 + GAMEHEIGHT/8
