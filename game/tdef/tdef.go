@@ -33,7 +33,7 @@ const (
 	RUNNING  = 2 // playing now
 	DONE     = 3 // done, clean me up
 
-	GAMEWIDTH  = 800 // temporarily hardcoded until i figure out a work around (DD)
+	GAMEWIDTH  = 1600 // temporarily hardcoded until i figure out a work around (DD)
 	GAMEHEIGHT = 600
 	TOPY       = GAMEHEIGHT * 3 / 4 // y coordinate of top lane
 	MIDY       = GAMEHEIGHT / 2     // ditto above but for mid
@@ -152,7 +152,7 @@ func (t *TowerDefense) updateGame() {
 	// Every second, award player's income to player's coins
 	if t.frame%int64(t.fps) == 1 {
 		for _, player := range t.players {
-			player.SetCoins(player.Coins() + player.Income())
+			player.SetBits(player.Bits() + player.Income())
 		}
 	}
 	// First, get player's commands and interpret them
@@ -163,15 +163,15 @@ func (t *TowerDefense) updateGame() {
 	// Then, each unit decides whether it's going to shoot or move
 	// It doesn't actually do anything yet, this avoids race conditions
 	for index, player := range t.players {
-		player.SetUnitTargets(t.players[(index+1)%2], t.frame)
+		player.PrepUnits(t.players[(index+1)%2], t.frame)
 	}
 	// Then, everything acts. Units with sub-zero HP do not die yet, and STILL act.
 	for _, player := range t.players {
 		player.IterateUnits(t.frame)
 	}
 	// Finally, units with sub-zero HP all are cleared out at once.
-	for _, player := range t.players {
-		player.UnitCleanup()
+	for index, player := range t.players {
+		player.UnitCleanup(t.players[(index+1)%2])
 	}
 }
 
@@ -216,10 +216,10 @@ func controlPlayer(tdef *TowerDefense, input string, playernum int) {
 	}
 
 	player := tdef.players[playernum-1]
-	if unitEnum < 10 {
-		player.BuyUnit(player.Spawns[lane-1], lane, unitEnum)
+	if unitEnum < 50 {
+		player.BuyTroop(player.Spawns[lane-1], lane, unitEnum, tdef.players[playernum%2])
 	} else {
-		player.BuyTower(lane, unitEnum) // note that lane for towers means plot
+		player.BuyTower(lane, unitEnum, tdef.players[playernum%2]) // note that lane for towers means plot
 	}
 }
 

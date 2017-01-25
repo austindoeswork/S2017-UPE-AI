@@ -8,14 +8,14 @@ import (
 type Player struct {
 	owner  int // who owns this, player 1 or 2?
 	income int // X coins per second
-	coins  int // total number of coins
+	bits   int // total number of coins
 
 	Spawns [3]int // X coordinates of the three lanes (0, 1, 2 = x positions for lanes 1, 2, 3)
 
-	MainTower *Unit // if this dies you die
+	MainTower Unit // if this dies you die
 
-	Units  []*Unit         // list of all units
-	Towers [NUMPLOTS]*Unit // list of all towers (CORE AND OBJECTIVES ARE NOT TOWERS), this is organized by plot
+	Units  []Unit         // list of all units
+	Towers [NUMPLOTS]Unit // list of all towers (CORE AND OBJECTIVES ARE NOT TOWERS), this is organized by plot
 }
 
 func (p *Player) Owner() int {
@@ -27,20 +27,21 @@ func (p *Player) Income() int {
 func (p *Player) SetIncome(income int) {
 	p.income = income
 }
-func (p *Player) Coins() int {
-	return p.coins
+func (p *Player) Bits() int {
+	return p.bits
 }
-func (p *Player) SetCoins(coins int) {
-	p.coins = coins
+func (p *Player) SetBits(bits int) {
+	p.bits = bits
 }
 
 // TODO change terminology, unit should be troop
 // will eventually be a list of some sort
 // returns true if player can afford unit, false otherwise
-func (p *Player) BuyUnit(x, lane, enum int) bool {
-	if p.coins >= 300 {
-		p.AddUnit(NewUnit(x, lane, enum))
-		p.coins -= 300
+func (p *Player) BuyTroop(x, lane, enum int, opponent *Player) bool {
+	troop := NewTroop(x, lane, p.owner, enum)
+	if troop.CheckBuyable(p.income, p.bits) {
+		p.AddUnit(troop)
+		troop.Birth(p, opponent)
 		return true
 	}
 	return false
@@ -59,28 +60,19 @@ func (p *Player) isPlotInTerritory(plot int) bool {
 // will eventually be a list of some sort
 // returns true if player can afford tower, false otherwise
 // enum: 10 = basic shooting tower, 11 = income tower
-func (p *Player) BuyTower(plot, enum int) bool {
+func (p *Player) BuyTower(plot, enum int, opponent *Player) bool {
 	if p.isPlotInTerritory(plot) == true && p.Towers[plot] == nil {
-		if enum == 10 && p.coins >= 500 && p.income >= 100 {
-			newTower := NewTower(plot, enum)
-			p.AddUnit(newTower)
+		newTower := NewTower(plot, p.owner, enum)
+		if newTower.CheckBuyable(p.income, p.bits) {
 			p.Towers[plot] = newTower
-			p.coins -= 500
-			p.income -= 100
-			return true
-		} else if enum == 11 && p.coins >= 2000 {
-			newTower := NewTower(plot, enum)
-			p.AddUnit(newTower)
-			p.Towers[plot] = newTower
-			p.coins -= 2000
-			p.income += 100
+			newTower.Birth(p, opponent)
 			return true
 		}
 	}
 	return false
 }
 
-func (p *Player) AddUnit(unit *Unit) {
+func (p *Player) AddUnit(unit Unit) {
 	if unit == nil {
 		return
 	}
@@ -100,22 +92,22 @@ func NewPlayer(owner int) *Player {
 		objx = GAMEWIDTH - 1 - XOFFSET
 		spawns = [3]int{GAMEWIDTH - 1, GAMEWIDTH - 1, GAMEWIDTH - 1}
 	}
-	mainTower := NewCoreTower(corex, MIDY, -2) // need to figure out where maintowers belong, temporarily on midlane
+	mainTower := NewCore(corex, MIDY, owner) // need to figure out where maintowers belong, temporarily on midlane
 	return &Player{
 		owner:     owner,
 		income:    500,
-		coins:     0,
+		bits:      0,
 		Spawns:    spawns,
 		MainTower: mainTower,
-		Units:     []*Unit{NewCoreTower(objx, TOPY, -1), NewCoreTower(objx, MIDY, -1), NewCoreTower(objx, BOTY, -1)}, // inits lane objectives
-		Towers:    [NUMPLOTS]*Unit{},
+		Units:     []Unit{NewObjective(objx, TOPY, owner), NewObjective(objx, MIDY, owner), NewObjective(objx, BOTY, owner)}, // inits lane objectives
+		Towers:    [NUMPLOTS]Unit{},
 	}
 }
 
 // searches each lane for the closest object to current unit within range
 // TODO n^2, we can probably find optimizations
-func (p *Player) FindClosestUnit(unit *Unit) (*Unit, float64) {
-	var minUnit *Unit
+func (p *Player) FindClosestUnit(unit Unit) (Unit, float64) {
+	var minUnit Unit
 	var minDist float64
 
 	for _, element := range p.Units {
@@ -129,6 +121,9 @@ func (p *Player) FindClosestUnit(unit *Unit) (*Unit, float64) {
 	}
 
 	for _, element := range p.Towers {
+		if element == nil { // p.Towers will always be the total number of plots
+			continue
+		}
 		diffX := intAbsDiff(unit.X(), element.X())
 		diffY := intAbsDiff(unit.Y(), element.Y())
 		dist := math.Pow(float64(unit.X()-element.X()), 2) + math.Pow(float64(unit.Y()-element.Y()), 2)
@@ -151,7 +146,18 @@ func (p *Player) FindClosestUnit(unit *Unit) (*Unit, float64) {
 
 // generates a JSON object in string form that is used for display purposes
 func (p *Player) ExportJSON() string { // used for exporting to screen
-	unitString := `"units": [`
+	unitString := `"towers": [`
+	for index, element := range p.Towers {
+		if element == nil {
+			unitString += `"nil"`
+		} else {
+			unitString += element.ExportJSON()
+		}
+		if index != len(p.Towers)-1 {
+			unitString += ","
+		}
+	}
+	unitString += `], "troops": [`
 	for index, element := range p.Units {
 		unitString += element.ExportJSON()
 		if index != len(p.Units)-1 {
@@ -159,7 +165,7 @@ func (p *Player) ExportJSON() string { // used for exporting to screen
 		}
 	}
 	unitString += `], "mainTower": ` + p.MainTower.ExportJSON() + "}"
-	return fmt.Sprintf(`{"owner": %d, "income": %d, "coins": %d, `, p.owner, p.income, p.coins) + unitString
+	return fmt.Sprintf(`{"owner": %d, "income": %d, "bits": %d, `, p.owner, p.income, p.bits) + unitString
 }
 
 // iterates over each of a player's units to see whether they should shoot or move.
@@ -167,13 +173,10 @@ func (p *Player) ExportJSON() string { // used for exporting to screen
 // if they have an invalid target, but find a new valid one, they'll shoot at it
 // else, they'll move.
 // this function call does not actually trigger shooting or moving, this just sets the "target" ptr of each unit.
-func (p *Player) SetUnitTargets(other *Player, frame int64) {
+func (p *Player) PrepUnits(other *Player, frame int64) {
 	for _, element := range append(p.Units, p.MainTower) {
-		if element.speed == 0 || frame%int64(element.speed) == 0 {
-			if !element.VerifyTarget() {
-				unit, _ := other.FindClosestUnit(element)
-				element.SetTarget(unit)
-			}
+		if element.Speed() == 0 || frame%int64(element.Speed()) == 0 {
+			element.Prep(p, other)
 		}
 	}
 }
@@ -181,25 +184,21 @@ func (p *Player) SetUnitTargets(other *Player, frame int64) {
 // iterates over each of a player's units and shoots at the unit's set target or move accordingly
 func (p *Player) IterateUnits(frame int64) {
 	for _, element := range append(p.Units, p.MainTower) {
-		if element.speed == 0 || frame%int64(element.speed) == 0 {
-			if element.Target() == nil && p.owner == 1 {
-				element.SetX(element.X() + element.Stride())
-			} else if element.Target() == nil && p.owner == 2 {
-				element.SetX(element.X() - element.Stride())
-			} else { // found a target, fire
-				element.Target().SetHP(element.Target().HP() - element.Damage())
-			}
+		if element.Speed() == 0 || frame%int64(element.Speed()) == 0 {
+			element.Iterate()
 		}
 	}
 }
 
 // units with <=0 hp don't die until this step, they are cleaned up here.
-func (p *Player) UnitCleanup() {
+func (p *Player) UnitCleanup(other *Player) {
 	alive := 0 // number of alive units
 	for _, element := range p.Units {
 		if element.HP() > 0 {
 			p.Units[alive] = element
 			alive++
+		} else {
+			element.Die(p, other)
 		}
 	}
 	p.Units = p.Units[:alive] // delete dead units, but (TODO) i suspect these are still in the memory!!
@@ -208,6 +207,7 @@ func (p *Player) UnitCleanup() {
 			continue
 		}
 		if element.HP() < 0 {
+			element.Die(p, other)
 			p.Towers[index] = nil
 		}
 	}
