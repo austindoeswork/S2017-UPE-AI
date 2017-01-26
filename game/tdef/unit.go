@@ -168,3 +168,77 @@ func NewTower(plot, enum int) *Unit {
 		reach:  reach,
 	}
 }
+
+// TODO: move this somewhere else?
+// Get the distance between u1 and u2 on X or Y axis
+// dir == 0 --> X
+// dir == 1 --> Y
+func getDist(u1 *Unit, u2 *Unit, dir int) int {
+	if dir == 0 {
+		return intAbsDiff(u1.X(), u2.X())
+	} else if dir == 1 {
+		return intAbsDiff(u1.Y(), u2.Y())
+	} else {
+		return -1
+	}
+}
+
+// TODO: Move this to somewhere else?
+// TODO: Debug and testint needed
+// TODO: Do we want 2 different functions to search closest
+//		 for X and Y? Or do we want just one function and
+//		 use the "dir int" to indicate X or Y?
+
+// Given a slice of *Unit called list sorted by X value and a *Unit u,
+// binary search to find the *Unit closest to u in list based on X value
+func SearchClosest(list []*Unit, u *Unit, dir int) *Unit {
+	// empty list
+	if len(list) == 0 { return nil }
+
+	start := 0
+	end := len(list) - 1
+
+	for start <= end {
+		mid := (start + end) / 2
+
+		// lower bound
+		if mid == 0 {
+			if len(list) == 1 {
+				return list[0]
+			} else {
+				if getDist(list[0], u, dir) < getDist(list[1], u, dir) {
+					return list[0]
+				} else {
+					return list[1]
+				}
+			}
+		}
+
+		// upper bound
+		if mid == len(list) - 1 {
+			return list[len(list) - 1]
+		}
+
+		// X value matach exactly
+		if list[mid].X() == u.X() || list[mid+1].X() == u.X() {
+			return u
+		}
+
+		// range is good enough
+		if list[mid].X() < u.X() && list[mid+1].X() > u.X() {
+			if getDist(list[mid], u, dir) < getDist(list[mid+1], u, dir) {
+				return list[mid]
+			} else {
+				return list[mid+1]
+			}
+		}
+
+		// find the right range
+		if list[mid].X() < u.X() {
+			start = mid + 1
+		} else {
+			end = mid
+		}
+	}
+	return nil
+}
