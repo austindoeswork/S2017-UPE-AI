@@ -48,7 +48,7 @@ func NewNut(x, y, owner int) Unit {
 		damage: 10,
 		hp:     100,
 		maxhp:  100,
-		stride: 5,
-		reach:  150,
+		stride: 10,
+		reach:  100,
 	}}
 }

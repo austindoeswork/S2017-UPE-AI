@@ -1,10 +1,6 @@
 {{define "game"}}
 {{template "header" .}}
-<script src="/static/assets/p5.min.js"></script>
-<script src="/static/assets/p5.dom.js"></script>
-<script src="/static/js/ws.js"></script>
-<script src="/static/js/tdef.js"></script>
-<div id="canvasHolder"></div>
+<div id="gameTV"></div>
 <div id="score">
   HP: <span id="p1hp">:)</span> to <span id="p2hp">:(</span>
   <br>Bits: <span id="p1bits">:)</span>to<span id="p2bits">:(</span>
@@ -47,6 +43,8 @@
     </table>
     </div>
 </div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.2.2/pixi.min.js"></script>
+<script src="/static/js/ws.js"></script>
+<script src="/static/js/tdef.js"></script>
 {{template "footer" .}}
 {{end}}
