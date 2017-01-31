@@ -2,7 +2,10 @@
 package server
 
 import (
+<<<<<<< 452317edd207fbe9fc5777e4d03f37805172e062
 	"encoding/json"
+=======
+>>>>>>> added gulpfile for dev; flash messages in the server
 	"html/template"
 	"log"
 	"net/http"
@@ -13,6 +16,7 @@ import (
 
 	"github.com/austindoeswork/S2017-UPE-AI/dbinterface"
 	"github.com/austindoeswork/S2017-UPE-AI/gamemanager"
+	"github.com/gorilla/sessions"
 )
 
 // Upgrades a regular ResponseWriter to WebSocketResponseWriter
@@ -32,12 +36,14 @@ type Server struct {
 	staticDir string
 	db        *dbinterface.DB
 	gm        *gamemanager.GameManager
+	store     *sessions.CookieStore
 	templates *template.Template
 }
 
 // This data is passed into templates so that we can have dynamic information
 type Page struct {
 	Title    string
+	Flash    []string
 	Username string
 	Data     string
 }
@@ -50,7 +56,18 @@ func (s *Server) ExecuteUserTemplate(res http.ResponseWriter, req *http.Request,
 			data.Username = username
 		}
 	}
-	err := s.templates.ExecuteTemplate(res, template, data)
+	session, err := s.store.Get(req, "flash")
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	rawFlashes := session.Flashes()
+	flashes := make([]string, len(rawFlashes))
+	for i, d := range rawFlashes {
+		flashes[i] = d.(string)
+	}
+	data.Flash = flashes
+	err = s.templates.ExecuteTemplate(res, template, data)
 	if err != nil {
 		log.Fatal("Cannot Get View ", err)
 	}
@@ -62,6 +79,7 @@ func New(port, staticDir string, db *dbinterface.DB) *Server {
 		staticDir: staticDir,
 		db:        db,
 		gm:        gamemanager.New(),
+		store:     sessions.NewCookieStore([]byte("secret")),
 	}
 }
 
@@ -71,17 +89,28 @@ func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 		s.ExecuteUserTemplate(res, req, "login", Page{Title: "Login"})
 		return
 	}
+	session, err := s.store.Get(req, "flash")
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 	username := req.FormValue("username")
 	password := req.FormValue("password")
-
+	if username == "" || password == "" {
+		session.AddFlash("Username and password required.")
+		s.ExecuteUserTemplate(res, req, "login", Page{Title: "Login"})
+		return
+	}
 	// dbinterface processes login request and returns cookie if valid request
 	cookie, err := s.db.VerifyLogin(username, password)
 	if err != nil { // login failed, send them back to the page
-		http.Redirect(res, req, "/login", 301)
+		session.AddFlash("Invalid username or password")
+		http.Redirect(res, req, "/login", http.StatusMovedPermanently)
 		return
 	}
 	http.SetCookie(res, cookie)
-	http.Redirect(res, req, "/profile", 302)
+	session.AddFlash("Welcome, " + username)
+	http.Redirect(res, req, "/profile", http.StatusFound)
 }
 
 // called by /logout
@@ -93,7 +122,13 @@ func (s *Server) handleLogout(res http.ResponseWriter, req *http.Request) {
 		Expires: time.Now(),
 	}
 	http.SetCookie(res, cookie)
-	http.Redirect(res, req, "/", 302)
+	session, err := s.store.Get(req, "flash")
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	session.AddFlash("You have been logged out.")
+	http.Redirect(res, req, "/", http.StatusFound)
 }
 
 // TODO should this be replaced with a try catch block?
@@ -107,7 +142,13 @@ func (s *Server) handleProfile(res http.ResponseWriter, req *http.Request) {
 			}
 		}
 	}
-	http.Redirect(res, req, "/signup", 302) // TODO add an "error, incorrect logged in page"
+	session, err := s.store.Get(req, "flash")
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	session.AddFlash("You login first.")
+	http.Redirect(res, req, "/signup", http.StatusFound) // TODO add an "error, incorrect logged in page"
 }
 
 func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
@@ -116,18 +157,25 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 		s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
 		return
 	}
-
+	session, err := s.store.Get(req, "flash")
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 	username := req.FormValue("username")
 	password := req.FormValue("password")
-
+	if username == "" || password == "" {
+		session.AddFlash("Username and password required.")
+		s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
+		return
+	}
 	cookie, err := s.db.SignupUser(username, password)
 	if err != nil { // TODO make errors more verbose
-		http.Error(res, "Server error, unable to create your account.", 500)
+		http.Error(res, "Server error, unable to create your account.", http.StatusInternalServerError)
 		return
-	} else {
-		http.SetCookie(res, cookie)
-		http.Redirect(res, req, "/profile", 302)
 	}
+	http.SetCookie(res, cookie)
+	http.Redirect(res, req, "/profile", http.StatusFound)
 }
 
 func (s *Server) handleWatchWS(w http.ResponseWriter, r *http.Request) {

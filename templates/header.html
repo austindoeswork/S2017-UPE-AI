@@ -35,4 +35,9 @@
     </div>
   </nav>
   <div class="container theme-showcase" role="main">
+  
+  {{range .Flash}}
+    <p>{{ . }}</p>
+  {{end}}
+
 {{end}}
