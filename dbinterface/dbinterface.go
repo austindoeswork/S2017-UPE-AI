@@ -6,6 +6,7 @@ This interface acts as a wrapper around the database, and handles cookies, key g
 
 import (
 	"database/sql"
+	"math"
 	"net/http"
 	"time"
 
@@ -15,9 +16,9 @@ import (
 
 	"github.com/gorilla/securecookie"
 	"golang.org/x/crypto/bcrypt"
-)
 
-import _ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
+)
 
 type DB struct {
 	db *sql.DB                    // actual MySQL hook
@@ -51,7 +52,7 @@ func NewDB() *DB {
 
 	// CREATE TABLE users WITHIN aicomp IF IT DOESN'T EXIST
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS users(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
-	createdAt DATETIME, name VARCHAR(50), email VARCHAR(50), username VARCHAR(50), 
+	createdAt DATETIME, name VARCHAR(50), email VARCHAR(50), username VARCHAR(50), ELO FLOAT,
 	pictureLoc VARCHAR(50), password VARCHAR(120), apikey VARCHAR(50));`)
 	if err != nil {
 		panic(err)
@@ -124,6 +125,7 @@ type User struct {
 	Email          string
 	ProfilePicture string
 	Username       string
+	ELO            float64
 	Apikey         string
 }
 
@@ -131,10 +133,11 @@ type User struct {
 func (d *DB) GetUser(username string) (*User, error) {
 	var name string
 	var email string
+	var ELO float64
 	var pictureLoc string
 	var apikey string
-	err := d.db.QueryRow("SELECT name, email, pictureLoc, apikey FROM users WHERE username=?",
-		username).Scan(&name, &email, &pictureLoc, &apikey)
+	err := d.db.QueryRow("SELECT name, email, ELO, pictureLoc, apikey FROM users WHERE username=?",
+		username).Scan(&name, &email, &ELO, &pictureLoc, &apikey)
 	if err != nil {
 		return nil, err
 	}
@@ -143,6 +146,7 @@ func (d *DB) GetUser(username string) (*User, error) {
 		Email:          email,
 		ProfilePicture: pictureLoc,
 		Username:       username,
+		ELO:            ELO,
 		Apikey:         apikey,
 	}, nil
 }
@@ -177,8 +181,8 @@ func (d *DB) SignupUser(user *User, password string) (*http.Cookie, error) {
 		now := time.Now()
 		pictureLoc := ""
 		_, err = d.db.Exec(`INSERT INTO users(createdAt, name, email, username, pictureLoc, password, 
-apikey) VALUES(?, ?, ?, ?, ?, ?, ?)`, now, user.Name, user.Email, user.Username, pictureLoc,
-			hashedPassword, apikey)
+apikey, ELO) VALUES(?, ?, ?, ?, ?, ?, ?, 1500.0)`, now, user.Name, user.Email, user.Username,
+			pictureLoc, hashedPassword, apikey)
 		if err != nil {
 			log.Fatalln(err)
 			return nil, err
@@ -199,4 +203,49 @@ apikey) VALUES(?, ?, ?, ?, ?, ?, ?)`, now, user.Name, user.Email, user.Username,
 		err = errors.New("username exists")
 		return nil, err
 	}
+}
+
+// UpdateELO updates each user's ELO score based on the results from a game.
+// 	winner = 0 if tie
+//					 1 if username1 is the winner
+//					 2 if username2 is the winner
+func (d *DB) UpdateELO(username1, username2 string, winner int) (*float64, *float64, error) {
+	const K = 64.0
+	var elo1 float64
+	var elo2 float64
+	err := d.db.QueryRow("SELECT ELO FROM users WHERE username=?", username1).Scan(&elo1)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = d.db.QueryRow("SELECT ELO FROM users WHERE username=?", username2).Scan(&elo2)
+	if err != nil {
+		return nil, nil, err
+	}
+	R1 := math.Pow(10, elo1/400)
+	R2 := math.Pow(10, elo2/400)
+	E1 := R1 / (R1 + R2)
+	E2 := R2 / (R1 + R2)
+	var S1 float64
+	var S2 float64
+	if winner == 2 {
+		S1 = 0.0
+		S2 = 1.0
+	} else if winner == 1 {
+		S1 = 1.0
+		S2 = 0.0
+	} else {
+		S1 = 0.5
+		S2 = 0.5
+	}
+	newELO1 := elo1 + K*(S1-E1)
+	newELO2 := elo2 + K*(S2-E2)
+	_, err = d.db.Exec("UPDATE users SET ELO=? WHERE username=?", newELO1, username1)
+	if err != nil {
+		return nil, nil, err
+	}
+	_, err = d.db.Exec("UPDATE users SET ELO=? WHERE username=?", newELO2, username2)
+	if err != nil {
+		return nil, nil, err
+	}
+	return &newELO1, &newELO2, nil
 }
