@@ -37,7 +37,9 @@
   <div class="container theme-showcase" role="main">
   
   {{range .Flash}}
-    <p>{{ . }}</p>
+    <div class="flash-message">
+      <p>{{ . }}</p>
+    </div>
   {{end}}
 
 {{end}}

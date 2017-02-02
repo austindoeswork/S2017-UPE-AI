@@ -1,3 +1,34 @@
-body { 
-    padding-top: 65px; 
-}  
+body {
+  padding-top: 65px;
+}
+.flash-message {
+  background-color: #993434;
+  color: #FFFFFF;
+  padding: 10px;
+  margin: 5px;
+}
+.flash-message p {
+  font-weight: bold;
+  margin: 0;
+}
+form input {
+  display: block;
+  margin: 5px auto;
+}
+#upe-advert {
+  margin-top: 50px;
+}
+/*
+  Profile
+*/
+#profile-picture {
+  width: 400px;
+  height: 400px;
+}
+.profile-item .name {
+  font-weight: bold;
+  margin-top: 5px;
+}
+.profile-item .value {
+  color: #484848;
+}

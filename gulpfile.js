@@ -7,8 +7,8 @@ const util = require('gulp-util');
 
 var server;
 
-gulp.task('default', ['go', 'watch']);
-gulp.task('watch', ['watch:go']);
+gulp.task('default', ['go', 'less', 'watch']);
+gulp.task('watch', ['watch:less', 'watch:go']);
 
 gulp.task('go', function(callback) { sequence('go:build', 'go:start', callback); });
 
@@ -49,5 +49,17 @@ gulp.task('go:start', function() {
 });
 
 gulp.task('watch:go', function() {
-  gulp.watch(['./**/*.go'], ['go:build', 'go:start']);
+  gulp.watch(['./**/*.go', './templates/*.html'], ['go:build', 'go:start']);
+});
+
+gulp.task('watch:less', function() {
+  gulp.watch(['./static/less/*.less'], ['less']);
+});
+
+gulp.task('less', function() {
+  return gulp.src('./static/less/*.less')
+    .pipe(less({
+      paths: [ path.join(__dirname, 'less', 'includes') ]
+    }))
+    .pipe(gulp.dest('./static/css'));
 });

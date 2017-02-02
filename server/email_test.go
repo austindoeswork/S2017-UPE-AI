@@ -7,6 +7,7 @@ import (
 )
 
 func TestMailer(t *testing.T) {
+	os.Chdir("..")
 	Mailer, err := NewMailer("test@aicomp.io")
 	if err != nil {
 		log.Fatalln(err)

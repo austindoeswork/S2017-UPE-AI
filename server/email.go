@@ -4,8 +4,6 @@ import (
 	"log"
 	"os"
 
-	"fmt"
-
 	"errors"
 
 	"github.com/cbroglie/mustache"
@@ -15,12 +13,12 @@ import (
 // loadEmail loads both the HTML and raw text for a given email template and compiles them using
 // mustache
 func loadEmail(filename string, context map[string]string) (string, string, error) {
-	txt, err := mustache.RenderFile("./emails/"+filename+".txt", context)
+	txt, err := mustache.RenderFile("./server/emails/"+filename+".txt", context)
 	if err != nil {
 		return "", "", err
 	}
-	html, err := mustache.RenderFileInLayout("./emails/"+filename+".html.mustache",
-		"./emails/layout.html.mustache", context)
+	html, err := mustache.RenderFileInLayout("./server/emails/"+filename+".html.mustache",
+		"./server/emails/layout.html.mustache", context)
 	if err != nil {
 		return "", "", err
 	}
@@ -53,11 +51,12 @@ func NewMailer(fromEmail string) (*Mailer, error) {
 }
 
 // MailSignup is meant to send the initial email when a new user signs up
-func (M *Mailer) MailSignup(to, name string) {
+func (M *Mailer) MailSignup(to, name string) (string, string, error) {
 	context := map[string]string{"name": name}
 	txt, html, err := loadEmail("signup", context)
 	if err != nil {
 		log.Panicln(err)
+		return "", "", err
 	}
 	message := mailgun.NewMessage(
 		M.from,
@@ -66,8 +65,5 @@ func (M *Mailer) MailSignup(to, name string) {
 		to)
 	message.SetHtml(html)
 	resp, id, err := M.mg.Send(message)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("ID: %s Resp: %s\n", id, resp)
+	return resp, id, err
 }
