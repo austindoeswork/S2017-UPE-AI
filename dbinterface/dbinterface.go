@@ -10,6 +10,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"time"
+
+	"bufio" // file-reading imports to deal with CREDENTIALS file
+	"os"
 )
 
 import _ "github.com/go-sql-driver/mysql"
@@ -27,7 +30,20 @@ It should be pretty crackable assuming someone wants to put in the time, but it'
 and the worst case scenario is someone gets to see someone else's apikey, which is not the end of the world.
 */
 func NewDB() *DB {
-	credentials := "root:@/"
+	var credentials string
+	file, err := os.Open("dbinterface/CREDENTIALS")
+	if err != nil { // default, if credentials doesn't exist
+		credentials = "root:@/" // USAGE: "username:password@IP-address/"
+	} else { // TODO: add IP address to CREDENTIALS file?
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		scanner.Scan() // get username "user:<username>"
+		text := scanner.Text()
+		credentials = text[5:]
+		scanner.Scan() // get password "pass:<password>"
+		text = scanner.Text()
+		credentials += ":" + text[5:] + "@/"
+	}
 	db, err := sql.Open("mysql", credentials) // assumes there is a MySQL instance existing with user root and no password
 	if err != nil {
 		panic(err)

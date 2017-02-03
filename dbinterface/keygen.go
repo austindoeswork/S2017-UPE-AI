@@ -39,7 +39,6 @@ func getWordsFromFile(path string) []byte {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-	// log.Println("counter: " + strconv.Itoa(counter))
 	// use random to find a line to grab
 	selected := rand.Intn(counter)
 	file.Seek(0, 0)

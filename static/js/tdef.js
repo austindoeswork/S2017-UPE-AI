@@ -91,8 +91,10 @@ function buyTower(location) {
     send('b' + enumVal + ' ' + location)
 }
 
+var timestamp = Date.now();
+
 function renderGrid(data) {
-    // var timestamp = Date.now();
+    frames++;
     d = JSON.parse(data);
     units = d.p1.troops.concat(d.p2.troops);
     for (i = 0; i < d.p1.towers.length; i++) {
@@ -107,15 +109,16 @@ function renderGrid(data) {
     }
     units.push(d.p1.mainTower);
     units.push(d.p2.mainTower);
-    document.getElementById("p1hp").innerHTML = d.p1.mainTower.hp
-    document.getElementById("p2hp").innerHTML = d.p2.mainTower.hp
-    document.getElementById("p1bits").innerHTML = d.p1.bits
-    document.getElementById("p2bits").innerHTML = d.p2.bits
-    document.getElementById("p1income").innerHTML = d.p1.income
-    document.getElementById("p2income").innerHTML = d.p2.income
+    document.getElementById("p1hp").innerHTML = d.p1.mainTower.hp;
+    document.getElementById("p2hp").innerHTML = d.p2.mainTower.hp;
+    document.getElementById("p1bits").innerHTML = d.p1.bits;
+    document.getElementById("p2bits").innerHTML = d.p2.bits;
+    document.getElementById("p1income").innerHTML = d.p1.income;
+    document.getElementById("p2income").innerHTML = d.p2.income;
     draw(units);
     renderer.render(stage);
-    // console.log(Date.now() - timestamp);
+    document.getElementById("fps").innerHTML = 1000/(Date.now() - timestamp);
+    timestamp = Date.now();
 }
 
 function draw(units){

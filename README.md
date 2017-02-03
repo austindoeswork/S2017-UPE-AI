@@ -2,8 +2,13 @@
 
 ## Installation
 
+Really convenient way to install Go: http://www.hostingadvice.com/how-to/install-golang-on-ubuntu/ (-Darwin)
+
 Note that this server uses MySQL as its database, make sure mysql-server is installed.	
-Additionally, you may need to edit dbinterface/dbinterface.go to have proper credentials. (i.e. replace "root@/" to "username:password@/" as necessary)
+Additionally, you may need to edit dbinterface/CREDENTIALS to have proper credentials. (i.e. replace username, password as necessary). If the server does not detect a CREDENTIALS file, it will use the default, which is "root" user with no password.
+
+(TODO: add dbinterface/CREDENTIALS to .gitignore?)
+
 The server will automatically use that account to create a database called aicomp if it doesn't exist, and a table called users within if that doesn't exist either.
 It will not override existing databases and tables of those names. You may need to drop the database manually if changes occur in the schemas?
 

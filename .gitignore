@@ -1,9 +1,10 @@
-// ignore wonky dev files
+// ignore wonky dev files (thanks emacs)
 *.go~
 #*.go#
 .txt~
 *.js~
 *.html~
+*.md~
 
 // ignore binary
 S2017-UPE-AI
