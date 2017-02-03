@@ -2,10 +2,12 @@
 package server
 
 import (
-	"github.com/gorilla/websocket"
+	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/websocket"
 	// "os" // when calling ExecuteTemplate you can use os.Stdout instead to output to screen
 	"time"
 
@@ -157,6 +159,7 @@ func (s *Server) handleWatchWS(w http.ResponseWriter, r *http.Request) {
 	// handle output
 	chanToWS(gameOutput, conn)
 }
+
 func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
 	gameName := r.FormValue("game")
 	if len(gameName) <= 0 {
@@ -170,7 +173,23 @@ func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	// TODO sanitization on gameName
+	log.Printf("SERVER: joinws %s\n", gameName)
+
+	// AUTHENTICATE USER
+	//TODO - timeout on this
+	idmt, idmessage, err := conn.ReadMessage()
+	if err != nil || idmt == CloseMessage {
+		log.Println("ERR: reading websocket", err)
+		return
+	}
+	profile, err := s.db.GetProfileFromApiKey(string(idmessage))
+	if err != nil {
+		log.Println("ERR: getting profile", err)
+		return
+	}
+	userName := profile.Username
+
+	// MAKE GAME IF DNE
 	if !s.gm.HasGame(gameName) {
 		err = s.gm.NewGame(gameName)
 		if err != nil {
@@ -178,8 +197,9 @@ func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// GET CONTROLLER
 	quitIn := make(chan bool)
-	gameInput, err := s.gm.ControlGame(gameName, quitIn)
+	gameInput, err := s.gm.ControlGame(gameName, userName, quitIn)
 	if err != nil {
 		log.Println("ERR: could not add controller", err)
 		return
@@ -191,6 +211,88 @@ func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
+	// GET WATCHER
+	quitOut := make(chan bool)
+	gameOutput, err := s.gm.WatchGame(gameName, quitOut)
+	if err != nil {
+		log.Println("ERR: could not add watcher", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitOut <- true:
+		default:
+		}
+	}()
+
+	// handle output
+	go chanToWS(gameOutput, conn)
+
+	// handle input
+	for {
+		mt, message, err := conn.ReadMessage()
+		if err != nil || mt == CloseMessage {
+			log.Println("ERR: reading websocket", err)
+			return
+		}
+		gameInput <- message
+	}
+}
+
+func (s *Server) handlePlayWS(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("ERR: upgrading websocket", err)
+		return
+	}
+	defer conn.Close()
+
+	log.Printf("SERVER: playws\n")
+
+	// AUTHENTICATE USER
+	//TODO - timeout on this
+	idmt, idmessage, err := conn.ReadMessage()
+	if err != nil || idmt == CloseMessage {
+		log.Println("ERR: reading websocket", err)
+		return
+	}
+	profile, err := s.db.GetProfileFromApiKey(string(idmessage))
+	if err != nil {
+		log.Println("ERR: getting profile", err)
+		return
+	}
+	userName := profile.Username
+
+	// MAKE GAME IF DNE
+	gameName, err := s.gm.PopOpenGame()
+	if err != nil {
+		gameName, err = s.gm.NewOpenGame()
+		if err != nil {
+			log.Println("ERR: creating game", err)
+			return
+		}
+	}
+	if !s.gm.HasGame(gameName) {
+		log.Println("ERR: creating game", err)
+	}
+
+	log.Printf("SERVER: playws %s\n", gameName)
+
+	// GET CONTROLLER
+	quitIn := make(chan bool)
+	gameInput, err := s.gm.ControlGame(gameName, userName, quitIn)
+	if err != nil {
+		log.Println("ERR: could not add controller", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitIn <- true:
+		default:
+		}
+	}()
+
+	// GET WATCHER
 	quitOut := make(chan bool)
 	gameOutput, err := s.gm.WatchGame(gameName, quitOut)
 	if err != nil {
@@ -247,6 +349,17 @@ func chanToWS(gameOutput <-chan []byte, conn *websocket.Conn) {
 	}
 }
 
+func (s *Server) handleGameList(w http.ResponseWriter, r *http.Request) {
+	gamelist := (s.gm.ListGames())
+	b, err := json.Marshal(&gamelist)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	w.Write(b)
+	return
+}
+
 func (s *Server) handleGame(res http.ResponseWriter, req *http.Request) {
 	s.ExecuteUserTemplate(res, req, "game", Page{Title: "Game"})
 }
@@ -264,12 +377,14 @@ func (s *Server) Start() {
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.staticDir))))
 	http.HandleFunc("/game", s.handleGame)
+	http.HandleFunc("/gamelist", s.handleGameList)
 	http.HandleFunc("/signout", s.handleLogout) // ?? for some reason on my machine if this is logout it doesn't detect it...
 	http.HandleFunc("/login", s.handleLogin)
 	http.HandleFunc("/signup", s.handleSignup)
 	http.HandleFunc("/profile", s.handleProfile)
 	http.HandleFunc("/docs", s.handleDocs)
 	http.HandleFunc("/wsjoin", s.handleJoinWS)
+	http.HandleFunc("/wsplay", s.handlePlayWS)
 	http.HandleFunc("/wswatch", s.handleWatchWS)
 	http.HandleFunc("/", s.handleHome)
 

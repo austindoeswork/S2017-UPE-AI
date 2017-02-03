@@ -3,6 +3,8 @@ package gamemanager
 import (
 	"fmt"
 	"log"
+	"math/rand"
+	"strconv"
 	"time"
 
 	"github.com/austindoeswork/S2017-UPE-AI/game"
@@ -21,12 +23,14 @@ type GM interface {
 }
 
 type GameManager struct {
-	games map[string]*GameWrapper
+	games     map[string]*GameWrapper
+	opengames []string
 }
 
 func New() *GameManager {
 	gm := &GameManager{
-		games: make(map[string]*GameWrapper),
+		games:     make(map[string]*GameWrapper),
+		opengames: []string{},
 	}
 	go func() {
 		gm.Janitor()
@@ -65,7 +69,7 @@ func (gm *GameManager) NewGame(gameName string) error {
 	gm.games[gameName] = gw
 
 	go func() {
-		time.AfterFunc(time.Second*10, func() {
+		time.AfterFunc(time.Second*60, func() {
 			if gw.Status() != game.RUNNING && gw.Status() != game.DONE {
 				log.Printf("game: %s timed out.", gameName)
 				gw.Quit()
@@ -75,7 +79,46 @@ func (gm *GameManager) NewGame(gameName string) error {
 	return nil
 }
 
-func (gm *GameManager) ControlGame(gameName string, quit chan bool) (chan<- []byte, error) {
+func (gm *GameManager) PopOpenGame() (string, error) {
+	if len(gm.opengames) == 0 {
+		return "", fmt.Errorf("no open games")
+	}
+	name := gm.opengames[0]
+
+	// TODO austin add a mutex
+	gm.opengames = append(gm.opengames[:0], gm.opengames[1:]...)
+	if _, ok := gm.games[name]; !ok {
+		return "", fmt.Errorf("error opening game")
+	}
+	if gm.games[name].Status() > game.READY {
+		return gm.PopOpenGame()
+	}
+	return name, nil
+}
+
+func (gm *GameManager) NewOpenGame() (string, error) {
+	rint := rand.Int()
+	rstr := strconv.Itoa(rint)
+
+	err := gm.NewGame(rstr)
+	if err != nil {
+		return "", err
+	}
+	gm.opengames = append(gm.opengames, rstr)
+	return rstr, nil
+}
+
+func (gm *GameManager) ListGames() []string {
+	list := []string{}
+	for name, g := range gm.games {
+		if g.Status() == game.RUNNING {
+			list = append(list, name)
+		}
+	}
+	return list
+}
+
+func (gm *GameManager) ControlGame(gameName string, userName string, quit chan bool) (chan<- []byte, error) {
 	gw, exists := gm.games[gameName]
 	if !exists {
 		return nil, fmt.Errorf("ERR no such game")
@@ -83,7 +126,7 @@ func (gm *GameManager) ControlGame(gameName string, quit chan bool) (chan<- []by
 	if gw.Status() == game.DONE {
 		return nil, fmt.Errorf("ERR game over")
 	}
-	input, err := gw.getOpenInput()
+	input, err := gw.getOpenInput(userName)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +134,7 @@ func (gm *GameManager) ControlGame(gameName string, quit chan bool) (chan<- []by
 	go func() {
 		select {
 		case <-quit:
-			log.Printf("game: %s controller QUIT", gameName)
+			log.Printf("game: %s %s controller QUIT", gameName, userName)
 			err := gw.closeInput(input)
 			if err != nil {
 				log.Panic(err) // TODO idiomatic way to log unexpected errors?
@@ -100,9 +143,10 @@ func (gm *GameManager) ControlGame(gameName string, quit chan bool) (chan<- []by
 		}
 	}()
 
-	log.Printf("game: %s controller GIVEN", gameName)
+	log.Printf("game: %s %s controller GIVEN", gameName, userName)
 	return input, nil
 }
+
 func (gm *GameManager) WatchGame(gameName string, quit chan bool) (<-chan []byte, error) {
 	gw, exists := gm.games[gameName]
 	if !exists {
@@ -133,7 +177,7 @@ type GameWrapper struct {
 	game.Game
 	// TODO think about resetting connections
 	// gameInput maps an input to whether they are connected
-	gameInputMap map[chan<- []byte]bool
+	gameInputMap map[chan<- []byte]string
 	activeInputs int
 	gameOutput   <-chan []byte
 	listenerMap  map[chan []byte]bool
@@ -142,11 +186,11 @@ type GameWrapper struct {
 // TODO allow creation of different games (pong, scrabble, whatever)
 func NewGameWrapper() *GameWrapper {
 	g, inputs, output := game.NewTowerDef()
-	gameInputMap := make(map[chan<- []byte]bool)
+	gameInputMap := make(map[chan<- []byte]string)
 	listenerMap := make(map[chan []byte]bool)
 
 	for _, in := range inputs {
-		gameInputMap[in] = false
+		gameInputMap[in] = ""
 	}
 
 	gw := &GameWrapper{
@@ -188,10 +232,13 @@ func (gw *GameWrapper) Ready() bool {
 }
 
 // getOpenInput returns the first open input chan it encounters
-func (gw *GameWrapper) getOpenInput() (chan<- []byte, error) {
-	for input, assigned := range gw.gameInputMap {
-		if !assigned {
-			gw.gameInputMap[input] = true
+func (gw *GameWrapper) getOpenInput(userName string) (chan<- []byte, error) {
+	if userName == "" {
+		return nil, fmt.Errorf("ERR invalid username")
+	}
+	for input, currentUser := range gw.gameInputMap {
+		if currentUser == "" {
+			gw.gameInputMap[input] = userName
 			gw.activeInputs++
 			if gw.activeInputs == gw.MinPlayers() {
 				gw.Start()
@@ -201,6 +248,7 @@ func (gw *GameWrapper) getOpenInput() (chan<- []byte, error) {
 	}
 	return nil, fmt.Errorf("ERR no open input chan")
 }
+
 func (gw *GameWrapper) closeInput(input chan<- []byte) error {
 	if _, exists := gw.gameInputMap[input]; !exists {
 		return fmt.Errorf("ERR no such input chan")
@@ -209,19 +257,22 @@ func (gw *GameWrapper) closeInput(input chan<- []byte) error {
 	if gw.activeInputs == 0 && gw.Status() != game.DONE {
 		gw.Quit()
 	}
-	gw.gameInputMap[input] = false
+	gw.gameInputMap[input] = ""
 	return nil
 }
+
 func (gw *GameWrapper) getOutput() chan []byte {
 	output := make(chan []byte)
 	gw.listenerMap[output] = true
 
 	return output
 }
+
 func (gw *GameWrapper) closeOutput(output chan []byte) error {
 	if _, exists := gw.listenerMap[output]; !exists {
 		return fmt.Errorf("ERR no such output chan")
 	}
+	// TODO austin add a mutex
 	delete(gw.listenerMap, output)
 	return nil
 }
