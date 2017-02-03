@@ -1,6 +1,8 @@
 var ws;
 window.addEventListener("load", function(evt) {
+	console.log("LOADING");
     document.getElementById("join").onclick = wsjoin;
+    document.getElementById("play").onclick = wsplay;
     document.getElementById("watch").onclick = wswatch;
     document.getElementById("close").onclick = function(evt) {
         if (!ws) {
@@ -12,27 +14,45 @@ window.addEventListener("load", function(evt) {
     };
 });
 
-function wsjoin() {
+function wsplay() {
+	console.log("play clicked");
 	var wspath = document.getElementById("wspathinput").value;
-	var wsroute = "/wsjoin"
+	var wsroute = "/wsplay";
+	// var gname = document.getElementById("gamename").value;
+	var devkey = document.getElementById("devkey").value;
+	wsopen(wspath, wsroute, "", devkey);
+}
+function wsjoin() {
+	console.log("join clicked");
+	var wspath = document.getElementById("wspathinput").value;
+	var wsroute = "/wsjoin";
 	var gname = document.getElementById("gamename").value;
-	wsopen(wspath, wsroute, gname);
+	var devkey = document.getElementById("devkey").value;
+	wsopen(wspath, wsroute, gname, devkey);
 }
 function wswatch() {
 	var wspath = document.getElementById("wspathinput").value;
 	var wsroute = "/wswatch"
 	var gname = document.getElementById("gamename").value;
-	wsopen(wspath, wsroute, gname);
+	wsopen(wspath, wsroute, gname, "");
 }
 
-function wsopen(wspath, wsroute, gname) {
+function wsopen(wspath, wsroute, gname, devkey) {
 	if (ws) {
 		return false;
 	}
-	ws = new WebSocket(wspath + wsroute + "?game=" + gname);
+	if (gname != "") {
+		ws = new WebSocket(wspath + wsroute + "?game=" + gname);
+	} else {
+		ws = new WebSocket(wspath + wsroute);
+	}
+
 	ws.onopen = function(evt) {
-		setstatus("WS CONNECTION OPENED");
-		console.log("WS CONNECTION OPENED");
+		if (devkey != "") {
+			send(devkey);
+		}
+		setstatus("WS send devkey");
+		console.log("WS send devkey");
 	}
 	ws.onclose = function(evt) {
 		setstatus("WS CONNECTION CLOSED");

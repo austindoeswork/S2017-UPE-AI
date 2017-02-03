@@ -38,7 +38,7 @@ func main() {
 	fmt.Println("version: " + commithash)
 	// end bash script help
 
-	s := server.New(":8080", *staticDir, db)
-	fmt.Println("server starting 8080")
+	s := server.New(":9090", *staticDir, db)
+	fmt.Println("server starting 9090")
 	s.Start()
 }

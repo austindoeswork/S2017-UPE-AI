@@ -145,6 +145,18 @@ func (d *DB) GetProfile(username string) (*Profile, error) {
 	}, nil
 }
 
+func (d *DB) GetProfileFromApiKey(apikey string) (*Profile, error) {
+	var username string
+	err := d.db.QueryRow("SELECT username, apikey FROM users WHERE apikey=?", apikey).Scan(&username, &apikey)
+	if err != nil {
+		return nil, err
+	}
+	return &Profile{
+		Username: username,
+		Apikey:   apikey,
+	}, nil
+}
+
 // TODO check to see how it's handled when user tries to add duplicates
 // AUTOMATICALLY ADDS USER TO DB
 // Any sort of verification should probably be handled by server/server.go or the front-end!!!
