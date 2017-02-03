@@ -147,17 +147,17 @@ function draw(units){
 	else */ 
 	if (units[i].enum == -1) {
 	    Mob2Blues[mobiterator].x = units[i].x;
-	    Mob2Blues[mobiterator].y = units[i].y;
+	    Mob2Blues[mobiterator].y = GAME_HEIGHT - units[i].y;
 	    mobiterator++;
 	}
 	else if (units[i].enum == 0) {
 	    Mob2Blues[mobiterator].x = units[i].x;
-	    Mob2Blues[mobiterator].y = units[i].y;
+	    Mob2Blues[mobiterator].y = GAME_HEIGHT - units[i].y;
 	    mobiterator++;
 	}
 	else if (units[i].enum >= 50) {
 	    Mob2Blues[mobiterator].x = units[i].x;
-	    Mob2Blues[mobiterator].y = units[i].y;
+	    Mob2Blues[mobiterator].y = GAME_HEIGHT - units[i].y;
 	    mobiterator++;
 	}
     }
