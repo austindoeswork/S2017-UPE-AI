@@ -45,3 +45,13 @@ People who want to spectate/play ongoing matches will interface through the game
 
 /templates = These .html files are loaded by the template manager on server startup. (Coming soon: template reloader when these templates change, so that server doesn't need to reload on each startup)
 Note that the header.html and footer.html templates that are included with each of these templates start and end the main container div that are pretty much used everywhere.
+
+## TODOLIST
+
+Victory screen + stats post-game
+
+Status splash screen before game
+
+Status message over websockets pre-game
+
+Death anims (fade?)

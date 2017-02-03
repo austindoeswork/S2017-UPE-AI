@@ -1,12 +1,3 @@
-/*
-TODO:
-Troops should have their own targetting and behaviors and such
-Add deploy time
-Add towers and plots
-Add actual troop ideas
-Change unit list to sorted tower/troop lanes
-*/
-
 package tdef
 
 import (
@@ -18,6 +9,7 @@ import (
 
 // TODO find a better place for this too, is this necessary?
 // std lib doesn't seem to have an int abs, converting to/from float64 seems unnecessary
+// this is used in player.go, unit.go
 func intAbsDiff(x, y int) int {
 	if x >= y {
 		return x - y
@@ -200,15 +192,7 @@ func interpretCommand(input string) (int, int) {
 
 /*
 Called each turn by updateGame().
-
-Currently, pressing up spawns a unit in top lane, right spawns in mid lane and down spawns
-in bot lane. Of course, this is conditional in whether player has enough coins (handled in
-BuyUnit()).
-
-If you're going to extend this functionality by adding more keycontrols, note that you need to
-first add the key to /static/js/tdef.js (tdef.js only sends certain keypresses to the server)
 */
-
 func controlPlayer(tdef *TowerDefense, input string, playernum int) {
 	unitEnum, lane := interpretCommand(input) // only one unit type exists currently
 	if unitEnum == 0 && lane == 0 {           // no move

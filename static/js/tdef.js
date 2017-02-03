@@ -1,3 +1,5 @@
+// TODO turn this into a generalized gameTV creator that can make smaller windows (i.e. for the main page)
+
 // scaleFactor scales the gameWindow to browser screen
 var scaleFactor = 1;
 var GAME_WIDTH = 1600;
@@ -33,8 +35,9 @@ var stage = new Container();
 // var particleContainer = stage;
 
 function resize() { // autoresizes gameTV depending on size of window (which determines size of main container)
-    // Determine which screen dimension is most constrained (checking vs main container)
-    scaleFactor = Math.min(document.getElementById('main').offsetWidth/GAME_WIDTH,
+    // Determine which screen dimension is most constrained
+    // note that we use main container for height because gameTV is not a fixed size
+    scaleFactor = Math.min(document.getElementById('gameTV').offsetWidth/GAME_WIDTH,
 			   document.getElementById('main').offsetHeight/GAME_HEIGHT);
     
     // Scale the view appropriately to fill that dimension

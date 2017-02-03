@@ -1,49 +1,86 @@
 {{define "game"}}
 {{template "header" .}}
+Framerate: <span id="fps">:)</span>
 <div id="gameTV"></div>
 <div id="score">
-  HP: <span id="p1hp">:)</span> to <span id="p2hp">:(</span>
-  <br>Bits: <span id="p1bits">:)</span>to<span id="p2bits">:(</span>
-  <br>Income: <span id="p1income">:)</span>to<span id="p2income">:(</span>
-  <br>Framerate: <span id="fps">:)</span>
-</div> 
-<p id="status">join/watch a game dawg.</p>
-<h3>controller</h3>
-<div>
-  <p><input id="gamename" type="text" value="gamename">
-    <button id="join">Join</button>
-    <button id="watch">Watch</button>
-  <p><input id="wspathinput" type="text" value="ws://localhost:8080">
-    <button id="close">Close</button>
-  <p><button onclick="send('b00 01')">send unit top</button><button onclick="send('b00 02')">send unit mid</button><button onclick="send('b00 03')">send unit bot</button>
-    <div>
-      <table class="table">
-	<tr>
-	  <td><INPUT TYPE="Radio" Name="towerEnum" Value="50" checked="checked">Peashooter
-	    <INPUT TYPE="Radio" Name="towerEnum" Value="51">Bank</td>
-	</tr>
-	<tr>
-	  <td><button onclick="buyTower('00')">buy p0 tower</button>
-	  <button onclick="buyTower('01')">buy p1 tower</button><button onclick="buyTower('02')">buy p2 tower</button><button onclick="buyTower('03')">buy p3 tower</button>
-	  </td>
-	</tr>
-	<tr>
-	  <td><button onclick="buyTower('04')">buy p4 tower</button><button onclick="buyTower('05')">buy p5 tower</button><button onclick="buyTower('06')">buy p6 tower</button>
-	  <button onclick="buyTower('07')">buy p7 tower</button>
-	  </td>
-	</tr>
-	<tr>
-	  <td><button onclick="buyTower('08')">buy p8 tower</button><button onclick="buyTower('09')">buy p9 tower</button>
-	  <button onclick="buyTower('10')">buy p10 tower</button><button onclick="buyTower('11')">buy p11 tower</button>
-	  </td>
-	</tr>
-	<tr>
-	  <td><button onclick="buyTower('12')">buy p12 tower</button>
-	  <button onclick="buyTower('13')">buy p13 tower</button><button onclick="buyTower('14')">buy p14 tower</button><button onclick="buyTower('15')">buy p15 tower</button>
-	  </td>
-	</tr>
+  <div class="col-md-6">
+    <table class="table col-md-6">
+      <tr>
+	<td>Player 1: <span id="p1name"></span></td>
+      </tr>
+      <tr>
+	<td>Core HP:</td>
+	<td><span id="p1hp"></span></td>
+      </tr>
+      <tr>
+	<td>Bits:</td>
+	<td><span id="p1bits"></span></td>
+      </tr>
+      <tr>
+	<td>Income:</td>
+	<td><span id="p1income"></span></td>
+      </tr>
     </table>
-    </div>
+  </div>
+  <div class="col-md-6">
+    <table class="table">
+      <tr>
+	<td>Player 2: <span id="p2name"></span></td>
+      </tr>
+      <tr>
+	<td>Core HP:</td>
+	<td><span id="p2hp"></span></td>
+      </tr>
+      <tr>
+	<td>Bits:</td>
+	<td><span id="p2bits"></span></td>
+      </tr>
+      <tr>
+	<td>Income:</td>
+	<td><span id="p2income"></span></td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div id="controller">
+  <p id="status">join/watch a game dawg.</p>
+  <h3>controller</h3>
+  <div>
+    <p><input id="gamename" type="text" value="gamename">
+      <button id="join">Join</button>
+      <button id="watch">Watch</button>
+    <p><input id="wspathinput" type="text" value="ws://localhost:8080">
+      <button id="close">Close</button>
+    <p><button onclick="send('b00 01')">send unit top</button><button onclick="send('b00 02')">send unit mid</button><button onclick="send('b00 03')">send unit bot</button>
+      <div>
+	<table class="table">
+	  <tr>
+	    <td><INPUT TYPE="Radio" Name="towerEnum" Value="50" checked="checked">Peashooter
+	      <INPUT TYPE="Radio" Name="towerEnum" Value="51">Bank</td>
+	  </tr>
+	  <tr>
+	    <td><button onclick="buyTower('00')">buy p0 tower</button>
+	      <button onclick="buyTower('01')">buy p1 tower</button><button onclick="buyTower('02')">buy p2 tower</button><button onclick="buyTower('03')">buy p3 tower</button>
+	    </td>
+	  </tr>
+	  <tr>
+	    <td><button onclick="buyTower('04')">buy p4 tower</button><button onclick="buyTower('05')">buy p5 tower</button><button onclick="buyTower('06')">buy p6 tower</button>
+	      <button onclick="buyTower('07')">buy p7 tower</button>
+	    </td>asd
+	  </tr>
+	  <tr>
+	    <td><button onclick="buyTower('08')">buy p8 tower</button><button onclick="buyTower('09')">buy p9 tower</button>
+	      <button onclick="buyTower('10')">buy p10 tower</button><button onclick="buyTower('11')">buy p11 tower</button>
+	    </td>
+	  </tr>
+	  <tr>
+	    <td><button onclick="buyTower('12')">buy p12 tower</button>
+	      <button onclick="buyTower('13')">buy p13 tower</button><button onclick="buyTower('14')">buy p14 tower</button><button onclick="buyTower('15')">buy p15 tower</button>
+	    </td>
+	  </tr>
+	</table>
+      </div>
+  </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.2.2/pixi.min.js"></script>
 <script src="/static/js/ws.js"></script>
