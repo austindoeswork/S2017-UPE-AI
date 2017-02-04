@@ -53,7 +53,11 @@ Framerate: <span id="fps">:)</span>
       <button id="watch">Watch</button>
     <p><input id="wspathinput" type="text" value="ws://localhost:8080">
       <button id="close">Close</button>
-    <p><button onclick="send('b00 01')">send unit top</button><button onclick="send('b00 02')">send unit mid</button><button onclick="send('b00 03')">send unit bot</button>
+    <p>
+      <INPUT TYPE="Radio" Name="troopEnum" Value="00" checked="checked">Nut
+      <INPUT TYPE="Radio" Name="troopEnum" Value="01">Bolt
+      <INPUT TYPE="Radio" Name="troopEnum" Value="02">Grease Monkey
+      <button onclick="buyTroop('01')">send unit top</button><button onclick="buyTroop('02')">send unit mid</button><button onclick="buyTroop('03')">send unit bot</button>
       <div>
 	<table class="table">
 	  <tr>

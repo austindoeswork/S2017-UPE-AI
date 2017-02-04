@@ -9,13 +9,25 @@ Unit enum:
 -2: Main core
 -1: Objective towers
 --
+(implemented)
 00: Nut
-*01: Bolt
-*02: Grease Monkey
-03:
+01: Bolt
+02: Grease Monkey
 
+(not implemented)
+03: Walker
+04: Aimbot
+05: Hard Drive
+06: Gas Guzzler
+07: Terminator
+08: Malware
+09: Gandhi
+
+(implemented)
 50: Peashooter
 51: Bank
+
+(not implemented)
 */
 
 // Troops and towers are units. All of their internal variables are private to promote good coding practice
@@ -27,6 +39,7 @@ type Unit interface {
 	Y() int
 	HP() int
 	MaxHP() int
+	SetHP(hp int)
 	Speed() int
 	Stride() int
 	Reach() int
@@ -64,7 +77,7 @@ func (ub *UnitBase) Owner() int {
 	return ub.owner
 }
 func (ub *UnitBase) ExportJSON() string { // rest of information is not really important to front-end
-	return fmt.Sprintf(`{"x": %d, "y": %d, "maxhp": %d, "hp": %d, "enum": %d}`, ub.x, ub.y, ub.maxhp, ub.hp, ub.enum)
+	return fmt.Sprintf(`{"owner": %d, "x": %d, "y": %d, "maxhp": %d, "hp": %d, "enum": %d}`, ub.owner, ub.x, ub.y, ub.maxhp, ub.hp, ub.enum)
 }
 func (ub *UnitBase) Enum() int {
 	return ub.enum
@@ -91,6 +104,9 @@ func (ub *UnitBase) MaxHP() int {
 }
 func (ub *UnitBase) HP() int {
 	return ub.hp
+}
+func (ub *UnitBase) SetHP(hp int) {
+	ub.hp = hp
 }
 func (ub *UnitBase) Stride() int {
 	return ub.stride
@@ -126,7 +142,16 @@ func NewTroop(x, lane, owner, enum int) Unit {
 	case 3:
 		y = BOTY
 	}
-	return NewNut(x, y, owner)
+	switch enum {
+	case 0:
+		return NewNut(x, y, owner)
+	case 1:
+		return NewBolt(x, y, owner)
+	case 2:
+		return NewGreaseMonkey(x, y, owner)
+	default:
+		return nil
+	}
 }
 
 // For lane towers, specify PLOT not x, y

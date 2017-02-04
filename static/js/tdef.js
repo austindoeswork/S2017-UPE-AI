@@ -59,6 +59,7 @@ loader
     .load(setup);
 
 var Mob2Blues = []; // prerender 100 of these
+var Mob2Reds = []; // prerender 100 of these as well
 
 // runs as soon as loader is done loading imgs
 function setup() {
@@ -73,6 +74,14 @@ function setup() {
 	mob.y = -100;
 	Mob2Blues.push(mob);
 	stage.addChild(mob);
+	mob = new Sprite(
+	    TextureCache["static/img/Mob_2_Red.png"]
+	);
+	mob.x = -100;
+	mob.y = -100;
+	mob.scale.x = -1; // flip horizontally
+	Mob2Reds.push(mob);
+	stage.addChild(mob);
     }
     // stage.addChild(particleContainer);
     resize();
@@ -81,6 +90,18 @@ function setup() {
 
 // resize when user changes page size
 window.addEventListener("resize", resize);
+
+// called by frontend troop buttons
+function buyTroop(location) {
+    var radioButtons = document.getElementsByName('troopEnum');
+    var enumVal;
+    for(var i = 0; i < radioButtons.length; i++){
+	if(radioButtons[i].checked){
+            enumVal = radioButtons[i].value;
+	}
+    }
+    send('b' + enumVal + ' ' + location)
+}
 
 // called by frontend tower buttons
 function buyTower(location) {
@@ -126,8 +147,9 @@ function renderGrid(data) {
 
 function draw(units){
     // particleContainer.removeChildren();
-    var mobiterator = 0;
-
+    var mobBlueIterator = 0;
+    var mobRedIterator = 0;
+    
     // units
     for (i = 0; i < units.length; i++) {
 	/* var c;
@@ -145,25 +167,38 @@ function draw(units){
 	    rect(scaleX(units[i].x-5), scaleY(canvash - units[i].y+40), 10, 200);
 	}
 	else */ 
-	if (units[i].enum == -1) {
-	    Mob2Blues[mobiterator].x = units[i].x;
-	    Mob2Blues[mobiterator].y = GAME_HEIGHT - units[i].y;
-	    mobiterator++;
+
+	var thisUnit;
+	if (units[i].owner == 1) {
+	    thisUnit = Mob2Blues[mobBlueIterator];
+	    mobBlueIterator++;
 	}
-	else if (units[i].enum == 0) {
-	    Mob2Blues[mobiterator].x = units[i].x;
-	    Mob2Blues[mobiterator].y = GAME_HEIGHT - units[i].y;
-	    mobiterator++;
+	else {
+	    thisUnit = Mob2Reds[mobRedIterator];
+	    mobRedIterator++;
+	}
+	
+	if (units[i].enum == -1) {
+	    thisUnit.x = units[i].x;
+	    thisUnit.y = GAME_HEIGHT - units[i].y;
+	}
+	else if (units[i].enum >= 0 && units[i].enum < 50) {
+	    thisUnit.x = units[i].x;
+	    thisUnit.y = GAME_HEIGHT - units[i].y;
 	}
 	else if (units[i].enum >= 50) {
-	    Mob2Blues[mobiterator].x = units[i].x;
-	    Mob2Blues[mobiterator].y = GAME_HEIGHT - units[i].y;
-	    mobiterator++;
+	    thisUnit.x = units[i].x;
+	    thisUnit.y = GAME_HEIGHT - units[i].y;
 	}
     }
-    while (mobiterator < 100) {
-	Mob2Blues[mobiterator].x = -100;
-	Mob2Blues[mobiterator].y = -100;
-	mobiterator++;
+    while (mobBlueIterator < 100) {
+	Mob2Blues[mobBlueIterator].x = -100;
+	Mob2Blues[mobBlueIterator].y = -100;
+	mobBlueIterator++;
+    }
+    while (mobRedIterator < 100) {
+	Mob2Reds[mobRedIterator].x = -100;
+	Mob2Reds[mobRedIterator].y = -100;
+	mobRedIterator++;
     }
 }
