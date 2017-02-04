@@ -21,9 +21,12 @@ form input {
 /*
   Profile
 */
-#profile-picture {
-  width: 400px;
-  height: 400px;
+#profile-pic-large {
+  text-align: center;
+}
+#profile-pic-large img {
+  width: 200px;
+  height: 200px;
 }
 .profile-item .name {
   font-weight: bold;

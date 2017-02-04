@@ -179,10 +179,9 @@ func (d *DB) SignupUser(user *User, password string) (*http.Cookie, error) {
 			return nil, err
 		}
 		now := time.Now()
-		pictureLoc := ""
 		_, err = d.db.Exec(`INSERT INTO users(createdAt, name, email, username, pictureLoc, password, 
 apikey, ELO) VALUES(?, ?, ?, ?, ?, ?, ?, 1500.0)`, now, user.Name, user.Email, user.Username,
-			pictureLoc, hashedPassword, apikey)
+			user.ProfilePicture, hashedPassword, apikey)
 		if err != nil {
 			log.Fatalln(err)
 			return nil, err

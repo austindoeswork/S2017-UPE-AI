@@ -13,6 +13,8 @@ import (
 
 	"fmt"
 
+	"os"
+
 	"github.com/austindoeswork/S2017-UPE-AI/dbinterface"
 	"github.com/austindoeswork/S2017-UPE-AI/gamemanager"
 	"github.com/gorilla/sessions"
@@ -79,6 +81,7 @@ func New(port, staticDir string, db *dbinterface.DB) *Server {
 	if err != nil {
 		log.Println(err)
 	}
+	os.Mkdir("./identicons", 0666)
 	return &Server{
 		port:      port,
 		staticDir: staticDir,
@@ -145,6 +148,7 @@ func (s *Server) handleProfile(res http.ResponseWriter, req *http.Request) {
 	if cookie, err := req.Cookie("login"); err == nil {
 		if username, err := s.db.VerifyCookie(cookie); err == nil {
 			if profile, err := s.db.GetUser(username); err == nil {
+				profile.ProfilePicture, _ = LoadIdenticon(profile.ProfilePicture)
 				s.ExecuteUserTemplate(res, req, "profile", Page{Title: "Profile", Username: username,
 					Data: profile})
 				return
@@ -183,10 +187,12 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 		s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
 		return
 	}
+	profilePicLoc := fmt.Sprintf("./identicons/%s.png", username)
 	user := &dbinterface.User{
-		Name:     fullName,
-		Email:    email,
-		Username: username,
+		Name:           fullName,
+		Email:          email,
+		ProfilePicture: profilePicLoc,
+		Username:       username,
 	}
 	cookie, err := s.db.SignupUser(user, password)
 	if err != nil {
@@ -206,6 +212,8 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 			session.Save(req, res)
 		}
 	}
+	hash := GenerateHash(username)
+	NewIdenticon(hash, nil).Save(profilePicLoc)
 	http.SetCookie(res, cookie)
 	http.Redirect(res, req, "/profile", http.StatusFound)
 }

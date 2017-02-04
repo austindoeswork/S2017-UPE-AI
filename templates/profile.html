@@ -2,8 +2,8 @@
 {{template "header" .}}
 <section id="profile">
   <div class="row">
-    <div class="col-md-6">
-      <img src="{{.Data.ProfilePicture}}" alt="Profile Picture">
+    <div id="profile-pic-large" class="col-md-6">
+      <img src="data:image/png;base64,{{.Data.ProfilePicture}}" alt="Profile Picture">
     </div>
     <div class="col-md-6">
       <div class="profile-item">

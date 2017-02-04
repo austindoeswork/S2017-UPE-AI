@@ -1,6 +1,8 @@
 package server
 
 import (
+	"bufio"
+	"encoding/base64"
 	"image"
 	"image/color"
 	"image/draw"
@@ -12,22 +14,28 @@ import (
 	"unicode/utf8"
 )
 
+// Identicon wraps the information needed to create the identicon, as well as the image object
+//  itself
 type Identicon struct {
-	hash string
-	img  *image.RGBA
+	hash    string
+	options *IdenticonOptions
+	img     *image.RGBA
 }
 
+// IdenticonOptions specifies the available options when constructing a new Identicon
 type IdenticonOptions struct {
 	background color.RGBA
-	hash       string
 	margin     float64
 	size       int
 }
 
+// defaultIdenticonOptions creates and returns an IdenticonOptions struct with defaults
 func defaultIdenticonOptions() *IdenticonOptions {
-	return &IdenticonOptions{color.RGBA{240, 240, 240, 255}, "", 0.08, 64}
+	return &IdenticonOptions{color.RGBA{240, 240, 240, 255}, 0.08, 64}
 }
 
+// NewIdenticon creates a new Identicon from the given hash using the given IdenticonOptions. This
+//  algorithm was adapted from https://github.com/stewartlord/identicon.js
 func NewIdenticon(hash string, options *IdenticonOptions) *Identicon {
 	if options == nil {
 		options = defaultIdenticonOptions()
@@ -63,9 +71,10 @@ func NewIdenticon(hash string, options *IdenticonOptions) *Identicon {
 				image.ZP, draw.Src)
 		}
 	}
-	return &Identicon{hash, img}
+	return &Identicon{hash, options, img}
 }
 
+// Save writes the Identicon image to disk at the given filepath
 func (I *Identicon) Save(filepath string) error {
 	fp, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
@@ -76,10 +85,8 @@ func (I *Identicon) Save(filepath string) error {
 	return nil
 }
 
-func (I *Identicon) ToBase64() string {
-	return ""
-}
-
+// GenerateHash generates a constant length hash string that can be used to create Identicons.
+//  Inputs are salted with the current time to increase randomness
 func GenerateHash(input string) string {
 	hash := 0
 	salt := time.Now().String()
@@ -93,10 +100,28 @@ func GenerateHash(input string) string {
 	return strconv.FormatInt(int64(hash), 16)
 }
 
+// LoadIdenticon reads an Identicon image stored at the given filepath and returns the
+//  base64-encoded version of the image
 func LoadIdenticon(filepath string) (string, error) {
-	return "", nil
+	fp, err := os.Open(filepath)
+	if err != nil {
+		return "", err
+	}
+	defer fp.Close()
+	fInfo, _ := fp.Stat()
+	fSize := fInfo.Size()
+	buf := make([]byte, fSize)
+	fReader := bufio.NewReader(fp)
+	_, err = fReader.Read(buf)
+	if err != nil {
+		return "", err
+	}
+	str := base64.StdEncoding.EncodeToString(buf)
+	return str, nil
 }
 
+// hsl2rgb transforms the given color from (h,s,l) color space to (r,g,b) color space. This
+//  algorithm was adapted from http://www.rapidtables.com/convert/color/hsl-to-rgb.htm
 func hsl2rgb(h, s, l float64) *color.RGBA {
 	c := (1 - math.Abs(2*l-1)) * s
 	x := c * (1 - math.Abs(float64(int(h/60)%2-1)))
@@ -121,6 +146,7 @@ func hsl2rgb(h, s, l float64) *color.RGBA {
 	return &color.RGBA{r, g, b, 255}
 }
 
+// touint8 appropriately rounds the given float64 and returns the result as a uint8
 func touint8(x float64) uint8 {
 	if x > 0 {
 		return uint8(x + 0.5)
