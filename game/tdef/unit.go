@@ -13,15 +13,17 @@ Unit enum:
 00: Nut
 01: Bolt
 02: Grease Monkey
-
-(not implemented)
 03: Walker
 04: Aimbot
 05: Hard Drive
-06: Gas Guzzler
-07: Terminator
-08: Malware
-09: Gandhi
+
+(not implemented)
+06: Scrapheap
+07: Gas Guzzler
+08: Terminator
+09: Blackhat
+10: Malware
+11: Gandhi
 
 (implemented)
 50: Peashooter
@@ -149,6 +151,16 @@ func NewTroop(x, lane, owner, enum int) Unit {
 		return NewBolt(x, y, owner)
 	case 2:
 		return NewGreaseMonkey(x, y, owner)
+	case 3:
+		return NewWalker(x, y, owner)
+	case 4:
+		return NewAimbot(x, y, owner)
+	case 5:
+		return NewHardDrive(x, y, owner) // 6-scrapheap coming soon
+	case 7:
+		return NewGasGuzzler(x, y, owner)
+	case 8:
+		return NewTerminator(x, y, owner) // 9+ coming soon
 	default:
 		return nil
 	}

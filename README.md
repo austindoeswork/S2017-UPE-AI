@@ -55,9 +55,3 @@ Status splash screen before game
 Status message over websockets pre-game
 
 Death anims (fade?)
-
-*HOW TO DESIGN FRONT-PAGE (GameTV idea, Kodal Kombat logo) (Logo)
-*Temple thing, make the cores more complex, more core-like?
-*Damage/rubble to units and cores (healthbar, additional assets?)
-*Mini red-team icons/blue-team icons for HUDs, money, tower, troop <-- for documentation, site stuff
-*HUD display in-game

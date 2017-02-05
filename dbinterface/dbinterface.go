@@ -9,10 +9,10 @@ import (
 	"math"
 	"net/http"
 	"time"
-	
+
 	"bufio" // file-reading imports to deal with CREDENTIALS file
-	"os"
 	"log"
+	"os"
 
 	"errors"
 
