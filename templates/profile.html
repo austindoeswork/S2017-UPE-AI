@@ -1,7 +1,29 @@
 {{define "profile"}}
 {{template "header" .}}
-<section>
-Hello {{.Username}}, your apikey is {{.Data}}
+<section id="profile">
+  <div class="row">
+    <div id="profile-pic-large" class="col-md-6">
+      <img src="data:image/png;base64,{{.Data.ProfilePicture}}" alt="Profile Picture">
+    </div>
+    <div class="col-md-6">
+      <div class="profile-item">
+        <div class="name">Name</div>
+        <div class="value">{{.Data.Name}}</div>
+      </div>
+      <div class="profile-item">
+        <div class="name">Email</div>
+        <div class="value">{{.Data.Email}}</div>
+      </div>
+      <div class="profile-item">
+        <div class="name">Username</div>
+        <div class="value">{{.Username}}</div>
+      </div>
+      <div class="profile-item">
+        <div class="name">API Key</div>
+        <div class="value">{{.Data.Apikey}}</div>
+      </div>
+    </div>
+  </div>
 </section>
 {{template "footer" .}}
 {{end}}

@@ -4,13 +4,6 @@
   <meta charset="utf-8">
   <link href="/static/css/main.css" rel="stylesheet">
   <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-  <!-- <link href="/static/css/bootstrap-theme.min.css" rel="stylesheet"> -->
-  <!-- <style>
-    .navbar{
-    padding-left: 10%;
-    padding-right: 10%;
-    }
-  </style> -->
   <title>{{.Title}}</title>
 </head>
 <body>
@@ -42,5 +35,10 @@
       </div> <!--/.nav-collapse -->
     </div>
   </nav>
-  <div class="container" id="main">
+  <div class="container" id="main" role="main">
+    {{range .Flash}}
+    <div class="flash-message">
+      <p>{{ . }}</p>
+    </div>
+    {{end}}
 {{end}}

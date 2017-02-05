@@ -1,0 +1,28 @@
+{
+  "name": "s2017-upe-ai",
+  "version": "1.0.0",
+  "description": "Note that this server uses MySQL as its database, make sure mysql-server is installed.\t\r Additionally, you may need to edit dbinterface/dbinterface.go to have proper credentials. (i.e. replace \"root@/\" to \"username:password@/\" as necessary)\r The server will automatically use that account to create a database called aicomp if it doesn't exist, and a table called users within if that doesn't exist either.\r It will not override existing databases and tables of those names. You may need to drop the database manually if changes occur in the schemas?",
+  "main": "main.go",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/austindoeswork/S2017-UPE-AI.git"
+  },
+  "keywords": [
+    "AI"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/austindoeswork/S2017-UPE-AI/issues"
+  },
+  "homepage": "https://github.com/austindoeswork/S2017-UPE-AI#readme",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-less": "^3.3.0",
+    "gulp-util": "^3.0.7",
+    "run-sequence": "^1.2.2"
+  }
+}

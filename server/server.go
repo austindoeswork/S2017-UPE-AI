@@ -11,8 +11,13 @@ import (
 	// "os" // when calling ExecuteTemplate you can use os.Stdout instead to output to screen
 	"time"
 
+	"fmt"
+
+	"os"
+
 	"github.com/austindoeswork/S2017-UPE-AI/dbinterface"
 	"github.com/austindoeswork/S2017-UPE-AI/gamemanager"
+	"github.com/gorilla/sessions"
 )
 
 // Upgrades a regular ResponseWriter to WebSocketResponseWriter
@@ -32,14 +37,17 @@ type Server struct {
 	staticDir string
 	db        *dbinterface.DB
 	gm        *gamemanager.GameManager
+	store     *sessions.CookieStore
 	templates *template.Template
+	mailer    *Mailer
 }
 
 // This data is passed into templates so that we can have dynamic information
 type Page struct {
 	Title    string
+	Flash    []string
 	Username string
-	Data     string
+	Data     interface{}
 }
 
 // TODO does it break the server if there is no login cookie? this should be tested
@@ -50,18 +58,37 @@ func (s *Server) ExecuteUserTemplate(res http.ResponseWriter, req *http.Request,
 			data.Username = username
 		}
 	}
-	err := s.templates.ExecuteTemplate(res, template, data)
+	session, err := s.store.Get(req, "flash")
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	rawFlashes := session.Flashes()
+	flashes := make([]string, len(rawFlashes))
+	for i, d := range rawFlashes {
+		flashes[i] = d.(string)
+	}
+	session.Save(req, res)
+	data.Flash = flashes
+	err = s.templates.ExecuteTemplate(res, template, data)
 	if err != nil {
 		log.Fatal("Cannot Get View ", err)
 	}
 }
 
 func New(port, staticDir string, db *dbinterface.DB) *Server {
+	m, err := NewMailer("team@aicomp.io")
+	if err != nil {
+		log.Println(err)
+	}
+	os.Mkdir("./identicons", 0666)
 	return &Server{
 		port:      port,
 		staticDir: staticDir,
 		db:        db,
 		gm:        gamemanager.New(),
+		store:     sessions.NewCookieStore([]byte("secret")),
+		mailer:    m,
 	}
 }
 
@@ -71,17 +98,29 @@ func (s *Server) handleLogin(res http.ResponseWriter, req *http.Request) {
 		s.ExecuteUserTemplate(res, req, "login", Page{Title: "Login"})
 		return
 	}
+	session, err := s.store.Get(req, "flash")
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 	username := req.FormValue("username")
 	password := req.FormValue("password")
-
+	if username == "" || password == "" {
+		session.AddFlash("Username and password required.")
+		session.Save(req, res)
+		s.ExecuteUserTemplate(res, req, "login", Page{Title: "Login"})
+		return
+	}
 	// dbinterface processes login request and returns cookie if valid request
 	cookie, err := s.db.VerifyLogin(username, password)
 	if err != nil { // login failed, send them back to the page
-		http.Redirect(res, req, "/login", 301)
+		session.AddFlash("Invalid username or password")
+		session.Save(req, res)
+		http.Redirect(res, req, "/login", http.StatusMovedPermanently)
 		return
 	}
 	http.SetCookie(res, cookie)
-	http.Redirect(res, req, "/profile", 302)
+	http.Redirect(res, req, "/profile", http.StatusFound)
 }
 
 // called by /logout
@@ -93,7 +132,14 @@ func (s *Server) handleLogout(res http.ResponseWriter, req *http.Request) {
 		Expires: time.Now(),
 	}
 	http.SetCookie(res, cookie)
-	http.Redirect(res, req, "/", 302)
+	session, err := s.store.Get(req, "flash")
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	session.AddFlash("You have been logged out.")
+	session.Save(req, res)
+	http.Redirect(res, req, "/", http.StatusFound)
 }
 
 // TODO should this be replaced with a try catch block?
@@ -101,33 +147,75 @@ func (s *Server) handleLogout(res http.ResponseWriter, req *http.Request) {
 func (s *Server) handleProfile(res http.ResponseWriter, req *http.Request) {
 	if cookie, err := req.Cookie("login"); err == nil {
 		if username, err := s.db.VerifyCookie(cookie); err == nil {
-			if profile, err := s.db.GetProfile(username); err == nil {
-				s.ExecuteUserTemplate(res, req, "profile", Page{Title: "Profile", Username: username, Data: profile.Apikey})
+			if profile, err := s.db.GetUser(username); err == nil {
+				profile.ProfilePicture, _ = LoadIdenticon(profile.ProfilePicture)
+				s.ExecuteUserTemplate(res, req, "profile", Page{Title: "Profile", Username: username,
+					Data: profile})
 				return
 			}
 		}
 	}
-	http.Redirect(res, req, "/signup", 302) // TODO add an "error, incorrect logged in page"
+	session, err := s.store.Get(req, "flash")
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	session.AddFlash("You must login first.")
+	session.Save(req, res)
+	http.Redirect(res, req, "/login", http.StatusFound)
 }
 
+// handleSignup serves the signup.html template on not POST requests. On POST requests, we handle
+// 	the request to create a new user.
 func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
-	// Serve signup.html to get requests to /signup
 	if req.Method != "POST" {
 		s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
 		return
 	}
-
+	session, err := s.store.Get(req, "flash")
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	fullName := req.FormValue("name")
+	email := req.FormValue("email")
 	username := req.FormValue("username")
 	password := req.FormValue("password")
-
-	cookie, err := s.db.SignupUser(username, password)
-	if err != nil { // TODO make errors more verbose
-		http.Error(res, "Server error, unable to create your account.", 500)
+	if fullName == "" || email == "" || username == "" || password == "" {
+		session.AddFlash("All fields are required.")
+		session.Save(req, res)
+		s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
 		return
-	} else {
-		http.SetCookie(res, cookie)
-		http.Redirect(res, req, "/profile", 302)
 	}
+	profilePicLoc := fmt.Sprintf("./identicons/%s.png", username)
+	user := &dbinterface.User{
+		Name:           fullName,
+		Email:          email,
+		ProfilePicture: profilePicLoc,
+		Username:       username,
+	}
+	cookie, err := s.db.SignupUser(user, password)
+	if err != nil {
+		if err.Error() == "username exists" {
+			session.AddFlash(fmt.Sprintf("Username '%s' already exists.", username))
+			session.Save(req, res)
+			s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
+			return
+		}
+		http.Error(res, "Server error, unable to create your account.", http.StatusInternalServerError)
+		return
+	}
+	if s.mailer != nil {
+		_, _, err = s.mailer.MailSignup(email, fullName)
+		if err != nil {
+			session.AddFlash(fmt.Sprintf("Failed to send email to '%s'.", email))
+			session.Save(req, res)
+		}
+	}
+	hash := GenerateHash(username)
+	NewIdenticon(hash, nil).Save(profilePicLoc)
+	http.SetCookie(res, cookie)
+	http.Redirect(res, req, "/profile", http.StatusFound)
 }
 
 func (s *Server) handleWatchWS(w http.ResponseWriter, r *http.Request) {
@@ -182,7 +270,7 @@ func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERR: reading websocket", err)
 		return
 	}
-	profile, err := s.db.GetProfileFromApiKey(string(idmessage))
+	profile, err := s.db.GetUserFromApiKey(string(idmessage))
 	if err != nil {
 		log.Println("ERR: getting profile", err)
 		return
@@ -256,7 +344,7 @@ func (s *Server) handlePlayWS(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERR: reading websocket", err)
 		return
 	}
-	profile, err := s.db.GetProfileFromApiKey(string(idmessage))
+	profile, err := s.db.GetUserFromApiKey(string(idmessage))
 	if err != nil {
 		log.Println("ERR: getting profile", err)
 		return
