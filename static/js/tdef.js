@@ -30,9 +30,7 @@ var rendererOptions = {
 var renderer = autoDetectRenderer(GAME_WIDTH, GAME_HEIGHT, rendererOptions);
 renderer.backgroundColor = 0xCCEBF1; // baby blue
 document.getElementById('gameTV').appendChild(renderer.view);
-var stage = new Container();
-// var particleContainer = new PIXI.particles.ParticleContainer(10000); // container hyperoptimized for quick display of sprites
-// var particleContainer = stage;
+var stage = new Container(); // TODO: make into particlecontainer?
 
 function resize() { // autoresizes gameTV depending on size of window (which determines size of main container)
     // Determine which screen dimension is most constrained
@@ -66,7 +64,7 @@ function setup() {
     stage.addChild(new Sprite(
 	TextureCache["static/img/background.png"]
     ));
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < 50; i++) {
 	var mob = new Sprite(
 	    TextureCache["static/img/Mob_2_Blue.png"]
 	);
@@ -146,28 +144,18 @@ function renderGrid(data) {
 }
 
 function draw(units){
-    // particleContainer.removeChildren();
     var mobBlueIterator = 0;
     var mobRedIterator = 0;
+
+    for (var test = 0; test < 50; test++) { // reset all of the sprites
+	Mob2Blues[test].x = -100;
+	Mob2Blues[test].y = -100;
+	Mob2Reds[test].x = -100;
+	Mob2Reds[test].y = -100;
+    }
     
     // units
-    for (i = 0; i < units.length; i++) {
-	/* var c;
-	if (units[i].hp/units[i].maxhp > .5) {
-	    c = color('green');
-	}
-	else if (units[i].hp/units[i].maxhp > .3) {
-	    c = color('yellow');
-	}
-	else {
-	    c = color('red');
-	}
-	fill(c); */
-	/* if (units[i].enum == -2) {
-	    rect(scaleX(units[i].x-5), scaleY(canvash - units[i].y+40), 10, 200);
-	}
-	else */ 
-
+    for (var i = 0; i < units.length; i++) {
 	var thisUnit;
 	if (units[i].owner == 1) {
 	    thisUnit = Mob2Blues[mobBlueIterator];
@@ -190,15 +178,5 @@ function draw(units){
 	    thisUnit.x = units[i].x;
 	    thisUnit.y = GAME_HEIGHT - units[i].y;
 	}
-    }
-    while (mobBlueIterator < 100) {
-	Mob2Blues[mobBlueIterator].x = -100;
-	Mob2Blues[mobBlueIterator].y = -100;
-	mobBlueIterator++;
-    }
-    while (mobRedIterator < 100) {
-	Mob2Reds[mobRedIterator].x = -100;
-	Mob2Reds[mobRedIterator].y = -100;
-	mobRedIterator++;
     }
 }

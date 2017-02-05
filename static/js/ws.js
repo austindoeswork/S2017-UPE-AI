@@ -1,6 +1,6 @@
 var ws;
 window.addEventListener("load", function(evt) {
-	console.log("LOADING");
+    console.log("LOADING");
     document.getElementById("join").onclick = wsjoin;
     document.getElementById("play").onclick = wsplay;
     document.getElementById("watch").onclick = wswatch;
@@ -8,14 +8,14 @@ window.addEventListener("load", function(evt) {
         if (!ws) {
             return false;
         }
-		console.log("CLOSING WS");
+	console.log("CLOSING WS");
         ws.close();
         return false;
     };
 });
 
 function wsplay() {
-	console.log("play clicked");
+    console.log("play clicked");
 	var wspath = document.getElementById("wspathinput").value;
 	var wsroute = "/wsplay";
 	// var gname = document.getElementById("gamename").value;
@@ -72,7 +72,7 @@ function wsopen(wspath, wsroute, gname, devkey) {
 function send(input) {
 	console.log("sending");
         if (!ws) {
-			console.log("failed");
+	    console.log("failed");
             return false;
         }
 	ws.send(input);

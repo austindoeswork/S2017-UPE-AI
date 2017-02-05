@@ -53,7 +53,7 @@ func NewNut(x, y, owner int) Unit {
 		hp:     100,
 		maxhp:  100,
 		stride: 10,
-		reach:  150,
+		reach:  120,
 	}}
 }
 
@@ -81,7 +81,7 @@ func (u *Bolt) Prep(owner *Player, opponent *Player) {
 }
 func (u *Bolt) Iterate() {
 	if u.target != nil {
-		u.target.ReceiveDamage(u.target.HP()/5)
+		u.target.ReceiveDamage(u.target.MaxHP()/10)
 	} else {
 		if u.owner == 1 {
 			u.x += u.stride
