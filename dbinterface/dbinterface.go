@@ -6,13 +6,16 @@ This interface acts as a wrapper around the database, and handles cookies, key g
 
 import (
 	"database/sql"
+	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/gorilla/securecookie"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
-	"time"
-)
 
-import _ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
+)
 
 type DB struct {
 	db *sql.DB                    // actual MySQL hook
@@ -145,8 +148,13 @@ func (d *DB) GetProfileFromApiKey(apikey string) (*Profile, error) {
 // AUTOMATICALLY ADDS USER TO DB
 // Any sort of verification should probably be handled by server/server.go or the front-end!!!
 func (d *DB) SignupUser(username, password string) (*http.Cookie, error) {
+	var err error
+	err = validateUsername(username)
+	if err != nil {
+		return nil, err
+	}
 	var user string
-	err := d.db.QueryRow("SELECT username FROM users WHERE username=?", username).Scan(&user)
+	err = d.db.QueryRow("SELECT username FROM users WHERE username=?", username).Scan(&user)
 	switch { // Username is available
 	case err == sql.ErrNoRows:
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -170,4 +178,18 @@ func (d *DB) SignupUser(username, password string) (*http.Cookie, error) {
 	default: // not sure what happens if it gets here? maybe this is if you try to add already existing user?
 		return nil, err
 	}
+}
+
+func validateUsername(username string) error {
+	if len(username) < 3 {
+		return fmt.Errorf("Invalid, username too short")
+	}
+
+	// TODO think about invalid chars?
+	invalidChars := `;'"`
+	if strings.ContainsAny(username, invalidChars) {
+		return fmt.Errorf("Invalid, cannot contain one of %s", invalidChars)
+	}
+
+	return nil
 }
