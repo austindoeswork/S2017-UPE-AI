@@ -29,17 +29,10 @@ func (u *Nut) Iterate() {
 	if u.target != nil {
 		u.target.ReceiveDamage(u.damage)
 	} else {
-		// grease monkeys don't attack, so we check to make sure they don't go out of bounds
 		if u.owner == 1 {
 			u.x += u.stride
-			if u.x >= GAMEWIDTH {
-				u.x = GAMEWIDTH - 1
-			}
 		} else {
 			u.x -= u.stride
-			if u.x < 0 {
-				u.x = 0
-			}
 		}
 	}
 }
@@ -155,10 +148,17 @@ func (u *GreaseMonkey) Prep(owner *Player, opponent *Player) {
 
 func (u *GreaseMonkey) Iterate() {
 	if u.move == true {
+		// grease monkeys don't attack, so we check to make sure they don't go out of bounds
 		if u.owner == 1 {
 			u.x += u.stride
+			if u.x >= GAMEWIDTH {
+				u.x = GAMEWIDTH - 1
+			}
 		} else {
 			u.x -= u.stride
+			if u.x < 0 {
+				u.x = 0
+			}
 		}
 	}
 	// do we ever need to check to see if GreaseMonkeys are going to be leaving the field?
@@ -172,7 +172,7 @@ func NewGreaseMonkey(x, y, owner int) Unit {
 	return &GreaseMonkey{ // note the slightly different initializer when you need to init values outside of UB (like move)
 		UnitBase: UnitBase{
 			owner:  owner,
-			enum:   1,
+			enum:   2,
 			x:      x,
 			y:      y,
 			speed:  5,
@@ -227,7 +227,7 @@ func (u *Walker) Die(owner *Player, opponent *Player) {}
 func NewWalker(x, y, owner int) Unit {
 	return &Walker{UnitBase{
 		owner:  owner,
-		enum:   0,
+		enum:   3,
 		x:      x,
 		y:      y,
 		speed:  2,
@@ -280,7 +280,7 @@ func (u *Aimbot) Die(owner *Player, opponent *Player) {}
 func NewAimbot(x, y, owner int) Unit {
 	return &Aimbot{UnitBase{
 		owner:  owner,
-		enum:   0,
+		enum:   4,
 		x:      x,
 		y:      y,
 		speed:  60,
@@ -337,7 +337,7 @@ func (u *HardDrive) Die(owner *Player, opponent *Player) {}
 func NewHardDrive(x, y, owner int) Unit {
 	return &HardDrive{UnitBase{
 		owner:  owner,
-		enum:   0,
+		enum:   5,
 		x:      x,
 		y:      y,
 		speed:  5,
@@ -349,7 +349,64 @@ func NewHardDrive(x, y, owner int) Unit {
 	}}
 }
 
-// SCRAPHEAP COMING SOON
+/*
+(Scrapheap) [Control]
+Bulky and pricey melee fighter with ridiculous HP that damages itself over time.
+It has low damage and is a little slow in terms of speed, but otherwise is similar in stats to a Nut.
+When it dies it creates two Nuts and a Bolt in its stead. This unit is heavily a defensive one.
+*/
+type Scrapheap struct {
+	UnitBase
+}
+
+func (u *Scrapheap) CheckBuyable(income, bits int) bool {
+	return bits >= 9000
+}
+func (u *Scrapheap) ReceiveDamage(damage int) {
+	u.hp -= damage
+}
+func (u *Scrapheap) Prep(owner *Player, opponent *Player) {
+	if !u.VerifyTarget() {
+		unit, _ := opponent.FindClosestUnit(u)
+		u.target = unit
+	}
+}
+func (u *Scrapheap) Iterate() {
+	if u.target != nil {
+		u.target.ReceiveDamage(u.damage)
+	} else {
+		if u.owner == 1 {
+			u.x += u.stride
+		} else {
+			u.x -= u.stride
+		}
+	}
+	u.hp -= 30
+}
+func (u *Scrapheap) Birth(owner *Player, opponent *Player) {
+	owner.SetBits(owner.Bits() - 9000)
+}
+func (u *Scrapheap) Die(owner *Player, opponent *Player) { // stagger the units slightly to make it visually make more sense
+	owner.AddUnit(NewNut(u.x-8, u.y, owner.Owner()))
+	owner.AddUnit(NewNut(u.x-4, u.y, owner.Owner()))
+	owner.AddUnit(NewBolt(u.x+4, u.y, owner.Owner()))
+	owner.AddUnit(NewBolt(u.x+8, u.y, owner.Owner()))
+}
+
+func NewScrapheap(x, y, owner int) Unit {
+	return &Scrapheap{UnitBase{
+		owner:  owner,
+		enum:   6,
+		x:      x,
+		y:      y,
+		speed:  5,
+		damage: 8,
+		hp:     9000,
+		maxhp:  9000,
+		stride: 5,
+		reach:  120,
+	}}
+}
 
 /*
 (Gas Guzzler) [Control]
@@ -360,7 +417,7 @@ type GasGuzzler struct {
 }
 
 func (u *GasGuzzler) CheckBuyable(income, bits int) bool {
-	return bits >= 10000
+	return bits >= 10000 && income >= 50
 }
 func (u *GasGuzzler) ReceiveDamage(damage int) {
 	u.hp -= damage
@@ -385,13 +442,16 @@ func (u *GasGuzzler) Iterate() {
 }
 func (u *GasGuzzler) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 10000)
+	owner.SetIncome(owner.Income() - 50)
 }
-func (u *GasGuzzler) Die(owner *Player, opponent *Player) {}
+func (u *GasGuzzler) Die(owner *Player, opponent *Player) {
+	owner.SetIncome(owner.Income() + 50)
+}
 
 func NewGasGuzzler(x, y, owner int) Unit {
 	return &GasGuzzler{UnitBase{
 		owner:  owner,
-		enum:   0,
+		enum:   7,
 		x:      x,
 		y:      y,
 		speed:  5,
@@ -412,7 +472,7 @@ type Terminator struct {
 }
 
 func (u *Terminator) CheckBuyable(income, bits int) bool {
-	return bits >= 9000
+	return bits >= 8000
 }
 func (u *Terminator) ReceiveDamage(damage int) {
 	u.hp -= damage
@@ -436,14 +496,14 @@ func (u *Terminator) Iterate() {
 	}
 }
 func (u *Terminator) Birth(owner *Player, opponent *Player) {
-	owner.SetBits(owner.Bits() - 9000)
+	owner.SetBits(owner.Bits() - 8000)
 }
 func (u *Terminator) Die(owner *Player, opponent *Player) {}
 
 func NewTerminator(x, y, owner int) Unit {
 	return &Terminator{UnitBase{
 		owner:  owner,
-		enum:   0,
+		enum:   8,
 		x:      x,
 		y:      y,
 		speed:  5,

@@ -34,14 +34,12 @@ func (p *Player) SetBits(bits int) {
 	p.bits = bits
 }
 
-// TODO change terminology, unit should be troop
-// will eventually be a list of some sort
 // returns true if player can afford unit, false otherwise
 func (p *Player) BuyTroop(x, lane, enum int, opponent *Player) bool {
 	troop := NewTroop(x, lane, p.owner, enum)
 	if troop.CheckBuyable(p.income, p.bits) {
+		troop.Birth(p, opponent) // we call birth before we add the unit officially to make gandhi work
 		p.AddUnit(troop)
-		troop.Birth(p, opponent)
 		return true
 	}
 	return false
@@ -59,7 +57,6 @@ func (p *Player) isPlotInTerritory(plot int) bool {
 
 // will eventually be a list of some sort
 // returns true if player can afford tower, false otherwise
-// enum: 10 = basic shooting tower, 11 = income tower
 func (p *Player) BuyTower(plot, enum int, opponent *Player) bool {
 	if p.isPlotInTerritory(plot) == true && p.Towers[plot] == nil {
 		newTower := NewTower(plot, p.owner, enum)
@@ -96,7 +93,7 @@ func NewPlayer(owner int) *Player {
 	return &Player{
 		owner:     owner,
 		income:    500,
-		bits:      0,
+		bits:      1000000, // TODO: change to 0 (made it ridic high for testing)
 		Spawns:    spawns,
 		MainTower: mainTower,
 		Units:     []Unit{NewObjective(objx, TOPY, owner), NewObjective(objx, MIDY, owner), NewObjective(objx, BOTY, owner)}, // inits lane objectives
@@ -192,13 +189,16 @@ func (p *Player) IterateUnits(frame int64) {
 
 // units with <=0 hp don't die until this step, they are cleaned up here.
 func (p *Player) UnitCleanup(other *Player) {
-	alive := 0 // number of alive units
-	for _, element := range p.Units {
+	for _, element := range p.Units { // first pass, let the dead units have their death
+		if element.HP() <= 0 {
+			element.Die(p, other) // we iterate twice because sometimes the length of p.Units changes in Die()
+		}
+	}
+	alive := 0                        // number of alive units
+	for _, element := range p.Units { // second pass, remove dead units
 		if element.HP() > 0 {
 			p.Units[alive] = element
 			alive++
-		} else {
-			element.Die(p, other)
 		}
 	}
 	p.Units = p.Units[:alive] // delete dead units, but (TODO) i suspect these are still in the memory!!

@@ -156,7 +156,9 @@ func NewTroop(x, lane, owner, enum int) Unit {
 	case 4:
 		return NewAimbot(x, y, owner)
 	case 5:
-		return NewHardDrive(x, y, owner) // 6-scrapheap coming soon
+		return NewHardDrive(x, y, owner)
+	case 6:
+		return NewScrapheap(x, y, owner)
 	case 7:
 		return NewGasGuzzler(x, y, owner)
 	case 8:
