@@ -16,6 +16,9 @@ type Player struct {
 
 	Units  []Unit         // list of all units
 	Towers [NUMPLOTS]Unit // list of all towers (CORE AND OBJECTIVES ARE NOT TOWERS), this is organized by plot
+
+	// special unit things
+	madeGandhi bool // true if Gandhi has been made (player cannot make another gandhi), false otherwise
 }
 
 func (p *Player) Owner() int {
@@ -34,10 +37,29 @@ func (p *Player) SetBits(bits int) {
 	p.bits = bits
 }
 
+// TODO: remove lane from here, players can hold their own spawns
 // returns true if player can afford unit, false otherwise
 func (p *Player) BuyTroop(x, lane, enum int, opponent *Player) bool {
 	troop := NewTroop(x, lane, p.owner, enum)
+	for _, element := range p.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 57 &&
+			(intAbsDiff(element.Y(), troop.Y()) <= 100) &&
+			((p.owner == 1 && element.X() > x) || (p.owner == 2 && element.X() < x)) {
+			x = element.X()
+		}
+	}
+	troop.SetX(x)
 	if troop.CheckBuyable(p.income, p.bits) {
+		if enum == 11 { // we're trying to create gandhi
+			if p.madeGandhi == true {
+				return false
+			} else {
+				p.madeGandhi = true
+			}
+		}
 		troop.Birth(p, opponent) // we call birth before we add the unit officially to make gandhi work
 		p.AddUnit(troop)
 		return true
@@ -165,13 +187,37 @@ func (p *Player) ExportJSON() string { // used for exporting to screen
 	return fmt.Sprintf(`{"owner": %d, "income": %d, "bits": %d, `, p.owner, p.income, p.bits) + unitString
 }
 
+// iterates before anything happens, just a frame initialization stage
+func (p *Player) PrepPlayer() {
+	for _, element := range p.Towers { // pre-prep phase: reenable all towers
+		if element == nil {
+			continue
+		}
+		element.SetEnabled(p, true)
+	}
+}
+
 // iterates over each of a player's units to see whether they should shoot or move.
 // if they have a target and it's valid, they'll shoot at it
 // if they have an invalid target, but find a new valid one, they'll shoot at it
 // else, they'll move.
 // this function call does not actually trigger shooting or moving, this just sets the "target" ptr of each unit.
 func (p *Player) PrepUnits(other *Player, frame int64) {
-	for _, element := range append(p.Units, p.MainTower) {
+	// I WOULD RATHER HAVE THIS BOILERPLATE CODE THAN USE MEMORY TRYING TO MERGE ALL THE LISTS INTO A SINGLE FOR LOOP
+	for _, element := range p.Units {
+		if element.Speed() == 0 || frame%int64(element.Speed()) == 0 {
+			element.Prep(p, other)
+		}
+	}
+
+	if p.MainTower.Speed() == 0 || frame%int64(p.MainTower.Speed()) == 0 {
+		p.MainTower.Prep(p, other)
+	}
+	
+	for _, element := range p.Towers {
+		if element == nil {
+			continue
+		}
 		if element.Speed() == 0 || frame%int64(element.Speed()) == 0 {
 			element.Prep(p, other)
 		}
@@ -179,10 +225,23 @@ func (p *Player) PrepUnits(other *Player, frame int64) {
 }
 
 // iterates over each of a player's units and shoots at the unit's set target or move accordingly
-func (p *Player) IterateUnits(frame int64) {
-	for _, element := range append(p.Units, p.MainTower) {
+func (p *Player) IterateUnits(other *Player, frame int64) {
+	for _, element := range p.Units {
 		if element.Speed() == 0 || frame%int64(element.Speed()) == 0 {
-			element.Iterate()
+			element.Iterate(p, other)
+		}
+	}
+
+	if p.MainTower.Speed() == 0 || frame%int64(p.MainTower.Speed()) == 0 {
+		p.MainTower.Iterate(p, other)
+	}
+	
+	for _, element := range p.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Speed() == 0 || frame%int64(element.Speed()) == 0 {
+			element.Iterate(p, other)
 		}
 	}
 }

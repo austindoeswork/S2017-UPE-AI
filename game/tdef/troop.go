@@ -25,7 +25,7 @@ func (u *Nut) Prep(owner *Player, opponent *Player) {
 		u.target = unit
 	}
 }
-func (u *Nut) Iterate() {
+func (u *Nut) Iterate(owner *Player, opponent *Player) {
 	if u.target != nil {
 		u.target.ReceiveDamage(u.damage)
 	} else {
@@ -39,7 +39,20 @@ func (u *Nut) Iterate() {
 func (u *Nut) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 200)
 }
-func (u *Nut) Die(owner *Player, opponent *Player) {}
+func (u *Nut) Die(owner *Player, opponent *Player) {
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
+}
 
 func NewNut(x, y, owner int) Unit {
 	return &Nut{UnitBase{
@@ -53,6 +66,8 @@ func NewNut(x, y, owner int) Unit {
 		maxhp:  100,
 		stride: 10,
 		reach:  120,
+		enabled: true,
+		infected: false,
 	}}
 }
 
@@ -78,7 +93,7 @@ func (u *Bolt) Prep(owner *Player, opponent *Player) {
 		u.target = unit
 	}
 }
-func (u *Bolt) Iterate() {
+func (u *Bolt) Iterate(owner *Player, opponent *Player) {
 	if u.target != nil {
 		u.target.ReceiveDamage(u.target.MaxHP() / 10)
 	} else {
@@ -93,7 +108,20 @@ func (u *Bolt) Iterate() {
 func (u *Bolt) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 400)
 }
-func (u *Bolt) Die(owner *Player, opponent *Player) {}
+func (u *Bolt) Die(owner *Player, opponent *Player) {
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
+}
 
 func NewBolt(x, y, owner int) Unit {
 	return &Bolt{UnitBase{
@@ -107,6 +135,8 @@ func NewBolt(x, y, owner int) Unit {
 		maxhp:  300,
 		stride: 15,
 		reach:  100,
+		enabled: true,
+		infected: false,
 	}}
 }
 
@@ -146,7 +176,7 @@ func (u *GreaseMonkey) Prep(owner *Player, opponent *Player) {
 	}
 }
 
-func (u *GreaseMonkey) Iterate() {
+func (u *GreaseMonkey) Iterate(owner *Player, opponent *Player) {
 	if u.move == true {
 		// grease monkeys don't attack, so we check to make sure they don't go out of bounds
 		if u.owner == 1 {
@@ -166,7 +196,20 @@ func (u *GreaseMonkey) Iterate() {
 func (u *GreaseMonkey) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 300)
 }
-func (u *GreaseMonkey) Die(owner *Player, opponent *Player) {}
+func (u *GreaseMonkey) Die(owner *Player, opponent *Player) {
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
+}
 
 func NewGreaseMonkey(x, y, owner int) Unit {
 	return &GreaseMonkey{ // note the slightly different initializer when you need to init values outside of UB (like move)
@@ -181,6 +224,8 @@ func NewGreaseMonkey(x, y, owner int) Unit {
 			maxhp:  75,
 			stride: 10,
 			reach:  200,
+			enabled: true,
+			infected: false,
 		},
 		move: true, // additional field for GreaseMonkeys (because they don't have a strict targetting system)
 	}
@@ -207,7 +252,7 @@ func (u *Walker) Prep(owner *Player, opponent *Player) {
 		u.target = unit
 	}
 }
-func (u *Walker) Iterate() {
+func (u *Walker) Iterate(owner *Player, opponent *Player) {
 	if u.target != nil {
 		u.target.ReceiveDamage(u.damage)
 	} else {
@@ -222,7 +267,20 @@ func (u *Walker) Iterate() {
 func (u *Walker) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 800)
 }
-func (u *Walker) Die(owner *Player, opponent *Player) {}
+func (u *Walker) Die(owner *Player, opponent *Player) {
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
+}
 
 func NewWalker(x, y, owner int) Unit {
 	return &Walker{UnitBase{
@@ -236,6 +294,8 @@ func NewWalker(x, y, owner int) Unit {
 		maxhp:  800,
 		stride: 10,
 		reach:  200,
+		enabled: true,
+		infected: false,
 	}}
 }
 
@@ -260,7 +320,7 @@ func (u *Aimbot) Prep(owner *Player, opponent *Player) {
 		u.target = unit
 	}
 }
-func (u *Aimbot) Iterate() {
+func (u *Aimbot) Iterate(owner *Player, opponent *Player) {
 	if u.target != nil {
 		u.target.ReceiveDamage(u.damage)
 	} else {
@@ -275,7 +335,20 @@ func (u *Aimbot) Iterate() {
 func (u *Aimbot) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 3000)
 }
-func (u *Aimbot) Die(owner *Player, opponent *Player) {}
+func (u *Aimbot) Die(owner *Player, opponent *Player) {
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
+}
 
 func NewAimbot(x, y, owner int) Unit {
 	return &Aimbot{UnitBase{
@@ -289,6 +362,8 @@ func NewAimbot(x, y, owner int) Unit {
 		maxhp:  100,
 		stride: 5,
 		reach:  1000,
+		enabled: true,
+		infected: false,
 	}}
 }
 
@@ -317,7 +392,7 @@ func (u *HardDrive) Prep(owner *Player, opponent *Player) {
 		u.target = unit
 	}
 }
-func (u *HardDrive) Iterate() {
+func (u *HardDrive) Iterate(owner *Player, opponent *Player) {
 	if u.target != nil {
 		u.target.ReceiveDamage(u.damage)
 	} else {
@@ -332,7 +407,20 @@ func (u *HardDrive) Iterate() {
 func (u *HardDrive) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 2500)
 }
-func (u *HardDrive) Die(owner *Player, opponent *Player) {}
+func (u *HardDrive) Die(owner *Player, opponent *Player) {
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
+}
 
 func NewHardDrive(x, y, owner int) Unit {
 	return &HardDrive{UnitBase{
@@ -346,6 +434,8 @@ func NewHardDrive(x, y, owner int) Unit {
 		maxhp:  500,
 		stride: 5,
 		reach:  50,
+		enabled: true,
+		infected: false,
 	}}
 }
 
@@ -371,7 +461,7 @@ func (u *Scrapheap) Prep(owner *Player, opponent *Player) {
 		u.target = unit
 	}
 }
-func (u *Scrapheap) Iterate() {
+func (u *Scrapheap) Iterate(owner *Player, opponent *Player) {
 	if u.target != nil {
 		u.target.ReceiveDamage(u.damage)
 	} else {
@@ -391,6 +481,18 @@ func (u *Scrapheap) Die(owner *Player, opponent *Player) { // stagger the units 
 	owner.AddUnit(NewNut(u.x-4, u.y, owner.Owner()))
 	owner.AddUnit(NewBolt(u.x+4, u.y, owner.Owner()))
 	owner.AddUnit(NewBolt(u.x+8, u.y, owner.Owner()))
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
 }
 
 func NewScrapheap(x, y, owner int) Unit {
@@ -405,6 +507,8 @@ func NewScrapheap(x, y, owner int) Unit {
 		maxhp:  9000,
 		stride: 5,
 		reach:  120,
+		enabled: true,
+		infected: false,
 	}}
 }
 
@@ -428,7 +532,7 @@ func (u *GasGuzzler) Prep(owner *Player, opponent *Player) {
 		u.target = unit
 	}
 }
-func (u *GasGuzzler) Iterate() {
+func (u *GasGuzzler) Iterate(owner *Player, opponent *Player) {
 	if u.target != nil {
 		u.target.ReceiveDamage(u.HP())
 	} else {
@@ -446,6 +550,18 @@ func (u *GasGuzzler) Birth(owner *Player, opponent *Player) {
 }
 func (u *GasGuzzler) Die(owner *Player, opponent *Player) {
 	owner.SetIncome(owner.Income() + 50)
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
 }
 
 func NewGasGuzzler(x, y, owner int) Unit {
@@ -483,7 +599,7 @@ func (u *Terminator) Prep(owner *Player, opponent *Player) {
 		u.target = unit
 	}
 }
-func (u *Terminator) Iterate() {
+func (u *Terminator) Iterate(owner *Player, opponent *Player) {
 	if u.target != nil {
 		u.target.ReceiveDamage(u.damage)
 	} else {
@@ -498,7 +614,20 @@ func (u *Terminator) Iterate() {
 func (u *Terminator) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 8000)
 }
-func (u *Terminator) Die(owner *Player, opponent *Player) {}
+func (u *Terminator) Die(owner *Player, opponent *Player) {
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
+}
 
 func NewTerminator(x, y, owner int) Unit {
 	return &Terminator{UnitBase{
@@ -512,5 +641,241 @@ func NewTerminator(x, y, owner int) Unit {
 		maxhp:  80,
 		stride: 6,
 		reach:  120,
+		enabled: true,
+		infected: false,
+	}}
+}
+
+/*
+(Blackhat) [Aggro Specialty]
+Assassin that instantly kills troops, very high speed, very low range and low HP and is pretty expensive.
+Blackhats disable enemy towers within a sizeable range.
+*/
+type Blackhat struct {
+	UnitBase
+}
+
+func (u *Blackhat) CheckBuyable(income, bits int) bool {
+	return bits >= 2500
+}
+func (u *Blackhat) ReceiveDamage(damage int) {
+	u.hp -= damage
+}
+func (u *Blackhat) Prep(owner *Player, opponent *Player) {
+	if !u.VerifyTarget() {
+		unit, _ := opponent.FindClosestUnit(u)
+		u.target = unit
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if intAbsDiff(element.Y(), u.y) <= 150 {
+			element.SetEnabled(opponent, false)
+		}
+	}
+}
+func (u *Blackhat) Iterate(owner *Player, opponent *Player) {
+	if u.target != nil {
+		u.target.ReceiveDamage(u.target.HP()) // instant kill
+	} else {
+		if u.owner == 1 {
+			u.x += u.stride
+		} else {
+			u.x -= u.stride
+		}
+		// HOPEFULLY NO NEED TO CHECK IF u.x < 0 or > GAMEWIDTH, BECAUSE WE SHOULD BE ATTACKING CORE
+	}
+}
+func (u *Blackhat) Birth(owner *Player, opponent *Player) {
+	owner.SetBits(owner.Bits() - 2500)
+}
+func (u *Blackhat) Die(owner *Player, opponent *Player) {
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
+}
+
+func NewBlackhat(x, y, owner int) Unit {
+	return &Blackhat{UnitBase{
+		owner:  owner,
+		enum:   9,
+		x:      x,
+		y:      y,
+		speed:  1, // right now, the blackhat has to act each turn in order to make sure it's constantly disabling the enemy
+		damage: 0,
+		hp:     50,
+		maxhp:  50,
+		stride: 6,
+		reach:  50,
+		enabled: true,
+		infected: false,
+	}}
+}
+
+/*
+(Malware) [Midrange Specialty]
+Virus that has pretty low HP and average reach/speed/stride, but above average damage. 
+When it attacks a troop, it infects the troop. Upon that troop’s death another Malware will spawn.
+*/
+
+type Malware struct {
+	UnitBase
+}
+
+func (u *Malware) CheckBuyable(income, bits int) bool {
+	return bits >= 6000
+}
+func (u *Malware) ReceiveDamage(damage int) {
+	u.hp -= damage
+}
+func (u *Malware) Prep(owner *Player, opponent *Player) {
+	if !u.VerifyTarget() {
+		unit, _ := opponent.FindClosestUnit(u)
+		u.target = unit
+	}
+}
+func (u *Malware) Iterate(owner *Player, opponent *Player) {
+	if u.target != nil {
+		u.target.ReceiveDamage(u.damage)
+		u.target.SetInfected()
+	} else {
+		if u.owner == 1 {
+			u.x += u.stride
+		} else {
+			u.x -= u.stride
+		}
+		// HOPEFULLY NO NEED TO CHECK IF u.x < 0 or > GAMEWIDTH, BECAUSE WE SHOULD BE ATTACKING CORE
+	}
+}
+func (u *Malware) Birth(owner *Player, opponent *Player) {
+	owner.SetBits(owner.Bits() - 2500)
+}
+func (u *Malware) Die(owner *Player, opponent *Player) {
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
+}
+
+func NewMalware(x, y, owner int) Unit {
+	return &Malware{UnitBase{
+		owner:  owner,
+		enum:   10,
+		x:      x,
+		y:      y,
+		speed:  5, // right now, the blackhat has to act each turn in order to make sure it's constantly disabling the enemy
+		damage: 30,
+		hp:     80,
+		maxhp:  80,
+		stride: 4,
+		reach:  200,
+		enabled: true,
+		infected: false,
+	}}
+}
+
+/*
+(Gandhi) [Control Specialty]
+Exorbitantly expensive troop that vaporizes all troops in its lane when it’s created. 
+It does absolutely nothing when it’s out and has very low HP. 
+If Gandhi reaches the other side of the stage you win the game. A player can only buy a single Gandhi during a game.
+*/
+type Gandhi struct {
+	UnitBase
+}
+
+func (u *Gandhi) CheckBuyable(income, bits int) bool {
+	return bits >= 500000
+}
+func (u *Gandhi) ReceiveDamage(damage int) {
+	u.hp -= damage
+}
+func (u *Gandhi) Prep(owner *Player, opponent *Player) {
+	if !u.VerifyTarget() {
+		unit, _ := opponent.FindClosestUnit(u)
+		u.target = unit
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if intAbsDiff(element.Y(), u.y) <= 150 {
+			element.SetEnabled(opponent, false)
+		}
+	}
+}
+func (u *Gandhi) Iterate(owner *Player, opponent *Player) {
+	if u.owner == 1 {
+		u.x += u.stride
+		if u.x >= GAMEWIDTH {
+			opponent.MainTower.ReceiveDamage(10000)
+		}
+	} else {
+		u.x -= u.stride
+		if u.x <= 0 {
+			opponent.MainTower.ReceiveDamage(10000)
+		}
+	}
+}
+func (u *Gandhi) Birth(owner *Player, opponent *Player) {
+	owner.SetBits(owner.Bits() - 500000)
+	for _, element := range owner.Units {
+		if element != u && intAbsDiff(element.Y(), u.y) <= 1 { // ghetto way of checking lane
+			element.ReceiveDamage(1000000)
+		}
+	}
+	for _, element := range opponent.Units {
+		if intAbsDiff(element.Y(), u.y) <= 1 { // ghetto way of checking lane
+			element.ReceiveDamage(1000000)
+		}
+	}
+}
+func (u *Gandhi) Die(owner *Player, opponent *Player) {
+	if u.infected == true {
+		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
+	}
+	for _, element := range opponent.Towers {
+		if element == nil {
+			continue
+		}
+		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
+			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
+			opponent.SetBits(opponent.Bits() + 500)
+		}
+	}
+}
+
+func NewGandhi(x, y, owner int) Unit {
+	return &Gandhi{UnitBase{
+		owner:  owner,
+		enum:   8,
+		x:      x,
+		y:      y,
+		speed:  1, // right now, the blackhat has to act each turn in order to make sure it's constantly disabling the enemy
+		damage: 0,
+		hp:     50,
+		maxhp:  50,
+		stride: 6,
+		reach:  50,
+		enabled: true,
+		infected: false,
 	}}
 }

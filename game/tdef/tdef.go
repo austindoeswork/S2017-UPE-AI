@@ -152,14 +152,18 @@ func (t *TowerDefense) updateGame() {
 	p2string := string(t.p2cmd)
 	controlPlayer(t, p1string, 1)
 	controlPlayer(t, p2string, 2)
+	// Then, prepare each player for the coming frame
+	for _, player := range t.players {
+		player.PrepPlayer()
+	}
 	// Then, each unit decides whether it's going to shoot or move
 	// It doesn't actually do anything yet, this avoids race conditions
 	for index, player := range t.players {
 		player.PrepUnits(t.players[(index+1)%2], t.frame)
 	}
 	// Then, everything acts. Units with sub-zero HP do not die yet, and STILL act.
-	for _, player := range t.players {
-		player.IterateUnits(t.frame)
+	for index, player := range t.players {
+		player.IterateUnits(t.players[(index+1)%2], t.frame)
 	}
 	// Finally, units with sub-zero HP all are cleared out at once.
 	for index, player := range t.players {

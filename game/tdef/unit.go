@@ -39,18 +39,31 @@ type Unit interface {
 	Owner() int
 	X() int
 	Y() int
+	SetX(x int)
+	SetY(y int)
 	HP() int
+	Damage() int
+	SetDamage(dmg int)
 	MaxHP() int
 	SetHP(hp int)
 	Speed() int
+	SetSpeed(speed int)
 	Stride() int
+	SetStride(stride int)
 	Reach() int
+
+	// special functions
+	SetEnabled(owner *Player, enable bool) // player is needed sometimes when towers being disabled affects their player's income (i.e. banks)
+	Enabled() bool
+	SetInfected() // units are only infected, never uninfected
+	Infected() bool
+	
 	// note that VerifyTarget() is in the UnitBase implementation, but probably shouldn't be a part of the required interface
 
 	// below here is not implemented by UnitBase
 	CheckBuyable(income, bits int) bool    // returns true if having income and # of bits will afford the unit (change to Player*?)
 	Prep(owner *Player, opponent *Player)  // called by each unit each turn (will figure out if unit is attacking or moving normally
-	Iterate()                              // called by each unit each turn (this will attack or move as necessary)
+	Iterate(owner *Player, opponent *Player)                              // called by each unit each turn (this will attack or move as necessary)
 	ReceiveDamage(damage int)              // called when this unit is under attack. this should NOT kill the unit.
 	Die(owner *Player, opponent *Player)   // called by unit cleanup, used for interesting death effects like Scrapheap
 	Birth(owner *Player, opponent *Player) // called by unit creation, used for interesting spawn effects like Gandhi
@@ -71,6 +84,10 @@ type UnitBase struct {
 	reach  int // range of a unit (rename?)
 
 	target Unit // nil = move, non-nil = shoot
+
+	// special characteristics
+	enabled bool // towers can be disabled by blackhats
+	infected bool // troops can be infected by malware
 }
 
 // things not implemented by UnitBase: Attack, ReceiveDamage, Iterate
@@ -87,20 +104,28 @@ func (ub *UnitBase) Enum() int {
 func (ub *UnitBase) X() int {
 	return ub.x
 }
+func (ub *UnitBase) SetX(x int) {
+	ub.x = x
+}
 func (ub *UnitBase) Y() int {
 	return ub.y
 }
-
-/* func (ub *UnitBase) SetX(x int) {
-	ub.x = x
-}
 func (ub *UnitBase) SetY(y int) {
 	ub.y = y
-} */
-
+}
+func (ub *UnitBase) Damage() int {
+	return ub.damage
+}
+func (ub *UnitBase) SetDamage(damage int) {
+	ub.damage = damage
+}
 func (ub *UnitBase) Speed() int {
 	return ub.speed
 }
+func (ub *UnitBase) SetSpeed(speed int) {
+	ub.speed = speed
+}
+
 func (ub *UnitBase) MaxHP() int {
 	return ub.maxhp
 }
@@ -112,6 +137,9 @@ func (ub *UnitBase) SetHP(hp int) {
 }
 func (ub *UnitBase) Stride() int {
 	return ub.stride
+}
+func (ub *UnitBase) SetStride(stride int) {
+	ub.stride = stride
 }
 func (ub *UnitBase) Reach() int {
 	return ub.reach
@@ -130,6 +158,25 @@ func (ub *UnitBase) VerifyTarget() bool {
 		return false
 	}
 	return true
+}
+
+// SPECIAL CHARACTERISTICS
+
+// specific to towers and blackhats
+// we require the owner here for overriden methods (banks on disable need to be able to reduce player income)
+func (ub *UnitBase) SetEnabled(owner *Player, enable bool) {
+	ub.enabled = enable
+}
+func (ub *UnitBase) Enabled() bool {
+	return ub.enabled
+}
+
+// specific to troops and malware
+func (ub *UnitBase) SetInfected() {
+	ub.infected = true
+}
+func (ub *UnitBase) Infected() bool {
+	return ub.infected
 }
 
 // this is just temporary, everything so far is a "unit" that can move and everything, although towers are units with 0 stride
@@ -162,7 +209,13 @@ func NewTroop(x, lane, owner, enum int) Unit {
 	case 7:
 		return NewGasGuzzler(x, y, owner)
 	case 8:
-		return NewTerminator(x, y, owner) // 9+ coming soon
+		return NewTerminator(x, y, owner)
+	case 9:
+		return NewBlackhat(x, y, owner)
+	case 10:
+		return NewMalware(x, y, owner)
+	case 11:
+		return NewGandhi(x, y, owner)
 	default:
 		return nil
 	}
@@ -182,7 +235,23 @@ func NewTower(plot, owner, enum int) Unit {
 	case 50:
 		return NewPeashooter(x, y, owner)
 	case 51:
+		return NewFirewall(x, y, owner)
+	case 52:
+		return NewGuardian(x, y, owner)
+	case 53:
 		return NewBank(x, y, owner)
+	case 54:
+		return NewJunkyard(x, y, owner)
+	case 55:
+		return NewStartUp(x, y, owner)
+	case 56:
+		return NewCorporation(x, y, owner)
+	case 57:
+		return NewWarpDrive(x, y, owner)
+	case 58:
+		return NewJammingStation(x, y, owner)
+	case 59:
+		return NewHotspot(x, y, owner)
 	default:
 		return nil
 	}
