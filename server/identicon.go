@@ -76,7 +76,7 @@ func NewIdenticon(hash string, options *IdenticonOptions) *Identicon {
 
 // Save writes the Identicon image to disk at the given filepath
 func (I *Identicon) Save(filepath string) error {
-	fp, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0600)
+	fp, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
