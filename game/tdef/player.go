@@ -68,10 +68,8 @@ func (p *Player) BuyTroop(x, lane, enum int, opponent *Player) bool {
 }
 
 // checks to see if a tower plot is within the player's territory
-func (p *Player) isPlotInTerritory(plot int) bool {
-	var x int
-	x = GAMEWIDTH*(plot%4)/4 + GAMEWIDTH/8
-	if (p.owner == 1 && x > GAMEWIDTH/2) || (p.owner == 2 && x < GAMEWIDTH/2) { // out of territory
+func (p *Player) isPlotInTerritory(x, y int) bool {
+	if (p.owner == 1 && x >= GAMEWIDTH/2) || (p.owner == 2 && x <= GAMEWIDTH/2) { // out of territory
 		return false
 	}
 	return true
@@ -80,8 +78,12 @@ func (p *Player) isPlotInTerritory(plot int) bool {
 // will eventually be a list of some sort
 // returns true if player can afford tower, false otherwise
 func (p *Player) BuyTower(plot, enum int, opponent *Player) bool {
-	if p.isPlotInTerritory(plot) == true && p.Towers[plot] == nil {
-		newTower := NewTower(plot, p.owner, enum)
+	x, y := getPlotPosition(plot)
+	if x == -1 || y == -1 {
+		return false
+	}
+	if p.isPlotInTerritory(x, y) == true && p.Towers[plot] == nil {
+		newTower := NewTower(x, y, p.owner, enum)
 		if newTower.CheckBuyable(p.income, p.bits) {
 			p.Towers[plot] = newTower
 			newTower.Birth(p, opponent)

@@ -380,7 +380,7 @@ func (u *HardDrive) CheckBuyable(income, bits int) bool {
 	return bits >= 2500
 }
 func (u *HardDrive) ReceiveDamage(damage int) {
-	if damage < 30 {
+	if damage < 30 || damage == 1000000 { // ghetto way of letting HardDrives get around Gandhi
 		u.hp -= damage
 	} else {
 		u.hp -= 30

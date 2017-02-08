@@ -27,13 +27,41 @@ const (
 
 	GAMEWIDTH  = 1600 // temporarily hardcoded until i figure out a work around (DD)
 	GAMEHEIGHT = 600
-	TOPY       = GAMEHEIGHT * 3 / 4 // y coordinate of top lane
-	MIDY       = GAMEHEIGHT / 2     // ditto above but for mid
-	BOTY       = GAMEHEIGHT / 4     // ditto
-	XOFFSET    = GAMEWIDTH / 4      // used for x-positioning of lane objectives
 
-	NUMPLOTS = 16 // number of plots used for towers
+	PLOTBUFFER = 300 // how far away from spawn do plots start
+	LANEWIDTH = 50 // towers spawn LANEWIDTH above and below each lane
+	PLOTWIDTH = 100 // width of each plot
+	NUMPLOTS = ((GAMEWIDTH - 2*PLOTBUFFER)/PLOTWIDTH + 1) * 6
+	
+	TOPY       = 475 // y coordinate of top lane
+	MIDY       = 280 // ditto above but for mid
+	BOTY       = 100 // ditto
+	XOFFSET    = 200 // used for x-positioning of lane objectives
 )
+
+// calculates where plot X will be, -1 -1 if not a valid plot
+func getPlotPosition(plot int) (int, int) {
+	if plot < 0 || plot >= NUMPLOTS {
+		return -1, -1
+	}
+	plotLane := plot / (NUMPLOTS / 6)
+	var x, y int
+	if plotLane < 2 {
+		y = TOPY
+	} else if plotLane < 4 {
+		y = MIDY
+	} else if plotLane < 6 {
+		y = BOTY
+	}
+	if plotLane%2 == 0 {
+		y += 50
+	} else {
+		y -= 50
+	}
+
+	x = PLOTBUFFER + plot % (NUMPLOTS/6) * PLOTWIDTH
+	return x, y
+}
 
 type TowerDefense struct {
 	p1input chan []byte

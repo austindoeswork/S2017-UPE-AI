@@ -9,15 +9,12 @@ Unit enum:
 -2: Main core
 -1: Objective towers
 --
-(implemented)
 00: Nut
 01: Bolt
 02: Grease Monkey
 03: Walker
 04: Aimbot
 05: Hard Drive
-
-(not implemented)
 06: Scrapheap
 07: Gas Guzzler
 08: Terminator
@@ -25,11 +22,16 @@ Unit enum:
 10: Malware
 11: Gandhi
 
-(implemented)
 50: Peashooter
-51: Bank
-
-(not implemented)
+51: Firewall
+52: Guardian
+53: Bank
+54: Junkyard
+55: Start Up
+56: Corporation
+57: Warp Drive
+58: Jamming Station
+59: Hotspot
 */
 
 // Troops and towers are units. All of their internal variables are private to promote good coding practice
@@ -223,14 +225,7 @@ func NewTroop(x, lane, owner, enum int) Unit {
 
 // For lane towers, specify PLOT not x, y
 // Note that territory checking should NOT be handled here, this assumes that it is a valid Tower
-func NewTower(plot, owner, enum int) Unit {
-	if plot >= NUMPLOTS { // error checking should really not have to be done here
-		return nil
-	}
-
-	var x, y int
-	x = GAMEWIDTH*(plot%4)/4 + GAMEWIDTH/8
-	y = GAMEHEIGHT*int(plot/4)/4 + GAMEHEIGHT/8
+func NewTower(x, y, owner, enum int) Unit {
 	switch enum {
 	case 50:
 		return NewPeashooter(x, y, owner)

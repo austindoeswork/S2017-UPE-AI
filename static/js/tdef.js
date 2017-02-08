@@ -1,5 +1,24 @@
 // TODO turn this into a generalized gameTV creator that can make smaller windows (i.e. for the main page)
 
+function buttonPress(button) {
+    buyTower(button.id);
+}
+
+// populate game controller
+for (var i = 0; i < 66; i++) {
+    var newButton = document.createElement("button");
+    var towerenum = i;
+    if (towerenum < 10) {
+	towerenum = '0' + i;
+    }
+    newButton.id = towerenum;
+    newButton.onclick = function() {
+	buttonPress(this);
+    }
+    newButton.innerHTML = towerenum;
+    document.getElementById('towerController').appendChild(newButton);
+}
+
 // scaleFactor scales the gameWindow to browser screen
 var scaleFactor = 1;
 var GAME_WIDTH = 1600;
@@ -49,39 +68,81 @@ function resize() { // autoresizes gameTV depending on size of window (which det
 
 // load images as textures, and once they're loaded, run setup
 loader
-    .add([
-	"static/img/background.png",
-	"static/img/Mob_2_Red.png",
-	"static/img/Mob_2_Blue.png"
-    ])
+    .add("background", "static/img/background.png")
+    .add("-1-blue", "static/img/Tower1_Blue.png")
+    .add("-1-red", "static/img/Tower1_Red.png")
+    .add("0-blue", "static/img/nut1.png")
+    .add("0-red", "static/img/nut2.png")
+    .add("1-blue", "static/img/bolts1.png")
+    .add("1-red", "static/img/bolts2.png")
+    .add("2-blue", "static/img/GreaseMonkey1.png")
+    .add("2-red", "static/img/GreaseMonkey2.png")
+    .add("3-blue", "static/img/walker1.png")
+    .add("3-red", "static/img/walker2.png")
+    .add("4-blue", "static/img/aimbot1.png")
+    .add("4-red", "static/img/aimbot2.png")
+    .add("5-blue", "static/img/hardrive1.png")
+    .add("5-red", "static/img/hardrive2.png")
+    .add("6-blue", "static/img/scrapheap1.png")
+    .add("6-red", "static/img/scrapheap2.png")
+    .add("7-blue", "static/img/gasguzzler1.png")
+    .add("7-red", "static/img/gasguzzler2.png")
+    .add("8-blue", "static/img/terminator1.png")
+    .add("8-red", "static/img/terminator2.png")
+    .add("9-blue", "static/img/blackhat1.png")
+    .add("9-red", "static/img/blackhat2.png")
+    .add("10-blue", "static/img/malware1.png")
+    .add("10-red", "static/img/malware2.png")
+    .add("11-blue", "static/img/ghandi1.png")
+    .add("11-red", "static/img/ghandi2.png")
+    .add("50-blue", "static/img/peashooter1.png")
+    .add("50-red", "static/img/peashooter2.png")
+    .add("51-blue", "static/img/firewall1.png")
+    .add("51-red", "static/img/firewall2.png")
+    .add("52-blue", "static/img/guardian1.png")
+    .add("52-red", "static/img/guardian2.png")
+    .add("53-blue", "static/img/bank.png")
+    .add("53-red", "static/img/bank.png")
+    .add("54-blue", "static/img/junkyard1.png")
+    .add("54-red", "static/img/junkyard2.png")
+    .add("55-blue", "static/img/startup1.png")
+    .add("55-red", "static/img/startup2.png")
+    .add("56-blue", "static/img/corporation1.png")
+    .add("56-red", "static/img/corporation2.png")
+    .add("57-blue", "static/img/warpdrive1.png")
+    .add("57-red", "static/img/warpdrive2.png")
+    .add("58-blue", "static/img/jammingstation1.png")
+    .add("58-red", "static/img/jammingstation2.png")
+    .add("59-blue", "static/img/Hotspot1.png")
+    .add("59-red", "static/img/Hotspot2.png")
     .load(setup);
 
-var Mob2Blues = []; // prerender 100 of these
-var Mob2Reds = []; // prerender 100 of these as well
+
+// we render all the mobs we need on a need-basis
+var prerenderedMobs = {};
+for (var i = -1; i <= 11; i++) {
+    prerenderedMobs['' + i + '-blue'] = [];
+    prerenderedMobs['' + i + '-red'] = [];
+}
+for (var i = 50; i <= 59; i++) {
+    prerenderedMobs['' + i + '-blue'] = [];
+    prerenderedMobs['' + i + '-red'] = [];
+}
+var prerenderedMobIterators = {};
+for (var i = -1; i <= 11; i++) {
+    prerenderedMobIterators['' + i + '-blue'] = 0;
+    prerenderedMobIterators['' + i + '-red'] = 0;
+}
+for (var i = 50; i <= 59; i++) {
+    prerenderedMobIterators['' + i + '-blue'] = 0;
+    prerenderedMobIterators['' + i + '-red'] = 0;
+}
 
 // runs as soon as loader is done loading imgs
 function setup() {
     stage.addChild(new Sprite(
-	TextureCache["static/img/background.png"]
+	TextureCache["background"]
     ));
-    for (var i = 0; i < 50; i++) {
-	var mob = new Sprite(
-	    TextureCache["static/img/Mob_2_Blue.png"]
-	);
-	mob.x = -100;
-	mob.y = -100;
-	Mob2Blues.push(mob);
-	stage.addChild(mob);
-	mob = new Sprite(
-	    TextureCache["static/img/Mob_2_Red.png"]
-	);
-	mob.x = -100;
-	mob.y = -100;
-	mob.scale.x = -1; // flip horizontally
-	Mob2Reds.push(mob);
-	stage.addChild(mob);
-    }
-    // stage.addChild(particleContainer);
     resize();
     renderer.render(stage);
 }
@@ -143,40 +204,59 @@ function renderGrid(data) {
     timestamp = Date.now();
 }
 
-function draw(units){
-    var mobBlueIterator = 0;
-    var mobRedIterator = 0;
+function resetSpriteArray(array) {
+    for (var i = 0; i < array.length; i++) {
+	array[i].x = -100;
+	array[i].y = -100;
+    }
+}
 
-    for (var test = 0; test < 50; test++) { // reset all of the sprites
-	Mob2Blues[test].x = -100;
-	Mob2Blues[test].y = -100;
-	Mob2Reds[test].x = -100;
-	Mob2Reds[test].y = -100;
+function draw(units){
+    // first, reset all units to base position.
+    for (var i = -1; i <= 11; i++) {
+	resetSpriteArray(prerenderedMobs['' + i + '-blue']);
+	resetSpriteArray(prerenderedMobs['' + i + '-red']);
+    }
+    for (var i = 50; i <= 59; i++) {
+	resetSpriteArray(prerenderedMobs['' + i + '-blue']);
+	resetSpriteArray(prerenderedMobs['' + i + '-red']);
+    }
+    for (var i = -1; i <= 11; i++) {
+	prerenderedMobIterators['' + i + '-blue'] = 0;
+	prerenderedMobIterators['' + i + '-red'] = 0;
+    }
+    for (var i = 50; i <= 59; i++) {
+	prerenderedMobIterators['' + i + '-blue'] = 0;
+	prerenderedMobIterators['' + i + '-red'] = 0;
     }
     
-    // units
+    // draw units
     for (var i = 0; i < units.length; i++) {
+	if (units[i].enum == -2) {
+	    continue;
+	}
 	var thisUnit;
+	var unitType = '' + units[i].enum + '-';
 	if (units[i].owner == 1) {
-	    thisUnit = Mob2Blues[mobBlueIterator];
-	    mobBlueIterator++;
+	    unitType += 'blue';
 	}
 	else {
-	    thisUnit = Mob2Reds[mobRedIterator];
-	    mobRedIterator++;
+	    unitType += 'red';
 	}
-	
-	if (units[i].enum == -1) {
-	    thisUnit.x = units[i].x;
-	    thisUnit.y = GAME_HEIGHT - units[i].y;
+
+	// if we haven't prerendered enough mobs of this type, we make more and cache them for later
+	while (prerenderedMobIterators[unitType] >= prerenderedMobs[unitType].length) {
+	    var newMob = new Sprite(
+		TextureCache[unitType]
+	    );
+	    prerenderedMobs[unitType].push(newMob);
+	    stage.addChild(newMob);
 	}
-	else if (units[i].enum >= 0 && units[i].enum < 50) {
-	    thisUnit.x = units[i].x;
-	    thisUnit.y = GAME_HEIGHT - units[i].y;
-	}
-	else if (units[i].enum >= 50) {
-	    thisUnit.x = units[i].x;
-	    thisUnit.y = GAME_HEIGHT - units[i].y;
-	}
+
+	thisUnit = prerenderedMobs[unitType][prerenderedMobIterators[unitType]];
+	prerenderedMobIterators[unitType]++;
+
+	thisUnit.x = units[i].x;
+	thisUnit.y = GAME_HEIGHT - units[i].y - thisUnit.height;
     }
 }
