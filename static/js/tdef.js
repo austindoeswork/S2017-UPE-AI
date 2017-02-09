@@ -6,7 +6,11 @@ function buttonPress(button) {
 
 // populate game controller
 for (var i = 0; i < 66; i++) {
+    if (i > 0 && i%11 == 0) {
+	document.getElementById('towerController').append(document.createElement("br"));
+    }
     var newButton = document.createElement("button");
+    newButton.className = "btn btn-default";
     var towerenum = i;
     if (towerenum < 10) {
 	towerenum = '0' + i;

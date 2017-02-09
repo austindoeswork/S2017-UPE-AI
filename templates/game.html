@@ -1,23 +1,41 @@
 {{define "game"}}
 {{template "header" .}}
-<div id="controller">
-  <h3>Controller</h3>
-  <p id="status">STATUS: Waiting to join a game.</p>
-  <br>Devkey: <input id="devkey" type="text" value="">
-  <br>Game Name (for joining/watching): <input id="gamename" type="text" value="">
-  <br><button id="join">Join game name room</button>
-      <button id="play">Enter matchmaking (no game name)</button>
-      <button id="watch">Watch room (game name specified)</button>
+<h1>Play</h1>
+<p class="lead">Play/watch games here!</p>
+
+<!-- TODO: make the collapse into an accordion, seems to be a little weird on initial collapse -->
+<p><span class="label label-danger" id="status">STATUS: Not connected.</span></p>
+<div id="controller" class="panel panel-primary">
+  <div class="panel-heading">
+    <h2 class="panel-title">
+      Web controller
+      <button data-toggle="collapse" style="margin-left:20px" class="btn btn-primary" data-target="#controllerBody">Show/hide</button>
+      <button data-toggle="collapse" style="margin-left:20px" class="btn btn-primary" data-target="#helpBody">Toggle help</button>
+    </h2>
+  </div>
+  <div class="panel-body" class="collapse" id="controllerBody">
+    <blockquote id="helpBody">
+      <p>Input your devkey (found in your profile), then either enter a gamename and join/watch that game, or simply enter matchmaking which will pair you against the next querying opponent.</p>
+    </blockquote>
+    <div class="form-group">
+      <label class="control-label" for="devkey">Devkey (required for matchmaking/room entering)</label>
+      <input class="form-control input-sm" id="devkey" type="text">
+      <label class="control-label" for="gamename">Gamename (required for room entering)</label>
+      <input class="form-control input-sm" id="gamename" type="text">
+    </div>
+    <p><button class="btn btn-default" id="join">Join game name room</button> <button class="btn btn-default" id="watch">Watch room (game name specified)</button>
+    <button class="btn btn-default" id="play">Enter matchmaking (no game name)</button>
     <p><input id="wspathinput" type="text" value="ws://localhost:8080">
-      <button id="close">Close websocket</button>
+    <button class="btn btn-danger" id="close">Close websocket</button>
+  </div>
 </div>
 Framerate: <span id="fps">:)</span>
 <div id="gameTV"></div>
 <div id="score">
-  <div class="col-md-6">
+  <div class="col-md-6" class="panel-body">
     <table class="table col-md-6">
       <tr>
-	<td>Player 1: <span id="p1name"></span></td>
+	<td>Player 1: <span id="p1name"></span></td> <!-- TODO: implement with identification from server -->
       </tr>
       <tr>
 	<td>Core HP:</td>
@@ -33,7 +51,7 @@ Framerate: <span id="fps">:)</span>
       </tr>
     </table>
   </div>
-  <div class="col-md-6">
+  <div class="col-md-6" class="panel-body">
     <table class="table">
       <tr>
 	<td>Player 2: <span id="p2name"></span></td>
@@ -53,41 +71,44 @@ Framerate: <span id="fps">:)</span>
     </table>
   </div>
 </div>
-<div id="gameController">
-      <INPUT TYPE="Radio" Name="troopEnum" Value="00" checked="checked">Nut
-      <INPUT TYPE="Radio" Name="troopEnum" Value="01">Bolt
-      <INPUT TYPE="Radio" Name="troopEnum" Value="02">Grease Monkey
-      <INPUT TYPE="Radio" Name="troopEnum" Value="03">Walker
-      <INPUT TYPE="Radio" Name="troopEnum" Value="04">Aimbot
-      <INPUT TYPE="Radio" Name="troopEnum" Value="05">Hard Drive
-      <INPUT TYPE="Radio" Name="troopEnum" Value="06">Scrapheap
-      <INPUT TYPE="Radio" Name="troopEnum" Value="07">Gas Guzzler
-      <INPUT TYPE="Radio" Name="troopEnum" Value="08">Terminator
-      <INPUT TYPE="Radio" Name="troopEnum" Value="09">Blackhat
-      <INPUT TYPE="Radio" Name="troopEnum" Value="10">Malware
-      <INPUT TYPE="Radio" Name="troopEnum" Value="11">Gandhi
-      <button onclick="buyTroop('01')">send unit top</button><button onclick="buyTroop('02')">send unit mid</button><button onclick="buyTroop('03')">send unit bot</button>
-      <div>
-	<table class="table">
-	  <tr>
-	    <td><INPUT TYPE="Radio" Name="towerEnum" Value="50" checked="checked">Peashooter
-	      <INPUT TYPE="Radio" Name="towerEnum" Value="51">Firewall
-	      <INPUT TYPE="Radio" Name="towerEnum" Value="52">Guardian
-	      <INPUT TYPE="Radio" Name="towerEnum" Value="53">Bank
-	      <INPUT TYPE="Radio" Name="towerEnum" Value="54">Junkyard
-	      <INPUT TYPE="Radio" Name="towerEnum" Value="55">Start Up
-	      <INPUT TYPE="Radio" Name="towerEnum" Value="56">Corporation
-	      <INPUT TYPE="Radio" Name="towerEnum" Value="57">Warp Drive
-	      <INPUT TYPE="Radio" Name="towerEnum" Value="58">Jamming Tower
-	      <INPUT TYPE="Radio" Name="towerEnum" Value="59">Hotspot
-	    </td>
-	  </tr>
-	  <tr>
-	    <div id="towerController"></div>
-	  </tr>
-	</table>
-      </div>
+<div id="gameController" class="panel panel-warning col-md-12">
+  <h3>Game Controller</h3>
+  <div class="panel-body">
+    <INPUT TYPE="Radio" Name="troopEnum" Value="00" checked="checked">Nut
+    <INPUT TYPE="Radio" Name="troopEnum" Value="01">Bolt
+    <INPUT TYPE="Radio" Name="troopEnum" Value="02">Grease Monkey
+    <INPUT TYPE="Radio" Name="troopEnum" Value="03">Walker
+    <INPUT TYPE="Radio" Name="troopEnum" Value="04">Aimbot
+    <INPUT TYPE="Radio" Name="troopEnum" Value="05">Hard Drive
+    <INPUT TYPE="Radio" Name="troopEnum" Value="06">Scrapheap
+    <INPUT TYPE="Radio" Name="troopEnum" Value="07">Gas Guzzler
+    <INPUT TYPE="Radio" Name="troopEnum" Value="08">Terminator
+    <INPUT TYPE="Radio" Name="troopEnum" Value="09">Blackhat
+    <INPUT TYPE="Radio" Name="troopEnum" Value="10">Malware
+    <INPUT TYPE="Radio" Name="troopEnum" Value="11">Gandhi
+    <br><button onclick="buyTroop('01')">send unit top</button><button onclick="buyTroop('02')">send unit mid</button><button onclick="buyTroop('03')">send unit bot</button>
+    <div>
+      <table class="table">
+	<tr>
+	  <td><INPUT TYPE="Radio" Name="towerEnum" Value="50" checked="checked">Peashooter
+	    <INPUT TYPE="Radio" Name="towerEnum" Value="51">Firewall
+	    <INPUT TYPE="Radio" Name="towerEnum" Value="52">Guardian
+	    <INPUT TYPE="Radio" Name="towerEnum" Value="53">Bank
+	    <INPUT TYPE="Radio" Name="towerEnum" Value="54">Junkyard
+	    <INPUT TYPE="Radio" Name="towerEnum" Value="55">Start Up
+	    <INPUT TYPE="Radio" Name="towerEnum" Value="56">Corporation
+	    <INPUT TYPE="Radio" Name="towerEnum" Value="57">Warp Drive
+	    <INPUT TYPE="Radio" Name="towerEnum" Value="58">Jamming Tower
+	    <INPUT TYPE="Radio" Name="towerEnum" Value="59">Hotspot
+	  </td>
+	</tr>
+	<tr>
+	  <td><div id="towerController"></div></td>
+	</tr>
+      </table>
+    </div>
   </div>
+</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.2.2/pixi.min.js"></script>
 <script src="/static/js/ws.js"></script>
