@@ -66,9 +66,15 @@ function resize() { // autoresizes gameTV depending on size of window (which det
     renderer.render(stage);
 }
 
+// TODO: try to figure out how to load these dynamically, just want to get the prototype out
 // load images as textures, and once they're loaded, run setup
 loader
     .add("background", "static/img/background.png")
+    .add("blueLaneColors", "static/img/Lane_colors_Blue.png")
+    .add("redLaneColors", "static/img/Lane_colors_Red.png")
+    .add("blueBuildingBar", "static/img/Building_barcolor_Blue.png")
+    .add("redBuildingBar", "static/img/Building_barcolor_Red.png")
+    .add("steps", "static/img/Building_steps1.png")
     .add("-1-blue", "static/img/Tower1_Blue.png")
     .add("-1-red", "static/img/Tower1_Red.png")
     .add("0-blue", "static/img/nut1.png")
@@ -140,9 +146,48 @@ for (var i = 50; i <= 59; i++) {
 
 // runs as soon as loader is done loading imgs
 function setup() {
+    // create the background, this will never get changed
     stage.addChild(new Sprite(
 	TextureCache["background"]
     ));
+    var blueLaneColors = new Sprite(
+	TextureCache["blueLaneColors"]
+    );
+    blueLaneColors.scale.x = -1;
+    blueLaneColors.x = blueLaneColors.width + 15;
+    blueLaneColors.y = GAME_HEIGHT - blueLaneColors.height - 50;
+    stage.addChild(blueLaneColors);
+    var redLaneColors = new Sprite(
+	TextureCache["redLaneColors"]
+    );
+    redLaneColors.x = GAME_WIDTH - redLaneColors.width - 15;
+    redLaneColors.y = GAME_HEIGHT - redLaneColors.height - 50;
+    stage.addChild(redLaneColors);
+    var blueBuildingBar = new Sprite(
+	TextureCache["blueBuildingBar"]
+    );
+    blueBuildingBar.x = blueBuildingBar.width;
+    blueBuildingBar.scale.x = -1;
+    blueBuildingBar.y = 15;
+    stage.addChild(blueBuildingBar);
+    var redBuildingBar = new Sprite(
+	TextureCache["redBuildingBar"]
+    );
+    redBuildingBar.x = GAME_WIDTH - redBuildingBar.width;
+    redBuildingBar.y = 15;
+    stage.addChild(redBuildingBar);
+    var leftSteps = new Sprite(
+	TextureCache["steps"]
+    );
+    leftSteps.scale.x = -1;
+    leftSteps.x = leftSteps.width - 10; leftSteps.y = 0;
+    stage.addChild(leftSteps);
+    var rightSteps = new Sprite(
+	TextureCache["steps"]
+    );
+    rightSteps.x = GAME_WIDTH - rightSteps.width + 10;
+    rightSteps.y = 0;
+    stage.addChild(rightSteps);
     resize();
     renderer.render(stage);
 }
@@ -249,6 +294,12 @@ function draw(units){
 	    var newMob = new Sprite(
 		TextureCache[unitType]
 	    );
+	    if (units[i].enum == -1 && units[i].owner == 1) {
+		newMob.scale.x = -1;
+	    } else if (units[i].enum != -1 && units[i].owner == 2) {
+	    	newMob.scale.x = -1;
+	    }
+	    
 	    prerenderedMobs[unitType].push(newMob);
 	    stage.addChild(newMob);
 	}
@@ -258,5 +309,8 @@ function draw(units){
 
 	thisUnit.x = units[i].x;
 	thisUnit.y = GAME_HEIGHT - units[i].y - thisUnit.height;
+	if (units[i].enum == -1) {
+	    thisUnit.y += thisUnit.height/4;
+	}
     }
 }

@@ -4,10 +4,8 @@
 
 Really convenient way to install Go: http://www.hostingadvice.com/how-to/install-golang-on-ubuntu/ (-Darwin)
 
-Note that this server uses MySQL as its database, make sure mysql-server is installed.	
+Note that this server uses MySQL as its database, make sure mysql-server is installed.
 Additionally, you may need to edit dbinterface/CREDENTIALS to have proper credentials. (i.e. replace username, password as necessary). If the server does not detect a CREDENTIALS file, it will use the default, which is "root" user with no password.
-
-(TODO: add dbinterface/CREDENTIALS to .gitignore?)
 
 The server will automatically use that account to create a database called aicomp if it doesn't exist, and a table called users within if that doesn't exist either.
 It will not override existing databases and tables of those names. You may need to drop the database manually if changes occur in the schemas?
@@ -45,6 +43,10 @@ People who want to spectate/play ongoing matches will interface through the game
 
 /templates = These .html files are loaded by the template manager on server startup. (Coming soon: template reloader when these templates change, so that server doesn't need to reload on each startup)
 Note that the header.html and footer.html templates that are included with each of these templates start and end the main container div that are pretty much used everywhere.
+
+## TROUBLESHOOTING
+
+If identicons are not working on your machine, try checking the permissions of the /identicons folder.
 
 ## TODOLIST
 

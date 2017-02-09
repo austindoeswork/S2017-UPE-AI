@@ -1,5 +1,16 @@
 {{define "game"}}
 {{template "header" .}}
+<div id="controller">
+  <h3>Controller</h3>
+  <p id="status">STATUS: Waiting to join a game.</p>
+  <br>Devkey: <input id="devkey" type="text" value="">
+  <br>Game Name (for joining/watching): <input id="gamename" type="text" value="">
+  <br><button id="join">Join game name room</button>
+      <button id="play">Enter matchmaking (no game name)</button>
+      <button id="watch">Watch room (game name specified)</button>
+    <p><input id="wspathinput" type="text" value="ws://localhost:8080">
+      <button id="close">Close websocket</button>
+</div>
 Framerate: <span id="fps">:)</span>
 <div id="gameTV"></div>
 <div id="score">
@@ -42,18 +53,7 @@ Framerate: <span id="fps">:)</span>
     </table>
   </div>
 </div>
-<div id="controller">
-  <p id="status">join/watch a game dawg.</p>
-  <h3>controller</h3>
-  <div>
-    <p><input id="gamename" type="text" value="gamename">
-      <input id="devkey" type="text" value="">
-      <button id="join">Join</button>
-      <button id="play">Play</button>
-      <button id="watch">Watch</button>
-    <p><input id="wspathinput" type="text" value="ws://localhost:8080">
-      <button id="close">Close</button>
-    <p>
+<div id="gameController">
       <INPUT TYPE="Radio" Name="troopEnum" Value="00" checked="checked">Nut
       <INPUT TYPE="Radio" Name="troopEnum" Value="01">Bolt
       <INPUT TYPE="Radio" Name="troopEnum" Value="02">Grease Monkey
