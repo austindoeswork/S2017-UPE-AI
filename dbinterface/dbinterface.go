@@ -182,41 +182,50 @@ func (d *DB) GetUserFromApiKey(apikey string) (*User, error) {
 // 	returns a valid *http.Cookie
 // Any sort of verification should be handled by server/server.go or the front-end!
 func (d *DB) SignupUser(user *User, password string) (*http.Cookie, error) {
+	// check if the username already exists
 	var username string
 	err := d.db.QueryRow("SELECT username FROM users WHERE username=?", user.Username).Scan(&username)
-	switch {
-	// Username is available, so we create a new user
-	case err == sql.ErrNoRows:
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		apikey := string(GenerateUniqueKey(true, true, true, true))
-		if err != nil {
-			log.Fatalln(err)
-			return nil, err
-		}
-		now := time.Now()
-		_, err = d.db.Exec(`INSERT INTO users(createdAt, name, email, username, pictureLoc, password, 
-apikey, ELO) VALUES(?, ?, ?, ?, ?, ?, ?, 1500.0)`, now, user.Name, user.Email, user.Username,
-			user.ProfilePicture, hashedPassword, apikey)
-		if err != nil {
-			log.Fatalln(err)
-			return nil, err
-		}
-		cookie, err := d.generateLoginCookie(user.Username)
-		if err != nil {
-			log.Fatalln(err)
-			return nil, err
-		}
-		// Successful return
-		return cookie, nil
-		// Some error occured with the database while processing the query
-	case err != nil:
+	if err != nil && err != sql.ErrNoRows {
 		log.Fatalln(err)
 		return nil, err
-		// This username already exists
-	default:
+	}
+	if username != "" {
 		err = errors.New("username exists")
 		return nil, err
 	}
+	// check if the email already exists
+	var email string
+	err = d.db.QueryRow("SELECT email FROM users WHERE email=?", user.Email).Scan(&email)
+	if err != nil && err != sql.ErrNoRows {
+		log.Fatalln(err)
+		return nil, err
+	}
+	if email != "" {
+		err = errors.New("email exists")
+		return nil, err
+	}
+	// no problems, so go ahead and create the new user
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	apikey := string(GenerateUniqueKey(true, true, true, true))
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
+	}
+	now := time.Now()
+	_, err = d.db.Exec(`INSERT INTO users(createdAt, name, email, username, pictureLoc, password, 
+apikey, ELO) VALUES(?, ?, ?, ?, ?, ?, ?, 1500.0)`, now, user.Name, user.Email, user.Username,
+		user.ProfilePicture, hashedPassword, apikey)
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
+	}
+	cookie, err := d.generateLoginCookie(user.Username)
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
+	}
+	// Successful return
+	return cookie, nil
 }
 
 // UpdateELO updates each user's ELO score based on the results from a game.

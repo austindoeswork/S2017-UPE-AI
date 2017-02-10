@@ -15,6 +15,8 @@ import (
 
 	"os"
 
+	"regexp"
+
 	"github.com/austindoeswork/S2017-UPE-AI/dbinterface"
 	"github.com/austindoeswork/S2017-UPE-AI/gamemanager"
 	"github.com/gorilla/sessions"
@@ -28,6 +30,12 @@ var upgrader = websocket.Upgrader{
 		return true
 	},
 }
+
+// isAlpha checks if the given string contains only alphabetic characters
+var isAlpha = regexp.MustCompile(`^[A-Za-z\s]+$`).MatchString
+
+// isAlphaNumeric checks if the given string contains only alphanumeric characters
+var isAlphaNumeric = regexp.MustCompile(`^[A-Za-z\d]+$`).MatchString
 
 // Server handles websockets and creation of games
 // TODO create a router/handler
@@ -187,6 +195,18 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 		s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
 		return
 	}
+	if !isAlpha(fullName) {
+		session.AddFlash("Name field can only contain alphabetic characters.")
+		session.Save(req, res)
+		s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
+		return
+	}
+	if !isAlphaNumeric(username) {
+		session.AddFlash("Username field can only contain alphanumeric characters.")
+		session.Save(req, res)
+		s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
+		return
+	}
 	profilePicLoc := fmt.Sprintf("./identicons/%s.png", username)
 	user := &dbinterface.User{
 		Name:           fullName,
@@ -198,6 +218,12 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		if err.Error() == "username exists" {
 			session.AddFlash(fmt.Sprintf("Username '%s' already exists.", username))
+			session.Save(req, res)
+			s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
+			return
+		}
+		if err.Error() == "email exists" {
+			session.AddFlash(fmt.Sprintf("Email '%s' already exists.", email))
 			session.Save(req, res)
 			s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
 			return
