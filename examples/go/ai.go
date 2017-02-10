@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	serverURL := "ws://localhost:9090/wsplay"
-	devkey := "ShanikasEasilyGoofyRamen"
+	serverURL := "ws://localhost:8080/wsplay"
+	devkey := "LaurettasEagerlyBoorishSponge"
 
 	//open websocket
 	var dialer *websocket.Dialer
