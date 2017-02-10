@@ -7,6 +7,45 @@ package tdef
  	"log"
 ) */
 
+// INVINCIBLE CORE IS USED FOR THE DEMOGAME (so that it never ends)
+type InvincibleCore struct {
+	UnitBase
+}
+
+func (u *InvincibleCore) CheckBuyable(income, bits int) bool {
+	return false
+}
+func (u *InvincibleCore) ReceiveDamage(damage int) {}
+func (u *InvincibleCore) Prep(owner *Player, opponent *Player) {
+	if !u.VerifyTarget() {
+		unit, _ := opponent.FindClosestUnit(u)
+		u.target = unit
+	}
+}
+func (u *InvincibleCore) Iterate(owner *Player, opponent *Player) {
+	if u.target != nil {
+		u.target.ReceiveDamage(u.damage)
+	}
+}
+
+func (u *InvincibleCore) Birth(owner *Player, opponent *Player) {}
+func (u *InvincibleCore) Die(owner *Player, opponent *Player)   {} // player will be able to detect game loss itself
+
+func NewInvincibleCore(x, y, owner int) Unit {
+	return &InvincibleCore{UnitBase{
+		enum:   -2,
+		x:      x,
+		y:      y,
+		owner:  owner,
+		damage: 10000,
+		maxhp:  10000,
+		hp:     10000,
+		speed:  20,
+		stride: 0,
+		reach:  300,
+	}}
+}
+
 // TODO: CREATE SEPARATE INSTANCE FOR OBJECTIVES, as on death objectives increase territory size
 type Core struct {
 	UnitBase
@@ -99,17 +138,17 @@ func (u *Peashooter) Die(owner *Player, opponent *Player) {
 
 func NewPeashooter(x, y, owner int) Unit {
 	return &Peashooter{UnitBase{
-		enum:   50,
-		x:      x,
-		y:      y,
-		owner:  owner,
-		damage: 10,
-		maxhp:  200,
-		hp:     200,
-		speed:  5,
-		stride: 0,
-		reach:  300,
-		enabled: true,
+		enum:     50,
+		x:        x,
+		y:        y,
+		owner:    owner,
+		damage:   10,
+		maxhp:    200,
+		hp:       200,
+		speed:    5,
+		stride:   0,
+		reach:    300,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -149,17 +188,17 @@ func (u *Firewall) Die(owner *Player, opponent *Player) {
 
 func NewFirewall(x, y, owner int) Unit {
 	return &Firewall{UnitBase{
-		enum:   51,
-		x:      x,
-		y:      y,
-		owner:  owner,
-		damage: 10,
-		maxhp:  3000,
-		hp:     3000,
-		speed:  5,
-		stride: 0,
-		reach:  300,
-		enabled: true,
+		enum:     51,
+		x:        x,
+		y:        y,
+		owner:    owner,
+		damage:   10,
+		maxhp:    3000,
+		hp:       3000,
+		speed:    5,
+		stride:   0,
+		reach:    300,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -200,24 +239,24 @@ func (u *Guardian) Die(owner *Player, opponent *Player) {
 
 func NewGuardian(x, y, owner int) Unit {
 	return &Guardian{UnitBase{
-		enum:   52,
-		x:      x,
-		y:      y,
-		owner:  owner,
-		damage: 60,
-		maxhp:  600,
-		hp:     600,
-		speed:  3,
-		stride: 0,
-		reach:  250,
-		enabled: true,
+		enum:     52,
+		x:        x,
+		y:        y,
+		owner:    owner,
+		damage:   60,
+		maxhp:    600,
+		hp:       600,
+		speed:    3,
+		stride:   0,
+		reach:    250,
+		enabled:  true,
 		infected: false,
 	}}
 }
 
 /*
 (Bank)
-Standard bank that increases your income by a standard fixed amount. 
+Standard bank that increases your income by a standard fixed amount.
 You start with three banks in the plots closest to your core, which grants you your base income.
 */
 type Bank struct {
@@ -255,17 +294,17 @@ func (u *Bank) Die(owner *Player, opponent *Player) {
 
 func NewBank(x, y, owner int) Unit {
 	return &Bank{UnitBase{
-		enum:   53,
-		x:      x,
-		y:      y,
-		owner:  owner,
-		damage: 10,
-		maxhp:  200,
-		hp:     200,
-		speed:  3,
-		stride: 0,
-		reach:  300,
-		enabled: true,
+		enum:     53,
+		x:        x,
+		y:        y,
+		owner:    owner,
+		damage:   10,
+		maxhp:    200,
+		hp:       200,
+		speed:    3,
+		stride:   0,
+		reach:    300,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -298,17 +337,17 @@ func (u *Junkyard) Die(owner *Player, opponent *Player) {}
 
 func NewJunkyard(x, y, owner int) Unit {
 	return &Junkyard{UnitBase{
-		enum:   54,
-		x:      x,
-		y:      y,
-		owner:  owner,
-		damage: 10,
-		maxhp:  600,
-		hp:     600,
-		speed:  3,
-		stride: 0,
-		reach:  500,
-		enabled: true,
+		enum:     54,
+		x:        x,
+		y:        y,
+		owner:    owner,
+		damage:   10,
+		maxhp:    600,
+		hp:       600,
+		speed:    3,
+		stride:   0,
+		reach:    500,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -360,17 +399,17 @@ func (u *StartUp) Die(owner *Player, opponent *Player) {
 func NewStartUp(x, y, owner int) Unit {
 	return &StartUp{
 		UnitBase: UnitBase{
-			enum:   55,
-			x:      x,
-			y:      y,
-			owner:  owner,
-			damage: 10,
-			maxhp:  200,
-			hp:     200,
-			speed:  3,
-			stride: 0,
-			reach:  300,
-			enabled: true,
+			enum:     55,
+			x:        x,
+			y:        y,
+			owner:    owner,
+			damage:   10,
+			maxhp:    200,
+			hp:       200,
+			speed:    3,
+			stride:   0,
+			reach:    300,
+			enabled:  true,
 			infected: false,
 		},
 		income: 100,
@@ -379,7 +418,7 @@ func NewStartUp(x, y, owner int) Unit {
 
 /*
 (Corporation) [Control]
-Expensive bank that increases your income by a fixed amount that is multiplied exponentially by the number of how many of these towers you own. 
+Expensive bank that increases your income by a fixed amount that is multiplied exponentially by the number of how many of these towers you own.
 Meant to snowball money by a crazy amount in the late game.
 */
 type Corporation struct {
@@ -404,7 +443,7 @@ func (u *Corporation) Iterate(owner *Player, opponent *Player) {
 		if element == nil {
 			continue
 		} else if element.Enum() == 56 {
-			corpCount++;
+			corpCount++
 		}
 	}
 	newValue := corpCount * corpCount * 200
@@ -435,17 +474,17 @@ func (u *Corporation) Die(owner *Player, opponent *Player) {
 func NewCorporation(x, y, owner int) Unit {
 	return &Corporation{
 		UnitBase: UnitBase{
-			enum:   56,
-			x:      x,
-			y:      y,
-			owner:  owner,
-			damage: 10,
-			maxhp:  200,
-			hp:     200,
-			speed:  3,
-			stride: 0,
-			reach:  300,
-			enabled: true,
+			enum:     56,
+			x:        x,
+			y:        y,
+			owner:    owner,
+			damage:   10,
+			maxhp:    200,
+			hp:       200,
+			speed:    3,
+			stride:   0,
+			reach:    300,
+			enabled:  true,
 			infected: false,
 		},
 		income: 0,
@@ -478,17 +517,17 @@ func (u *WarpDrive) Die(owner *Player, opponent *Player) {}
 
 func NewWarpDrive(x, y, owner int) Unit {
 	return &WarpDrive{UnitBase{
-		enum:   57,
-		x:      x,
-		y:      y,
-		owner:  owner,
-		damage: 0,
-		maxhp:  400,
-		hp:     400,
-		speed:  1,
-		stride: 0,
-		reach:  0,
-		enabled: true,
+		enum:     57,
+		x:        x,
+		y:        y,
+		owner:    owner,
+		damage:   0,
+		maxhp:    400,
+		hp:       400,
+		speed:    1,
+		stride:   0,
+		reach:    0,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -534,17 +573,17 @@ func (u *JammingStation) Die(owner *Player, opponent *Player) {
 
 func NewJammingStation(x, y, owner int) Unit {
 	return &JammingStation{UnitBase{
-		enum:   58,
-		x:      x,
-		y:      y,
-		owner:  owner,
-		damage: 0,
-		maxhp:  3000,
-		hp:     3000,
-		speed:  30,
-		stride: 0,
-		reach:  200,
-		enabled: true,
+		enum:     58,
+		x:        x,
+		y:        y,
+		owner:    owner,
+		damage:   0,
+		maxhp:    3000,
+		hp:       3000,
+		speed:    30,
+		stride:   0,
+		reach:    200,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -586,17 +625,17 @@ func (u *Hotspot) Die(owner *Player, opponent *Player) {
 
 func NewHotspot(x, y, owner int) Unit {
 	return &Hotspot{UnitBase{
-		enum:   59,
-		x:      x,
-		y:      y,
-		owner:  owner,
-		damage: 0,
-		maxhp:  1000,
-		hp:     1000,
-		speed:  10,
-		stride: 0,
-		reach:  300,
-		enabled: true,
+		enum:     59,
+		x:        x,
+		y:        y,
+		owner:    owner,
+		damage:   0,
+		maxhp:    1000,
+		hp:       1000,
+		speed:    10,
+		stride:   0,
+		reach:    300,
+		enabled:  true,
 		infected: false,
 	}}
 }

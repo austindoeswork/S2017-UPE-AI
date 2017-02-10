@@ -1,18 +1,19 @@
 var ws;
-window.addEventListener("load", function(evt) {
-    document.getElementById("join").onclick = wsjoin;
-    document.getElementById("play").onclick = wsplay;
-    document.getElementById("watch").onclick = wswatch;
-    document.getElementById("close").onclick = function(evt) {
-        if (!ws) {
+function addListeners() {   
+    window.addEventListener("load", function(evt) {
+	document.getElementById("join").onclick = wsjoin;
+	document.getElementById("play").onclick = wsplay;
+	document.getElementById("watch").onclick = wswatch;
+	document.getElementById("close").onclick = function(evt) {
+            if (!ws) {
+		return false;
+            }
+	    setstatus("NOT CONNECTED", "label label-danger");
+	    ws.close();
             return false;
-        }
-	setstatus("NOT CONNECTED", "label label-danger");
-	ws.close();
-        return false;
-    };
-});
-
+	};
+    });
+}
 function wsplay() {
     var wspath = document.getElementById("wspathinput").value;
     var wsroute = "/wsplay";
@@ -33,6 +34,12 @@ function wswatch() {
     var gname = document.getElementById("gamename").value;
     wsopen(wspath, wsroute, gname, "");
 }
+function wsmainpagewatch() {
+    var wspath = "ws://localhost:8080";
+    var wsroute = "/wswatch"
+    var gname = "mainpagegame";
+    wsopen(wspath, wsroute, gname, "");
+}
 
 function wsopen(wspath, wsroute, gname, devkey) {
     if (ws) {
@@ -50,7 +57,7 @@ function wsopen(wspath, wsroute, gname, devkey) {
 	    setstatus("Sent devkey to server", "label label-info");
 	}
 	else {
-	    setStatus("Please enter your devkey", "label label-warning");
+	    setstatus("Please enter your devkey", "label label-warning");
 	}
     }
     ws.onclose = function(evt) {

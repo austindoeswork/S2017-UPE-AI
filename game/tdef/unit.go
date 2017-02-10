@@ -59,16 +59,16 @@ type Unit interface {
 	Enabled() bool
 	SetInfected() // units are only infected, never uninfected
 	Infected() bool
-	
+
 	// note that VerifyTarget() is in the UnitBase implementation, but probably shouldn't be a part of the required interface
 
 	// below here is not implemented by UnitBase
-	CheckBuyable(income, bits int) bool    // returns true if having income and # of bits will afford the unit (change to Player*?)
-	Prep(owner *Player, opponent *Player)  // called by each unit each turn (will figure out if unit is attacking or moving normally
-	Iterate(owner *Player, opponent *Player)                              // called by each unit each turn (this will attack or move as necessary)
-	ReceiveDamage(damage int)              // called when this unit is under attack. this should NOT kill the unit.
-	Die(owner *Player, opponent *Player)   // called by unit cleanup, used for interesting death effects like Scrapheap
-	Birth(owner *Player, opponent *Player) // called by unit creation, used for interesting spawn effects like Gandhi
+	CheckBuyable(income, bits int) bool      // returns true if having income and # of bits will afford the unit (change to Player*?)
+	Prep(owner *Player, opponent *Player)    // called by each unit each turn (will figure out if unit is attacking or moving normally
+	Iterate(owner *Player, opponent *Player) // called by each unit each turn (this will attack or move as necessary)
+	ReceiveDamage(damage int)                // called when this unit is under attack. this should NOT kill the unit.
+	Die(owner *Player, opponent *Player)     // called by unit cleanup, used for interesting death effects like Scrapheap
+	Birth(owner *Player, opponent *Player)   // called by unit creation, used for interesting spawn effects like Gandhi
 }
 
 // UnitBase is a very basic implementation of a Unit that is overridden for all purposes
@@ -88,7 +88,7 @@ type UnitBase struct {
 	target Unit // nil = move, non-nil = shoot
 
 	// special characteristics
-	enabled bool // towers can be disabled by blackhats
+	enabled  bool // towers can be disabled by blackhats
 	infected bool // troops can be infected by malware
 }
 

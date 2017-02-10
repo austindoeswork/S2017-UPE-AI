@@ -1,4 +1,5 @@
 // TODO: split into mini handlers
+// SERVER.GO IS IN DESPERATE NEED OF REFACTORING, TOO MUCH STUFF IS HERE
 package server
 
 import (
@@ -14,6 +15,9 @@ import (
 	"fmt"
 
 	"os"
+
+	"math/rand" // used for the main game TV move generation (MOVE FROM HERE)
+	"strconv"
 
 	"github.com/austindoeswork/S2017-UPE-AI/dbinterface"
 	"github.com/austindoeswork/S2017-UPE-AI/gamemanager"
@@ -50,6 +54,94 @@ type Page struct {
 	Data     interface{}
 }
 
+// TODO MOVE FROM THIS FILE
+// generates a unit move bXX YY, where XX is 00 thru 11 and YY is 01 thru 03
+// these are fed into the sample game TV
+func generateSampleGameMove() []byte {
+	var move []byte
+	unitChoice := rand.Intn(12)
+	if unitChoice >= 10 {
+		move = append(move, []byte(strconv.Itoa(unitChoice))...)
+	} else {
+		move = append(move, append([]byte("0"), []byte(strconv.Itoa(unitChoice))...)...)
+	}
+	move = append([]byte("b"), move...)
+	laneChoice := rand.Intn(3) + 1
+	move = append(move, append([]byte(" 0"), []byte(strconv.Itoa(laneChoice))...)...)
+	// fmt.Println(string(move[:]))
+	return move
+}
+
+// TODO MOVE FROM THIS FILE
+// Creates a game TV that will be played on the starting screen of the landing page
+func (s *Server) CreateSampleGameTV() {
+	gameName := "mainpagegame"
+	if !s.gm.HasGame(gameName) {
+		err := s.gm.NewGame(gameName, true)
+		if err != nil {
+			log.Println("ERR: creating game", err)
+		}
+	}
+	quitIn1 := make(chan bool)
+	gameInput1, err := s.gm.ControlGame(gameName, "mainpageAI1", quitIn1)
+	if err != nil {
+		log.Println("ERR: could not add controller", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitIn1 <- true:
+		default:
+		}
+	}()
+	quitOut1 := make(chan bool)
+	_, err = s.gm.WatchGame(gameName, quitOut1)
+	if err != nil {
+		log.Println("ERR: could not add watcher", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitOut1 <- true:
+		default:
+		}
+	}()
+
+	quitIn2 := make(chan bool)
+	gameInput2, err := s.gm.ControlGame(gameName, "mainpageAI2", quitIn2)
+	if err != nil {
+		log.Println("ERR: could not add controller", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitIn2 <- true:
+		default:
+		}
+	}()
+
+	quitOut2 := make(chan bool)
+	_, err = s.gm.WatchGame(gameName, quitOut2)
+	if err != nil {
+		log.Println("ERR: could not add watcher", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitOut2 <- true:
+		default:
+		}
+	}()
+
+	for {
+		if !s.gm.HasGame(gameName) { // with the invincibleCore, this should never end, but just in case??
+			return
+		}
+		gameInput1 <- generateSampleGameMove()
+		gameInput2 <- generateSampleGameMove()
+	}
+}
+
 // TODO does it break the server if there is no login cookie? this should be tested
 // Loads username if possible from cookie, and loads the template
 func (s *Server) ExecuteUserTemplate(res http.ResponseWriter, req *http.Request, template string, data Page) {
@@ -82,7 +174,7 @@ func New(port, staticDir string, db *dbinterface.DB) *Server {
 		log.Println(err)
 	}
 	os.Mkdir("./identicons", 0666)
-	return &Server{
+	s := Server{
 		port:      port,
 		staticDir: staticDir,
 		db:        db,
@@ -90,6 +182,8 @@ func New(port, staticDir string, db *dbinterface.DB) *Server {
 		store:     sessions.NewCookieStore([]byte("secret")),
 		mailer:    m,
 	}
+	go s.CreateSampleGameTV()
+	return &s
 }
 
 // called by /login
@@ -279,7 +373,7 @@ func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
 
 	// MAKE GAME IF DNE
 	if !s.gm.HasGame(gameName) {
-		err = s.gm.NewGame(gameName)
+		err = s.gm.NewGame(gameName, false)
 		if err != nil {
 			log.Println("ERR: creating game", err)
 		}

@@ -2,9 +2,52 @@
 {{template "header" .}}
 <section>
   <div class="jumbotron">
-    <!-- TODO: add game TV -->
     <h1>Kodal Kombat</h1>
     <p>This section will be replaced by the GameTV when we get that working.</p>
+  </div>
+  <p><span class="label label-danger" id="status">STATUS: Not connected.</span></p>
+  <p><span id="fps"></span>
+  <div id="gameTV">
+  </div>
+  <div id="score">
+    <div class="col-md-6" class="panel-body">
+      <table class="table col-md-6">
+	<tr>
+	  <td>Player 1: <span id="p1name"></span></td> <!-- TODO: implement with identification from server -->
+	</tr>
+	<tr>
+	  <td>Core HP:</td>
+	  <td><span id="p1hp"></span></td>
+	</tr>
+	<tr>
+	  <td>Bits:</td>
+	  <td><span id="p1bits"></span></td>
+	</tr>
+	<tr>
+	  <td>Income:</td>
+	  <td><span id="p1income"></span></td>
+	</tr>
+      </table>
+    </div>
+    <div class="col-md-6" class="panel-body">
+      <table class="table">
+	<tr>
+	  <td>Player 2: <span id="p2name"></span></td>
+	</tr>
+	<tr>
+	  <td>Core HP:</td>
+	  <td><span id="p2hp"></span></td>
+	</tr>
+	<tr>
+	  <td>Bits:</td>
+	  <td><span id="p2bits"></span></td>
+	</tr>
+	<tr>
+	  <td>Income:</td>
+	  <td><span id="p2income"></span></td>
+	</tr>
+      </table>
+    </div>
   </div>
   <div class="container">
     <div class="well text-center">
@@ -83,5 +126,19 @@
 </div>
 <br><center>Any additional questions? Reach out! Email Darwin Ding at dingd@rpi.edu</center>
 </section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.2.2/pixi.min.js"></script>
+<script src="/static/js/ws.js"></script>
+<script src="/static/js/tdef.js"></script>
+<script>
+  function startMainGameTV() {
+  if(readyToDisplay) {
+  wsmainpagewatch();
+  }
+  else {
+  setTimeout(startMainGameTV, 500);
+  }
+  }
+  startMainGameTV();
+</script>
 {{template "footer" .}}
 {{end}}

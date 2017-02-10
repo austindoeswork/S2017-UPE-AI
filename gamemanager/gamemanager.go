@@ -13,7 +13,7 @@ import (
 type GM interface {
 	// NewGame creates a new game object and starts it when it has
 	// enough controllers
-	NewGame(gameName string) error
+	NewGame(gameName string, demoGame bool) error
 
 	// ControlGame returns the input channel to a game if it exists
 	ControlGame(gameName string, quit chan bool) (chan<- []byte, error)
@@ -61,11 +61,11 @@ func (gm *GameManager) HasGame(gameName string) bool {
 	return exists
 }
 
-func (gm *GameManager) NewGame(gameName string) error {
+func (gm *GameManager) NewGame(gameName string, demoGame bool) error {
 	if _, exists := gm.games[gameName]; exists {
 		return fmt.Errorf("ERR game already exists")
 	}
-	gw := NewGameWrapper()
+	gw := NewGameWrapper(demoGame)
 	gm.games[gameName] = gw
 
 	go func() {
@@ -100,7 +100,7 @@ func (gm *GameManager) NewOpenGame() (string, error) {
 	rint := rand.Int()
 	rstr := strconv.Itoa(rint)
 
-	err := gm.NewGame(rstr)
+	err := gm.NewGame(rstr, false)
 	if err != nil {
 		return "", err
 	}
@@ -184,8 +184,8 @@ type GameWrapper struct {
 }
 
 // TODO allow creation of different games (pong, scrabble, whatever)
-func NewGameWrapper() *GameWrapper {
-	g, inputs, output := game.NewTowerDef()
+func NewGameWrapper(demoGame bool) *GameWrapper {
+	g, inputs, output := game.NewTowerDef(demoGame)
 	gameInputMap := make(map[chan<- []byte]string)
 	listenerMap := make(map[chan []byte]bool)
 
@@ -210,7 +210,7 @@ func (gw *GameWrapper) multiplex() {
 		select {
 		case msg, more := <-gw.gameOutput:
 			if more {
-				for listener, _ := range gw.listenerMap {
+				for listener := range gw.listenerMap {
 					select {
 					case listener <- msg: // dont block on a listener
 					default:
@@ -218,7 +218,7 @@ func (gw *GameWrapper) multiplex() {
 				}
 			} else {
 				log.Println("stopping the multiplex")
-				for listener, _ := range gw.listenerMap {
+				for listener := range gw.listenerMap {
 					close(listener)
 				}
 				return
