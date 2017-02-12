@@ -56,17 +56,17 @@ func (u *Nut) Die(owner *Player, opponent *Player) {
 
 func NewNut(x, y, owner int) Unit {
 	return &Nut{UnitBase{
-		owner:  owner,
-		enum:   0,
-		x:      x,
-		y:      y,
-		speed:  5,
-		damage: 10,
-		hp:     100,
-		maxhp:  100,
-		stride: 10,
-		reach:  120,
-		enabled: true,
+		owner:    owner,
+		enum:     0,
+		x:        x,
+		y:        y,
+		speed:    5,
+		damage:   10,
+		hp:       100,
+		maxhp:    100,
+		stride:   10,
+		reach:    120,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -125,17 +125,17 @@ func (u *Bolt) Die(owner *Player, opponent *Player) {
 
 func NewBolt(x, y, owner int) Unit {
 	return &Bolt{UnitBase{
-		owner:  owner,
-		enum:   1,
-		x:      x,
-		y:      y,
-		speed:  8,
-		damage: 0,
-		hp:     300,
-		maxhp:  300,
-		stride: 15,
-		reach:  100,
-		enabled: true,
+		owner:    owner,
+		enum:     1,
+		x:        x,
+		y:        y,
+		speed:    8,
+		damage:   0,
+		hp:       300,
+		maxhp:    300,
+		stride:   15,
+		reach:    100,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -214,17 +214,17 @@ func (u *GreaseMonkey) Die(owner *Player, opponent *Player) {
 func NewGreaseMonkey(x, y, owner int) Unit {
 	return &GreaseMonkey{ // note the slightly different initializer when you need to init values outside of UB (like move)
 		UnitBase: UnitBase{
-			owner:  owner,
-			enum:   2,
-			x:      x,
-			y:      y,
-			speed:  5,
-			damage: 0,
-			hp:     75,
-			maxhp:  75,
-			stride: 10,
-			reach:  200,
-			enabled: true,
+			owner:    owner,
+			enum:     2,
+			x:        x,
+			y:        y,
+			speed:    5,
+			damage:   0,
+			hp:       75,
+			maxhp:    75,
+			stride:   10,
+			reach:    200,
+			enabled:  true,
 			infected: false,
 		},
 		move: true, // additional field for GreaseMonkeys (because they don't have a strict targetting system)
@@ -284,17 +284,17 @@ func (u *Walker) Die(owner *Player, opponent *Player) {
 
 func NewWalker(x, y, owner int) Unit {
 	return &Walker{UnitBase{
-		owner:  owner,
-		enum:   3,
-		x:      x,
-		y:      y,
-		speed:  2,
-		damage: 5,
-		hp:     800,
-		maxhp:  800,
-		stride: 10,
-		reach:  200,
-		enabled: true,
+		owner:    owner,
+		enum:     3,
+		x:        x,
+		y:        y,
+		speed:    2,
+		damage:   5,
+		hp:       800,
+		maxhp:    800,
+		stride:   10,
+		reach:    200,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -352,17 +352,17 @@ func (u *Aimbot) Die(owner *Player, opponent *Player) {
 
 func NewAimbot(x, y, owner int) Unit {
 	return &Aimbot{UnitBase{
-		owner:  owner,
-		enum:   4,
-		x:      x,
-		y:      y,
-		speed:  60,
-		damage: 100,
-		hp:     100,
-		maxhp:  100,
-		stride: 5,
-		reach:  1000,
-		enabled: true,
+		owner:    owner,
+		enum:     4,
+		x:        x,
+		y:        y,
+		speed:    60,
+		damage:   100,
+		hp:       100,
+		maxhp:    100,
+		stride:   5,
+		reach:    1000,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -424,17 +424,17 @@ func (u *HardDrive) Die(owner *Player, opponent *Player) {
 
 func NewHardDrive(x, y, owner int) Unit {
 	return &HardDrive{UnitBase{
-		owner:  owner,
-		enum:   5,
-		x:      x,
-		y:      y,
-		speed:  5,
-		damage: 50,
-		hp:     500,
-		maxhp:  500,
-		stride: 5,
-		reach:  50,
-		enabled: true,
+		owner:    owner,
+		enum:     5,
+		x:        x,
+		y:        y,
+		speed:    5,
+		damage:   50,
+		hp:       500,
+		maxhp:    500,
+		stride:   5,
+		reach:    50,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -497,17 +497,17 @@ func (u *Scrapheap) Die(owner *Player, opponent *Player) { // stagger the units 
 
 func NewScrapheap(x, y, owner int) Unit {
 	return &Scrapheap{UnitBase{
-		owner:  owner,
-		enum:   6,
-		x:      x,
-		y:      y,
-		speed:  5,
-		damage: 8,
-		hp:     9000,
-		maxhp:  9000,
-		stride: 5,
-		reach:  120,
-		enabled: true,
+		owner:    owner,
+		enum:     6,
+		x:        x,
+		y:        y,
+		speed:    5,
+		damage:   8,
+		hp:       9000,
+		maxhp:    9000,
+		stride:   5,
+		reach:    120,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -631,17 +631,17 @@ func (u *Terminator) Die(owner *Player, opponent *Player) {
 
 func NewTerminator(x, y, owner int) Unit {
 	return &Terminator{UnitBase{
-		owner:  owner,
-		enum:   8,
-		x:      x,
-		y:      y,
-		speed:  5,
-		damage: 100,
-		hp:     80,
-		maxhp:  80,
-		stride: 6,
-		reach:  120,
-		enabled: true,
+		owner:    owner,
+		enum:     8,
+		x:        x,
+		y:        y,
+		speed:    5,
+		damage:   100,
+		hp:       80,
+		maxhp:    80,
+		stride:   6,
+		reach:    120,
+		enabled:  true,
 		infected: false,
 	}}
 }
@@ -707,24 +707,24 @@ func (u *Blackhat) Die(owner *Player, opponent *Player) {
 
 func NewBlackhat(x, y, owner int) Unit {
 	return &Blackhat{UnitBase{
-		owner:  owner,
-		enum:   9,
-		x:      x,
-		y:      y,
-		speed:  1, // right now, the blackhat has to act each turn in order to make sure it's constantly disabling the enemy
-		damage: 0,
-		hp:     50,
-		maxhp:  50,
-		stride: 6,
-		reach:  50,
-		enabled: true,
+		owner:    owner,
+		enum:     9,
+		x:        x,
+		y:        y,
+		speed:    1, // right now, the blackhat has to act each turn in order to make sure it's constantly disabling the enemy
+		damage:   0,
+		hp:       50,
+		maxhp:    50,
+		stride:   6,
+		reach:    50,
+		enabled:  true,
 		infected: false,
 	}}
 }
 
 /*
 (Malware) [Midrange Specialty]
-Virus that has pretty low HP and average reach/speed/stride, but above average damage. 
+Virus that has pretty low HP and average reach/speed/stride, but above average damage.
 When it attacks a troop, it infects the troop. Upon that troop’s death another Malware will spawn.
 */
 
@@ -777,25 +777,25 @@ func (u *Malware) Die(owner *Player, opponent *Player) {
 
 func NewMalware(x, y, owner int) Unit {
 	return &Malware{UnitBase{
-		owner:  owner,
-		enum:   10,
-		x:      x,
-		y:      y,
-		speed:  5, // right now, the blackhat has to act each turn in order to make sure it's constantly disabling the enemy
-		damage: 30,
-		hp:     80,
-		maxhp:  80,
-		stride: 4,
-		reach:  200,
-		enabled: true,
+		owner:    owner,
+		enum:     10,
+		x:        x,
+		y:        y,
+		speed:    5, // right now, the blackhat has to act each turn in order to make sure it's constantly disabling the enemy
+		damage:   30,
+		hp:       80,
+		maxhp:    80,
+		stride:   4,
+		reach:    200,
+		enabled:  true,
 		infected: false,
 	}}
 }
 
 /*
 (Gandhi) [Control Specialty]
-Exorbitantly expensive troop that vaporizes all troops in its lane when it’s created. 
-It does absolutely nothing when it’s out and has very low HP. 
+Exorbitantly expensive troop that vaporizes all troops in its lane when it’s created.
+It does absolutely nothing when it’s out and has very low HP.
 If Gandhi reaches the other side of the stage you win the game. A player can only buy a single Gandhi during a game.
 */
 type Gandhi struct {
@@ -865,17 +865,17 @@ func (u *Gandhi) Die(owner *Player, opponent *Player) {
 
 func NewGandhi(x, y, owner int) Unit {
 	return &Gandhi{UnitBase{
-		owner:  owner,
-		enum:   8,
-		x:      x,
-		y:      y,
-		speed:  1, // right now, the blackhat has to act each turn in order to make sure it's constantly disabling the enemy
-		damage: 0,
-		hp:     50,
-		maxhp:  50,
-		stride: 6,
-		reach:  50,
-		enabled: true,
+		owner:    owner,
+		enum:     8,
+		x:        x,
+		y:        y,
+		speed:    1, // right now, the blackhat has to act each turn in order to make sure it's constantly disabling the enemy
+		damage:   0,
+		hp:       50,
+		maxhp:    50,
+		stride:   6,
+		reach:    50,
+		enabled:  true,
 		infected: false,
 	}}
 }

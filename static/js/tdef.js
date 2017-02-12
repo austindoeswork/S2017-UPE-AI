@@ -5,22 +5,24 @@ function buttonPress(button) {
 }
 
 // populate game controller
-for (var i = 0; i < 66; i++) {
-    if (i > 0 && i%11 == 0) {
-	document.getElementById('towerController').append(document.createElement("br"));
+function populateGameController() {
+    for (var i = 0; i < 66; i++) {
+	if (i > 0 && i%11 == 0) {
+	    document.getElementById('towerController').append(document.createElement("br"));
+	}
+	var newButton = document.createElement("button");
+	newButton.className = "btn btn-default";
+	var towerenum = i;
+	if (towerenum < 10) {
+	    towerenum = '0' + i;
+	}
+	newButton.id = towerenum;
+	newButton.onclick = function() {
+	    buttonPress(this);
+	}
+	newButton.innerHTML = towerenum;
+	document.getElementById('towerController').appendChild(newButton);
     }
-    var newButton = document.createElement("button");
-    newButton.className = "btn btn-default";
-    var towerenum = i;
-    if (towerenum < 10) {
-	towerenum = '0' + i;
-    }
-    newButton.id = towerenum;
-    newButton.onclick = function() {
-	buttonPress(this);
-    }
-    newButton.innerHTML = towerenum;
-    document.getElementById('towerController').appendChild(newButton);
 }
 
 // scaleFactor scales the gameWindow to browser screen
@@ -72,6 +74,7 @@ function resize() { // autoresizes gameTV depending on size of window (which det
 
 // TODO: try to figure out how to load these dynamically, just want to get the prototype out
 // load images as textures, and once they're loaded, run setup
+var readyToDisplay = false;
 loader
     .add("background", "static/img/background.png")
     .add("blueLaneColors", "static/img/Lane_colors_Blue.png")
@@ -194,6 +197,7 @@ function setup() {
     stage.addChild(rightSteps);
     resize();
     renderer.render(stage);
+    readyToDisplay = true;
 }
 
 // resize when user changes page size
@@ -310,10 +314,16 @@ function draw(units){
 
 	thisUnit = prerenderedMobs[unitType][prerenderedMobIterators[unitType]];
 	prerenderedMobIterators[unitType]++;
-
+	
 	thisUnit.x = units[i].x;
 	thisUnit.y = GAME_HEIGHT - units[i].y - thisUnit.height;
-	if (units[i].enum == -1) {
+	/* if (thisUnit.scale.x < 0) {
+	    thisUnit.scale.x = -(thisUnit.y)/(GAME_HEIGHT);
+	}
+	else {
+	    thisUnit.scale.x = (thisUnit.y)/(GAME_HEIGHT);
+	} */
+	if (units[i].enum == -1) { // objective towers kind of take up the entire lane
 	    thisUnit.y += thisUnit.height/4;
 	}
     }

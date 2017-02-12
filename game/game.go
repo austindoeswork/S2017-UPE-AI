@@ -29,8 +29,8 @@ type Game interface {
 	MinPlayers() int
 }
 
-func NewTowerDef() (*tdef.TowerDefense, []chan<- []byte, <-chan []byte) {
-	p, inArr, out := tdef.New(1600, 600, 60)
+func NewTowerDef(demoGame bool) (*tdef.TowerDefense, []chan<- []byte, <-chan []byte) {
+	p, inArr, out := tdef.New(1600, 600, 60, demoGame)
 	return p, inArr, out
 }
 

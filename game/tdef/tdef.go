@@ -29,14 +29,14 @@ const (
 	GAMEHEIGHT = 600
 
 	PLOTBUFFER = 300 // how far away from spawn do plots start
-	LANEWIDTH = 50 // towers spawn LANEWIDTH above and below each lane
-	PLOTWIDTH = 100 // width of each plot
-	NUMPLOTS = ((GAMEWIDTH - 2*PLOTBUFFER)/PLOTWIDTH + 1) * 6
-	
-	TOPY       = 475 // y coordinate of top lane
-	MIDY       = 280 // ditto above but for mid
-	BOTY       = 100 // ditto
-	XOFFSET    = 200 // used for x-positioning of lane objectives
+	LANEWIDTH  = 50  // towers spawn LANEWIDTH above and below each lane
+	PLOTWIDTH  = 100 // width of each plot
+	NUMPLOTS   = ((GAMEWIDTH-2*PLOTBUFFER)/PLOTWIDTH + 1) * 6
+
+	TOPY    = 475 // y coordinate of top lane
+	MIDY    = 280 // ditto above but for mid
+	BOTY    = 100 // ditto
+	XOFFSET = 200 // used for x-positioning of lane objectives
 )
 
 // calculates where plot X will be, -1 -1 if not a valid plot
@@ -59,7 +59,7 @@ func getPlotPosition(plot int) (int, int) {
 		y -= 50
 	}
 
-	x = PLOTBUFFER + plot % (NUMPLOTS/6) * PLOTWIDTH
+	x = PLOTBUFFER + plot%(NUMPLOTS/6)*PLOTWIDTH
 	return x, y
 }
 
@@ -79,28 +79,48 @@ type TowerDefense struct {
 	fps    int
 	frame  int64
 
-	winner int
+	winner   int
+	demoGame bool
 }
 
-func New(width, height, fps int) (*TowerDefense, []chan<- []byte, <-chan []byte) {
+func New(width, height, fps int, demoGame bool) (*TowerDefense, []chan<- []byte, <-chan []byte) {
 	outputChan := make(chan []byte)
-	p1 := NewPlayer(1)
-	p2 := NewPlayer(2)
+	p1 := NewPlayer(1, demoGame)
+	p2 := NewPlayer(2, demoGame)
 	p1input := make(chan []byte, 5)
 	p2input := make(chan []byte, 5)
 	return &TowerDefense{
-		p1input: p1input,
-		p2input: p2input,
-		output:  outputChan,
-		quit:    make(chan bool),
-		status:  READY,
-		players: [2]*Player{p1, p2},
-		width:   width,
-		height:  height,
-		fps:     fps,
-		frame:   0,
-		winner:  -1,
+		p1input:  p1input,
+		p2input:  p2input,
+		output:   outputChan,
+		quit:     make(chan bool),
+		status:   READY,
+		players:  [2]*Player{p1, p2},
+		width:    width,
+		height:   height,
+		fps:      fps,
+		frame:    0,
+		winner:   -1,
+		demoGame: demoGame,
 	}, []chan<- []byte{p1input, p2input}, outputChan
+}
+
+func (t *TowerDefense) DetermineWinner() {
+	if !t.players[0].IsAlive() {
+		t.winner = 2
+	} else if !t.players[1].IsAlive() {
+		t.winner = 1
+	} else {
+		tiebreak1 := t.players[0].GetTiebreak()
+		tiebreak2 := t.players[1].GetTiebreak()
+		if tiebreak1 > tiebreak2 {
+			t.winner = 1
+		} else if tiebreak1 < tiebreak2 {
+			t.winner = 2
+		} else {
+			t.winner = 0
+		}
+	}
 }
 
 func (t *TowerDefense) Start() error {
@@ -139,7 +159,9 @@ func (t *TowerDefense) Start() error {
 				case t.output <- t.stateJSON(): //send output
 				default:
 				}
-				if !t.players[0].IsAlive() || !t.players[1].IsAlive() {
+				if t.demoGame == false &&
+					(!t.players[0].IsAlive() || !t.players[1].IsAlive() || t.frame == int64(t.fps*300)) {
+					t.DetermineWinner()
 					t.status = DONE
 					log.Println("GAME DIED OF NATURAL CAUSES")
 					close(t.output)

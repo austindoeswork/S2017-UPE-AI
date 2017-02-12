@@ -5,6 +5,8 @@ import (
 	"math"
 )
 
+// IDENTIFICATION OF PLAYERS (usernames etc) IS HANDLED BY GAMEMANGER/WRAPPER, NOT HERE
+// GAMES ONLY DEAL WITH INTERNAL GAME LOGIC
 type Player struct {
 	owner  int // who owns this, player 1 or 2?
 	income int // X coins per second
@@ -19,6 +21,23 @@ type Player struct {
 
 	// special unit things
 	madeGandhi bool // true if Gandhi has been made (player cannot make another gandhi), false otherwise
+}
+
+// Determine's a player's tiebreak score in the event of time running out
+func (p *Player) GetTiebreak() int {
+	pts := 0
+	for _, elem := range p.Units {
+		pts += elem.HP()
+	}
+	for _, elem := range p.Towers {
+		if elem != nil {
+			pts += elem.HP()
+		}
+	}
+	pts += p.MainTower.HP() * 3
+	pts += p.bits / 1000
+	pts += p.income
+	return pts
 }
 
 func (p *Player) Owner() int {
@@ -100,7 +119,7 @@ func (p *Player) AddUnit(unit Unit) {
 	p.Units = append(p.Units, unit)
 }
 
-func NewPlayer(owner int) *Player {
+func NewPlayer(owner int, demoGame bool) *Player {
 	var corex, objx int
 	var spawns [3]int
 	switch owner {
@@ -113,11 +132,21 @@ func NewPlayer(owner int) *Player {
 		objx = GAMEWIDTH - 1 - XOFFSET
 		spawns = [3]int{GAMEWIDTH - 1, GAMEWIDTH - 1, GAMEWIDTH - 1}
 	}
-	mainTower := NewCore(corex, MIDY, owner) // need to figure out where maintowers belong, temporarily on midlane
+	var mainTower Unit
+	var bits, income int
+	if demoGame == true {
+		mainTower = NewInvincibleCore(corex, MIDY, owner)
+		bits = 10000
+		income = 10000
+	} else {
+		mainTower = NewCore(corex, MIDY, owner) // need to figure out where maintowers belong, temporarily on midlane
+		bits = 1000000                          // TODO: change to 0 (made it ridic high for testing)
+		income = 500
+	}
 	return &Player{
 		owner:     owner,
-		income:    500,
-		bits:      1000000, // TODO: change to 0 (made it ridic high for testing)
+		income:    income,
+		bits:      bits,
 		Spawns:    spawns,
 		MainTower: mainTower,
 		Units:     []Unit{NewObjective(objx, TOPY, owner), NewObjective(objx, MIDY, owner), NewObjective(objx, BOTY, owner)}, // inits lane objectives
@@ -215,7 +244,7 @@ func (p *Player) PrepUnits(other *Player, frame int64) {
 	if p.MainTower.Speed() == 0 || frame%int64(p.MainTower.Speed()) == 0 {
 		p.MainTower.Prep(p, other)
 	}
-	
+
 	for _, element := range p.Towers {
 		if element == nil {
 			continue
@@ -237,7 +266,7 @@ func (p *Player) IterateUnits(other *Player, frame int64) {
 	if p.MainTower.Speed() == 0 || frame%int64(p.MainTower.Speed()) == 0 {
 		p.MainTower.Iterate(p, other)
 	}
-	
+
 	for _, element := range p.Towers {
 		if element == nil {
 			continue
