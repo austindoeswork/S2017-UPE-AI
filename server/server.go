@@ -543,6 +543,16 @@ func (s *Server) handleGameList(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// TODO: implement front-page userlist
+func (s *Server) handleUserList(w http.ResponseWriter, r *http.Request) {
+	userList, err := s.db.GetUserList()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	log.Println(userList) // TODO: serve up a file with these details
+}
+
 func (s *Server) handleGame(res http.ResponseWriter, req *http.Request) {
 	s.ExecuteUserTemplate(res, req, "game", Page{Title: "Game"})
 }
@@ -561,6 +571,7 @@ func (s *Server) Start() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.staticDir))))
 	http.HandleFunc("/game", s.handleGame)
 	http.HandleFunc("/gamelist", s.handleGameList)
+	http.HandleFunc("/userlist", s.handleUserList)
 	http.HandleFunc("/signout", s.handleLogout) // ?? for some reason on my machine if this is logout it doesn't detect it...
 	http.HandleFunc("/login", s.handleLogin)
 	http.HandleFunc("/signup", s.handleSignup)
