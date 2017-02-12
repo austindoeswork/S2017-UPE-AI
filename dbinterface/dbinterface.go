@@ -166,6 +166,37 @@ func (d *DB) GetUser(username string) (*User, error) {
 	}, nil
 }
 
+// GetUserList gets all users, pretty much exclusively for display
+func (d *DB) GetUserList() ([]User, error) {
+	users := []User{}
+	rows, err := d.db.Query("SELECT name, email, ELO, pictureLoc, apikey, username FROM users")
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var name string
+		var email string
+		var elo float64
+		var pictureLoc string
+		var apikey string
+		var username string
+		err = rows.Scan(&name, &email, &elo, &pictureLoc, &apikey, &username)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, User{
+			Name:           name,
+			Email:          email,
+			ProfilePicture: pictureLoc,
+			Username:       username,
+			ELO:            elo,
+			Apikey:         apikey, // TODO: GET RID OF SHOWING APIKEYS TO EVERYONE ON USERLIST LOL
+		})
+	}
+	return users, nil
+}
+
+
 func (d *DB) GetUserFromApiKey(apikey string) (*User, error) {
 	var username string
 	err := d.db.QueryRow("SELECT username, apikey FROM users WHERE apikey=?", apikey).Scan(&username, &apikey)
