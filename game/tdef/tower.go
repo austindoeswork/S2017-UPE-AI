@@ -243,7 +243,7 @@ func NewGuardian(x, y, owner int) Unit {
 		x:        x,
 		y:        y,
 		owner:    owner,
-		damage:   60,
+		damage:   30,
 		maxhp:    600,
 		hp:       600,
 		speed:    3,
@@ -299,11 +299,11 @@ func NewBank(x, y, owner int) Unit {
 		y:        y,
 		owner:    owner,
 		damage:   10,
-		maxhp:    200,
-		hp:       200,
-		speed:    3,
+		maxhp:    500,
+		hp:       500,
+		speed:    60,
 		stride:   0,
-		reach:    300,
+		reach:    1,
 		enabled:  true,
 		infected: false,
 	}}
@@ -342,8 +342,8 @@ func NewJunkyard(x, y, owner int) Unit {
 		y:        y,
 		owner:    owner,
 		damage:   10,
-		maxhp:    600,
-		hp:       600,
+		maxhp:    300,
+		hp:       300,
 		speed:    3,
 		stride:   0,
 		reach:    500,
@@ -364,7 +364,7 @@ type StartUp struct {
 }
 
 func (u *StartUp) CheckBuyable(income, bits int) bool {
-	return bits >= 1000
+	return bits >= 3000
 }
 func (u *StartUp) ReceiveDamage(damage int) {
 	u.hp -= damage
@@ -388,7 +388,7 @@ func (u *StartUp) SetEnabled(owner *Player, enable bool) { // override of UnitBa
 }
 
 func (u *StartUp) Birth(owner *Player, opponent *Player) {
-	owner.SetBits(owner.Bits() - 1000)
+	owner.SetBits(owner.Bits() - 3000)
 }
 func (u *StartUp) Die(owner *Player, opponent *Player) {
 	if u.enabled == true { // to avoid corner case where a disabled bank is killed before reenabling
@@ -404,9 +404,9 @@ func NewStartUp(x, y, owner int) Unit {
 			y:        y,
 			owner:    owner,
 			damage:   10,
-			maxhp:    200,
-			hp:       200,
-			speed:    3,
+			maxhp:    400,
+			hp:       400,
+			speed:    60,
 			stride:   0,
 			reach:    300,
 			enabled:  true,
@@ -479,8 +479,8 @@ func NewCorporation(x, y, owner int) Unit {
 			y:        y,
 			owner:    owner,
 			damage:   10,
-			maxhp:    200,
-			hp:       200,
+			maxhp:    1000,
+			hp:       1000,
 			speed:    3,
 			stride:   0,
 			reach:    300,
@@ -542,7 +542,7 @@ type JammingStation struct {
 }
 
 func (u *JammingStation) CheckBuyable(income, bits int) bool {
-	return income >= 150 && bits >= 2500
+	return income >= 150 && bits >= 3000
 }
 func (u *JammingStation) ReceiveDamage(damage int) {
 	u.hp -= damage
@@ -564,7 +564,7 @@ func (u *JammingStation) Iterate(owner *Player, opponent *Player) {
 }
 
 func (u *JammingStation) Birth(owner *Player, opponent *Player) {
-	owner.SetBits(owner.Bits() - 2500)
+	owner.SetBits(owner.Bits() - 3000)
 	owner.SetIncome(owner.Income() - 150)
 }
 func (u *JammingStation) Die(owner *Player, opponent *Player) {
@@ -610,6 +610,12 @@ func (u *Hotspot) Iterate(owner *Player, opponent *Player) {
 		for _, element := range owner.Units {
 			if intAbsDiff(element.Y(), u.y) <= 100 {
 				element.SetDamage(element.Damage() + 1)
+				if element.HP() < element.MaxHP() {
+					element.SetHP(element.HP() + 10)
+					if element.HP() > element.MaxHP() {
+						element.SetHP(element.MaxHP())
+					}
+				}
 			}
 		}
 	}
@@ -630,8 +636,8 @@ func NewHotspot(x, y, owner int) Unit {
 		y:        y,
 		owner:    owner,
 		damage:   0,
-		maxhp:    1000,
-		hp:       1000,
+		maxhp:    400,
+		hp:       400,
 		speed:    10,
 		stride:   0,
 		reach:    300,

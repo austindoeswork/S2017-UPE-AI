@@ -95,7 +95,7 @@ func (u *Bolt) Prep(owner *Player, opponent *Player) {
 }
 func (u *Bolt) Iterate(owner *Player, opponent *Player) {
 	if u.target != nil {
-		u.target.ReceiveDamage(u.target.MaxHP() / 10)
+		u.target.ReceiveDamage(u.target.MaxHP()/20)
 	} else {
 		if u.owner == 1 {
 			u.x += u.stride
@@ -677,7 +677,7 @@ func (u *Blackhat) Prep(owner *Player, opponent *Player) {
 }
 func (u *Blackhat) Iterate(owner *Player, opponent *Player) {
 	if u.target != nil {
-		u.target.ReceiveDamage(u.target.HP()) // instant kill
+		u.target.ReceiveDamage(u.target.MaxHP()) // instant kill
 	} else {
 		if u.owner == 1 {
 			u.x += u.stride

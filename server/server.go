@@ -144,6 +144,7 @@ func (s *Server) CreateSampleGameTV() {
 		if !s.gm.HasGame(gameName) { // with the invincibleCore, this should never end, but just in case??
 			return
 		}
+		time.Sleep(250)
 		gameInput1 <- generateSampleGameMove()
 		gameInput2 <- generateSampleGameMove()
 	}
