@@ -1,397 +1,1812 @@
+<!-- TODO: fix header blocking the title of href jumps within page -->
 {{define "docs"}}
 {{template "header" .}}
 <section>
   <div class="jumbotron text-center">
     <div class="row">
-      <p class="lead">
+      <p>
         <h1>Documentation</h1>
+	<p class="lead">We're still updating the game as we add new features, so this documentation might change up a little as we balance numbers and tweak values!</p>
+      Last edited: Web, Feb 15
+      </p>
+    </div>
+  </div>
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h2 class="panel-title" id="toc">Table of Contents</h2>
+    </div>
+    <div class="panel-body">
+      <p>
+	<ul>
+	  <li><a href="#gettingstarted">Getting Started</a>
+	  <li><a href="#premise">Premise</a></li>
+          <li><a href="#troops">Troops 101</a></li>
+          <li><a href="#towers">Towers 101</a></li>
+	  <li><a href="#objectives">Objectives 101</a></li>
+	  <li><a href="#gameconstants">Game Constants</a></li>
+          <li><a href="#enginedetails">Engine Details</a></li>
+          <li><a href="#developingyourai">Developing your AI</a></li>
+	  <li><a href="#sampleoutput">Sample Output</a></li>
+	  <li><a href="#interpretingoutput">Interpreting Output</a></li>
+	</ul>
       </p>
     </div>
   </div>
   <div>
-    <h3 id="toc">Table of Contents</h3>
-    <div class="well">
-    <li><a href="#gettingstarted">Getting Started</a></li>
-    <li><a href="#gamerules">Game Rules</a><ul>
-        <li><a href="#premise">Premise</a></li>
-        <li><a href="#highleveloo">High Level Object Overview</a></li>
-        <li><a href="#playeroverview">Player Overview</a></li>
-        <li><a href="#bombtrailoverview">Bomb and Explosion Trail Overview</a></li>
-        <li><a href="#portaloverview">Portal Overview</a></li>
-        <li><a href="#shopoverview">Shop Overview</a></li>
-        <li><a href="#init">Initialization</a></li>
-        <li><a href="#apocalypse">Apocalypse</a></li>
-        <li><a href="#enginedetails">Engine Details</a></li>
-        </ul>
-    <li><a href="#developingyourai">Developing your AI</a></li>
-    <li><a href="#sampleoutput">Sample Output</a></li>
-    <li><a href="#interpretingoutput">Interpreting Output</a></li>
-    </div>
     <h3 id="gettingstarted">Getting started</h3>
-    <ul>
-      <li>If you haven't already, create an account and find a team (of up to four people)! Sign up in the top right corner of the screen.</li>
-      <li>Go to Edit Profile, which can be found after logging in by clicking on your name in the top right in the dropdown.</li>
-      <li>There you should find your developer key (which you should NOT share with anyone), and your current matchmaking rating. You will need your dev key for testing your AI on our server.</li>
-      <li>If anything doesn't make sense, please email Darwin Ding (<b>dingd@rpi.edu</b>) with any questions you may have!</li>
-    </ul>
-    <h3 id="gamerules">Game Rules</h3>
+    <p>
+      <h5>
+	<ul>
+	  <li>If you haven't already, create an account and find a team (of up to four people)! Sign up in the top right corner of the screen.</li>
+	  <li>Go to your Profile, which can be found after logging in by clicking on your name in the top right in the dropdown.</li>
+	  <li>There you should find your developer key (which you should NOT share with anyone), and your current matchmaking rating. You will need your dev key for testing your AI on our server.</li>
+	  <li>If anything doesn't make sense, please email Darwin Ding (<b>dingd@rpi.edu</b>) with any questions you may have!</li>
+	</ul>
+      </h5>
+    </p>
     <div class="row">
-    <img src="img/docs/sampleboard.png" align="right" style="width: 25%; margin: 20px;"></img>
-    <div class="col-xs-8">
-    <h4 id="premise">Premise</h4>
-    <p>Bomberman is a grid-based game where players aim to be the last man standing by blowing all of their opponents up. You can check out the code on <a href="https://github.com/dubwub/F2016-UPE-AI">github</a>.
+      <img src="img/docs/sampleboard.png" align="right" style="width: 25%; margin: 20px;"></img>
+      <div class="col-xs-8">
+	<h3 id="premise">Premise</h3>
+	<p class="lead">In some dystopian, robotic future, you're just a colony trying to survive. Conveniently placed across three horizontally aligned lanes is another colony, which sucks and must be destroyed. This 1600 x 600 pixel grid is only large enough for one of you, after all.</p>
+	<p>The game this time around is a 1v1 tower defense that takes place over the course of five minutes. Each player begins with a core, which are the main objectives to take out in this game. Each player additionally has a smaller objective tower in each lane. After five minutes, if both main cores are still standing, a tie-breaker process occurs to determine a winner.</p>
 
-    <p>Players start in various starting locations on a grid populated with blocks that impede movement. In traditional Bomberman, a turn can consist of doing nothing, moving up/down/left/right one square, or placing a bomb. Bombs tick down after being placed until their timer hits 0, at which point they destroy blocks, players and detonate other bombs within their range.
+	<p>You can check out the code on <a href="https://github.com/austindoeswork/S2017-UPE-AI">github</a>.</p>
 
-    <p>In usual games of Bomberman, destroyed blocks occasionally drop power-ups that players can pick up. Sample power ups include increasing the number of bombs a player can use, increasing the range of bombs, and increasing the speed of the player.
+	<p>The game progresses in real-time at a rate of 60 FPS, where players can input up to a single action per frame. These actions can either consist of buying a tower in one of the plots that exist along each of the lanes, or buying a troop to progress down any of the lanes. Note that you don't actually directly control the actions of any particular unit after its been created, they all have set AIs. You'll find that just managing where/when to buy them will still be quite a handful!</p>
 
-    <p>For further explanation on how default Bomberman works, see the extended documentation below or simply watch some videos of existing Bomberman games. The general concept is the same.
+	<p>You buy troops/towers using <b>bits</b>, the local currency. You get these bits every second depending on what your <b>income</b> is (which can be increased/decreased throughout the course of the game). You have a base income of 500 bits/sec when the game starts.</p>
+      </div>
     </div>
-    </div>
-
-    <p><i>However, this isn’t default Bomberman.</i> The variant of Bomberman that will be used for this AI competition can most aptly be described as “deterministic Bomberman with portals”. To summarize the big changes that set this apart from the classic ruleset:
+    
+    <h3 id="troops">Troops 101</h3>
+    <p class="lead">Troops are the main game objects you will need to worry about, as they'll comprise the majority of your attack and defense. Here you'll get an introduction to all of the troops you'll have to play with.</p>
+    <p>Troops have each of the following characteristics that you'll need to worry about:</p>
     <ul>
-    <li>Blocks are given values depending on their proximity to the center; blocks closer to the middle are the most valuable. Blowing up blocks give you coins you can spend in the global shop for power-ups. Buying from the global shop is considered an action that will take a turn.</li>
-    <li>By turning everything into predictable formulas, AIs can rely on pure skill to defeat their opponents. People will not get screwed over by randomly getting the power-up they needed or by not getting any power-ups.</li>
-    <li>Additionally, instead of doing any other action, players can choose to shoot an orange or blue portal (just like in the classic Valve game). Anything that would move through the portal (players, moved blocks or bombs) will go through the other portal end. Bomb explosion trails will even go through too.</li>
+      <li><b>X, Y</b>: Pretty self explanatory. Troops have an X, Y position that varies from 0-1599 for X and 0-599 for Y. Player 1 (blue, left player)'s units spawn at x = 0, and player 2 (red, right player)'s units spawn at x = 1599.
+      <li><b>HP/MaxHP</b>: Pretty self explanatory. Troops keep track of their maximum HP as well as their current running HP. If it goes to 0 or below that troop is considered dead and will be cleaned up at the end of the frame.</li>
+      <li><b>Enum</b>: Each troop and tower has an enum value that tells the game what type of unit it is.</li>
+      <li><b>Damage</b>: Most troops are single-target shooters (as opposed to AOE), and damage is how much damage this troop will do in a single step.</li>
+      <li><b>Cost</b>: You must have at least X bits and Y income to purchase this unit on a given turn. The vast majority of troops simply cost a bit value.</li>
+      <li><b>Speed</b>: This troop acts every (60/speed) frames. Higher speed means it moves more frequently.</li>
+      <li><b>Stride</b>: When this troop chooses to move, it will move (stride) pixels in the direction of its player. If you are the blue player, the troop will move to the right. If red, left.</li>
+      <li>Additionally, some troops have special characteristics that separate them from the crowd. Make sure to read all of the troops below!
     </ul>
-    <h4 id="highleveloo">High-Level Object Overview</h4>
-    <p>Below here is a brief overview of all the different things that will appear on the gameboard. Each of these are fleshed out in more detail below on the page.
-    <p><b>Solid objects</b> are objects that occupy an entire space. There can only exist a single solid object in any given grid space, with the only exception being a player that has just placed a bomb. Players, bombs and blocks are solid objects.
-    <dl class="dl-horizontal">
-      <dt><img src="/img/player0.png" width="40px" height="40px"></dt>
-      <dd><b>Players</b> are the characters that AIs control. An AI is considered to be out of the match when its player is destroyed.</dd>
-      <dt><img src="/img/bomb0.png" width="40px" height="40px"></dt>
-      <dd><b>Bombs</b> are objects that players put down. Players have a limited number of bombs they can have out at any point in time. After being placed, they will tick down for a specified amount of time then detonate in the four main directions (up/down/left/right), creating explosion trails.</dd>
-      <dt><img src="/img/sb.png" width="40px" height="40px"><img src="/img/hb.png" width="40px" height="40px" style="margin-left: 10px;"></dt>
-      <dd><b>Blocks</b> are objects that are initialized before any player movement is possible. <b>Soft blocks</b> are a class of blocks that can be destroyed through the detonation of bombs. Blowing up soft blocks awards the player(s) that blew it up a number of coins. <b>Hard blocks</b> are blocks that cannot be destroyed.</dd>
-      <dt>
-    </dl>
-    <p>There are a few other objects that will appear on the Bomberman grid however.
-    <dl class="dl-horizontal">
-    <dt><img src="/img/docs/sampletrail.png" width="150px" height="100px"></dt>
-    <dd><b>Explosion trails</b> are generated by bomb detonations. They will destroy players, bombs and soft blocks that they come in contact with. These also tick down before disappearing from the grid, so it is possible for an object to be moved into a trail after it has been initialized.</dd>
-    <dt><img src="/img/docs/sampleportal.png" width="150px" height="150px"></dt>
-    <dd><b>Portals</b> are objects that exist attached to blocks and are basically identical to those in the actual video game made by Valve. Players can spend their turn to shoot a portal instead of doing anything else. If you're not familiar with the game these portals are from: portals are shot onto surfaces, and objects that go through an orange/blue portal will appear at the corresponding blue/orange portal.</dd>
-    </dl>
-    <a href="#toc">Back to top</a>
-    <h4 id="playeroverview">Player Overview</h4>
-    <p>Players take turns moving, and the nitty gritty for how this happens is covered in <b>Engine Details</b> below. There are a lot of different options for players in any given turn, and all of these are outlined here. Note that doing any of the following will take up your turn.
-
-    <p>If a player makes an illegal move (i.e. trying to buy a power-up with insufficient coinage), it will be construed as an empty move (the player will not do anything for that turn). There is no opportunity to submit a second move. If a player submits a move to the server when it is not their turn, the engine will respond with a message saying so but there is no penalty.
-
-    <dl class="dl-horizontal">
-    <dt>Basic Movement</dt>
-    <dd><p>Players can move in any of the four main directions (up/down/left/right) by inputting to the server <kbd>mu</kbd>, <kbd>md</kbd>, <kbd>ml</kbd>, or <kbd>mr</kbd> respectively. This will move them one square and change their orientation to be facing that direction.
-
-    <p>Players cannot walk onto spaces that have solid objects in them, but the player’s orientation will still be changed by the attempt.
-
-    <p>If a player attempts to walk onto a block that has a portal facing the player, the player will have a successful move as long as the portal is paired with another portal that faces an empty square. Note that the player’s orientation will be changed to match the orientation of the portal the player leaves.
-
-    <p>Players can also change orientation without movement by inputting one of <kbd>tl</kbd>, <kbd>tu</kbd>, <kbd>tr</kbd> or <kbd>td</kbd>. This is important for accurate portal/block placement that does not require a fully committed move.
-    <p>Players can also elect to actually just do nothing by inputting <kbd>''</kbd> (no quotes) (empty move).</dd>
-    <dt>Bomb</dt>
-    <dd><p>Players can drop a bomb by inputting <kbd>b</kbd>. This requires that the player is not currently standing on a bomb, and that they still have a bomb remaining in their stash. Players can only have out a number of bombs at one time equal to their bomb count (you don't have to keep buying bombs after using them, they naturally replenish after detonating).</dd>
-    <dt>Power-ups</dt>
-    <dd>Players can input <kbd>buy_range</kbd>, <kbd>buy_count</kbd>, <kbd>buy_pierce</kbd> or <kbd>buy_block</kbd> to buy the respective power-up. These are explained in more detail in the power-up section below. This requires that the player have a sufficient number of coins to make the purchase. Again, attempting to purchase a power-up with insufficient coinage will result in the player doing nothing for the turn.</dd>
-    <dt>Portals</dt>
-    <dd>Players can input <kbd>op</kbd>, <kbd>bp</kbd> to shoot either an orange or blue portal. The shot portal will travel in the player's line of sight until it reaches a soft or hard block. The portal will then override any portals on that face, and then park itself facing towards the player.</dd>
-    </dl><a href="#toc">Back to top</a>
-    <h4 id="bombtrailoverview">Bomb and Explosion Trail Overview</h4>
-    <p>Bombs work pretty much identically to traditional Bomberman.
-    <p>Right after placing a bomb, the player and bomb will share a square. Again, this is the only scenario that a bomb can share a space with a player. Movement after placing a bomb works as normal.
-
-    <dl class="dl-horizontal">
-    <dt>Detonation
-    <br><img src="img/docs/sampletrail.png" width="150px" height="100px"></dt>
-    <dd><p>Each turn, after each individual player has moved, all existing bombs will tick down. If any are at 0 (the tick count starts at 5), they detonate, creating detonation trails in the four squares immediately up, down, left and right from the detonation spot. These detonation trails will travel outwards for the extent of the player’s bomb range. However, if a detonation trail hits a solid object it will continue moving for the extent of the player’s bomb pierce (without surpassing the player’s bomb range).
-    <p>For instance, if a bomb detonates with range 5, and after 3 spaces of travel the trail hits a block:
-    <li>It will normally stop moving (default bomb pierce is 0)</li>
-    <li>If the detonated bomb’s owner has a bomb pierce of 1, the trail will continue to travel one more space.</li>
-    <li>However, if the detonated bomb’s owner has a bomb pierce of 6, the trail will continue to travel until the bomb hits its max range of 5, regardless of how much pierce was remaining.</li>
-    <br><br>One edge case to note is if a trail hits a block with a portal facing the trail, it will continue to the other end of the portal if it exists. It will also take the orientation of the paired portal. If this is confusing, just know that bomb trails do travel through portals and work how you'd expect.
-    <br>&nbsp;</dd>
-    <dt>Explosion trail collision</dt>
-    <dd>
-    <p>Colliding with explosion trails is generally bad for the objects in Bomberman:
-    <li>Bombs that are in the explosion trail will detonate on the turn that the explosion trail hits them. Chain reactions will all occur on the same turn, so a single bomb may trigger an extremely large explosion.</li>
-    <li>Players in the explosion trail will die.</li>
-    <li>Soft blocks in the explosion trail will be removed, and will award all players who own explosion trails crossing the block at the time of death coins. If a soft block is destroyed by a trail, all owners of trails that exist on the spot of the block’s destruction will be awarded coins equal to the block’s value given by the following formula: (min block value is set to 1, even though 0 is reachable)</li>
-    <pre>floor((board size - 1 - x) * x * (board size - 1 - y) * y * 10 / ((board size - 1)^4 / 16))</pre>
-    <p>The default has the board size as 11. The above formula is calculated using x, y as integers from 0 to 10 where 0, 0 is the top left corner and 10, 10 is the bottom right. If you're having trouble understanding the formula, just know that this returns integer values from 0 to 10 where being in the middle of the board grants higher values and being at the edge has lower values.
-    </dd>
-    </dl>
-    <a href="#toc">Back to top</a>
-    <h4 id="portaloverview">Portal Overview</h4>
-    <p>As in the original Portal game, players have an orange portal <kbd>op</kbd> and a blue portal <kbd>bp</kbd>. Apart from color, these are identical. When players shoot portals, the portal will appear on the closest block (soft or hard) facing the player.
-
-    <p>If the player already owns a portal of that color, the player will override that portal with the new one (it cannot have two portals of the same color). Additionally, it will override any portals existing on that block face. It will not touch portals on the other faces of the block.
-
-    <dl class="dl-horizontal">
-    <dt><img src="img/docs/portal_mvmt.gif" align="left" width="150px" height="150px"></dt>
-    <dd><p>Portals also act like in the original Valve game.
-    <li>Players that attempt to move into a block that has a portal facing them will appear at the space that the corresponding portal (of the same owner) faces. This assumes, of course, that the target space is not blocked by a block or bomb and that the other portal even exists. Note that players can use any pairing of portals of the same owner. Going through a portal will cause a player to assume the orientation of the portal it just came out of.</li>
-    <li>Bomb explosions that attempt to move into a block that has a portal facing them will also go through like players would. Note that regardless of whether the other side is blocked or not, the explosion will go through as long as the portal has an existing pair. Explosion trails going through portals will assume the orientation of the exit portal.</li></dd>
-    </dl>
-    <a href="#toc">Back to top</a>
-    <h4 id="shopoverview">Power-ups and Global Shop</h4>
-    When a power-up is bought, the price of the power-up is deducted from the player’s coin count. If the player has insufficient coins, the player does not get the power-up, and the move is considered to be an empty move.
-
-    <dl class="dl-horizontal">
-    <dt>Range Up <kbd>buy_range</kbd></dt>
-    <dd>Increases your player’s bomb range by 1. This increases how far your explosion trails will go when unimpeded. [default 3, costs 5 coin]</dd>
-    <dt>Bomb Up <kbd>buy_count</kbd></dt>
-    <dd>Increases your player’s bomb count by 1. This increases how many bombs you can have out at once. [default 1, costs 5 coin]</dd>
-    <dt>Pierce Up <kbd>buy_pierce</kbd></dt>
-    <dd>Increases your player’s bomb pierce by 1. This increases how far your explosion trails will go after collisions with solid objects. [default 0, costs 5 coin]</dd>
-    <dt>Set Block <kbd>buy_block</kbd></dt>
-    <dd>Creates a destructible block in the space your player is facing. Cost is variable to the value of the block being placed. You cannot create a block on top of an existing solid object (you will not be charged for an invalid block placement this way). The value formula is given below (min value is 1, even if the formula gives 0):
-    <pre>floor((board size - 1 - x) * x * (board size - 1 - y) * y * 10 / ((board size - 1)^4 / 16))</pre></dd>
-    </dl>
-    <a href="#toc">Back to top</a>
-    <h4 id="init">Initialization</h4>
-    <img src="img/docs/init.png" align="right" style="width: 25%; margin: 20px;"></img>
-    <p>At the beginning of the game...
-    <p>One player is assigned to be player 0, the other player 1.
-    <p>Hard blocks are placed in every other column in every other row, creating a spaced out uniform grid as shown below. They also surround the entirety of the grid. See the attached picture to the right.
-
-    <p>Players are initialized at start points in opposite corners of the grid (player 0 starts at [0, 0] (the top left corner), and player 1 starts at [10, 10] (the bottom right corner)), with the following characteristics:
-    <li>0 Coins</li>
-    <li>Bomb count 1</li>
-    <li>Bomb range 3</li>
-    <li>Bomb pierce 0</li>
-    <li>Orientation 0 (facing left, this doesn’t really matter)</li>
-    <br><br><p>Soft blocks are initialized throughout the entirety of the board purely randomly (each non-occupied space has a 70% chance of having a soft block) with the exception being around the players' starting points. Each player is guaranteed exactly one vertical and horizontal free space to ensure that no player is completely doomed to begin with.
-    <p>Additionally, the move order (see below for details) is initialized to [0, 1]. This is described more below in Engine Details.
-    <p><a href="#toc">Back to top</a>
-    <h4 id="apocalypse">Apocalypse</h4>
-    <img src="img/docs/ringoffire.png" align="right" style="width: 25%; margin: 20px;"></img>
-    <p>At the beginning of the game, the "move count" is at 0. With every successful submit, the move count increases by one. This move count is given in the sample output as moveCount. At the end of each full turn (a full turn being after each player has moved once), if the total movecount is greater than 400, the ring of fire will iterate. The ring of fire consists of two trails, one starting at the bottom left corner (0, 10), and one starting in the top right corner (10, 0). The bottom left trail travels upwards initially, and the top right one travels downwards initially. Each iteration, they move forward, turning 90 degrees to the right if they will collide with either an apocalypse trail or the edge of the board. A complete description of how the ring of fire moves is shown to the right. <strike>Note that the ring of fire seems to be broken for practice mode.</strike> (Should be fixed!)</p>
-    <p>The apocalypse fire trails will appear in the trailMap and resolve at the end of each turn just like a regular trail. Note that these trails are permanent and do not tick down. They will still go through the entirety of the hard blocks surrounding the map before starting to go into the actionable squares.</p>
-    <h4 id="enginedetails">Engine details</h4>
-    <p>The engine handles each game by going through rounds until the game is completed.
-    <p>A round in Bomberman follows the following steps:
-    <li>The first player in the move order moves. (At the start of every game, the move order is [0, 1], so player 0 always has the first move).</li>
-    <li>The second player in the move order moves.</li>
-    <li>Bombs all tick down. If any bomb is at 0, it will detonate and create explosion trails as in the Bomb Overview above.</li>
-    <li>Explosion trails will resolve their squares and tick down (when a trail hits 0, it just disappears). Resolving a square involves killing players and blocks (as well as awarding the proper number of coins), and chain detonating bombs.</li>
-    <li>The first player who moved in the move order is moved to the end of the move order queue. (On the end of the first round, the move order becomes [1, 0]).</li>
-    <li>The game checks to see if there are either 0 players remaining or 1 player remaining. In the former case, the game is ended as a tie for both players (this happens if both players die from explosions on the same turn). In the latter case, the game is ended as a win for the remaining player.</li>
-    <a href="#toc">Back to top</a>
-    <h3 id="developingyourai">Developing your AI</h3>
-    <dl class="dl-horizontal">
-    <dt>Coding your AI</dt>
-    <dd><p>All of the game logic is handled internally on the server! All you need to worry about is how you want to interpret the board state into a move. Read the Sample Output breakdown below for more details on how to do that. <b>We've also provided some sample AIs to get you get started!</b> See below.
-    <p>For some inspiration on how best to play the game, hit up Games > Training Mode from the top nav bar!
-    <p><b>Note that if a bot takes more than <strike>5 seconds</strike> <b>(Note: currently 15 seconds to deal with strange timeout issues)</b> to input a move, the game will be ended as a win for the other player. If the game was not sufficiently long enough (less than 3 moves), the game will be aborted instead, which will not award any elo points to either player.</b></dd>
-    <dt>Testing your bot<br>(AND QUALIFYING)</dt>
-    <dd><p>Before trying the game out on the actual matchmaking server, you should definitely try it against our practice bot! All it does is make random moves, and it never drops bombs. <b>Your matches against the practice bot will not affect your matchmaking rating at all.</b> To do this, have your AI send a post request to:
-    <pre>http://aicomp.io/api/games/practice</pre>
-    with the following information:
-    <pre>{ devkey: your dev key goes here, username: your username goes here }</pre>
-    This will simulate playing an actual game, and the server will act as normal sending you post responses to your moves in the form of the sample output before whenever it's your turn. You can follow the game real-time by going to Games > List Games and finding the one that involves your bot. Or, you can simply go to the following link to watch:
-    <pre>http://aicomp.io/games/(game ID)</pre>
-    To submit a move, send a post request to:
-    <pre>http://aicomp.io/api/games/submit/(gameID as interpreted from output)</pre>
-    with data:
-    <pre>{ devkey: your dev key goes here, playerID: playerID as interpreted from output, move: your move to submit, see legal list below }</pre>
-    Your AI is not going to get a post response until it's your move again (or if the game ends), so sit back and relax! You've submitted your move.
-    <h4>Note that in order to qualify for the main events, you'll need to defeat our practice bot! It shouldn't be too bad... so go nuts!</h4>
-    <br><br>
-    </dd>
-    <dt>Matchmaking details</dt>
-    <dd>To search for a game against a real opponent, have your AI send a post request to:
-    <pre>http://aicomp.io/api/games/search</pre>
-    with the following information:
-    <pre>{ devkey: your dev key goes here, username: your username goes here }</pre>
-    This will put your account into matchmaking. Once there are two players in matchmaking, the server will start a game between the two players. The server will send your AI a post response (in response to your matchmaking request) once a game has started AND it's your move. If you're the second player, the server will send your AI a post response after the first player moves. Note that whenever the server responds to your request with the board state, it's generally your turn.
-    <br><br>When you've received the server output in JSON format, first interpret it and extract the gameID and playerID (see the Sample Output breakdown below). Then, in order to submit your move send a post request to:
-    <pre>http://aicomp.io/api/games/submit/(gameID as interpreted from output)</pre>
-    with data:
-    <pre>{ devkey: your dev key goes here, playerID: playerID as interpreted from output, move: your move to submit, see legal list below }</pre>
-    Your AI is not going to get a post response until it's your move again (or if the game ends), so sit back and relax! You've submitted your move.
-    <br><br>
-    </dd>
-    <dt>Sample AIs<br>(Click to expand)</dt>
-    <dd>
-    <uib-accordion close-others="oneAtATime">
-        <div uib-accordion-group class="panel-default" heading="&nbsp;Python Sample AI">
-          The below sample Python AI randomly generates moves and plays:
-    <pre>
-import time
-import requests # if not installed already, run python -m pip install requests OR pip install requests, whatever you normally do
-import random
-r = requests.post('http://aicomp.io/api/games/search', data={'devkey': "devkey", 'username': 'username'}) # search for new game
-json = r.json() # when request comes back, that means you've found a match! (validation if server goes down?)
-print(json)
-gameID = json['gameID']
-playerID = json['playerID']
-print(gameID)
-print(playerID)
-possibleMoves = ['mu', 'ml', 'mr', 'md', 'tu', 'tl', 'tr', 'td', 'b', '', 'op', 'bp', 'buy_count', 'buy_range', 'buy_pierce', 'buy_block']
-output = {'state': 'in progress'}
-while output['state'] != 'complete':
-    randomInt = random.randint(0,len(possibleMoves)-1)
-    r = requests.post('http://aicomp.io/api/games/submit/' + gameID, data={'playerID': playerID, 'move': possibleMoves[randomInt], 'devkey': "devkey"}); # submit sample move
-    json = r.json()
-    print(json)
-    output = json
-    </pre>
-    </div>
-    <div uib-accordion-group class="panel-default" heading="&nbsp;Go Sample AI (thanks to Matt Poegel for writing this!)">
-          Download <a href="/sampleAIs/Golang Sample AI.zip">here</a> (Right Click > Save As), instructions are in the README file. (Thanks Matt!)
-    </div>
-    <div uib-accordion-group class="panel-default" heading="&nbsp;C++ Sample AI (thanks to Mike Yang for writing this!)">
-          Download <a href="/sampleAIs/C++ Sample AI.zip">here</a> (Right Click > Save As), instructions are in the CPP file. (Thanks Mike!)
-    </div>
-    </uib-accordion>
-    </dd>
-    <dt>Legal Moves</dt>
-    <dd>All of the legal moves are covered in depth above in the Game Rules, but just for your convenience...
-    <uib-accordion close-others="oneAtATime">
-    <div uib-accordion-group class="panel-default" heading="&nbsp;(Click here to expand)">
-          <ul>
-    <li><kbd>mu</kbd> - move up</li>
-    <li><kbd>ml</kbd> - move left</li>
-    <li><kbd>md</kbd> - move down</li>
-    <li><kbd>mr</kbd> - move right</li>
-    <li><kbd>tu</kbd> - turn up</li>
-    <li><kbd>tl</kbd> - turn left</li>
-    <li><kbd>td</kbd> - turn down</li>
-    <li><kbd>tr</kbd> - turn right</li>
-    <li><kbd>b</kbd> - place bomb</li>
-    <li><kbd>op</kbd> - shoot orange portal</li>
-    <li><kbd>bp</kbd> - shoot blue portal</li>
-    <li><kbd>(empty string)</kbd> - do nothing</li>
-    <li><kbd>buy_count</kbd> - costs 5, increases number of bombs you can have out by 1 (bomb count)</li>
-    <li><kbd>buy_pierce</kbd> - costs 5, increases range of your bombs after collision with solid objects</li>
-    <li><kbd>buy_range</kbd> - costs 5, increases raw range of bombs</li>
-    <li><kbd>buy_block</kbd> - costs &lt;value of block&gt;, creates a block in the square you’re facing assuming there’s not a solid object already there</li>
-    <li>Value formula (min 1, even if the formula returns 0): <pre>floor((board size - 1 - x) * x * (board size - 1 - y) * y * 10 / ((board size - 1)^4 / 16))</pre></li>
-    </ul>
-    </div>
-    </uib-accordion></dd>
-    </dl>
-    <a href="#toc">Back to top</a>
-    <h3 id="sampleoutput">Sample output</h3>
-    <pre>
-{
-    u'hardBlockBoard': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    u'boardSize': 11,
-    u'gameID': u'57e1d18e04fa591c2c1ddca4',
-    u'bombMap': {u'2,1': {u'owner': 0, u'tick': 1}},
-    u'moveIterator': 0,
-    u'playerID': u'57e1d18e04fa591c2c1ddca3',
-    u'portalMap': {u'7,9': {u'2': {u'owner': 1, u'portalColor': u'orange'}}, u'9,7': {u'3': {u'owner': 1, u'portalColor': u'blue'}}},
-    u'playerIndex': 1,
-    u'trailMap': {},
-    u'player': {u'bluePortal': {u'y': 7, u'x': 9, u'direction': 3}, u'orientation': 1, u'orangePortal': {u'y': 9, u'x': 7, u'direction': 2}, u'coins': 0, u'bombCount': 1, u'bombPierce': 0, u'alive': True, u'y': 8, u'x': 9, u'bombRange': 3},
-    u'state': u'in progress',
-    u'softBlockBoard': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    u'moveOrder': [1, 0],
-    u'opponent': {u'bluePortal': None, u'orientation': 0, u'orangePortal': None, u'coins': 0, u'bombCount': 0, u'bombPierce': 0, u'alive': True, u'y': 1, u'x': 1, u'bombRange': 3}
-}</pre>
-    <a href="#toc">Back to top</a>
-    <h3 id="interpretingoutput">Interpreting the output</h3>
-    This may look really complicated, but it all makes sense when you break it down.
-    <br><br>A few definitions:
+    <p>
+      After you decide you want to buy a specific troop, and you know you have the bits and income to support the purchase, you'll have to decide on which lane you want to place it in. Finally, once you submit the buy action, you're good to go! The troop has its own AI that it will follows, and that will be described below.
+    </p>
+    <p>Now for what you were waiting for: the unit selection!
+      <dl class="dl-horizontal">
+	<dt><img src="/static/img/nut.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Nut
+	  </p>
+	  <p>
+	    <b>Nuts</b> are standard foot-soldier with below average HP, average stride/reach and high speed/damage. This unit is great for high DPS but needs to be supplemented with meatier troops. The Nut is the cheapest unit in the game, and the most cost efficient.
+	  </p>
+	  <p>
+	    Nuts move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		00
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		200 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		12
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		10
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		100
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		10
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		120
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/bolts.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Bolt
+	  </p>
+	  <p>
+	    <b>Bolts</b> have worse speed/reach than Nuts, but above average HP. Bolts deal damage as a percent of enemy HP as opposed to a standard fixed damage amount. On average, Bolts do better versus large opponents than Nuts, but are worse versus smaller opponents than Nuts. Bolts cost a little more than Nuts.
+	  </p>
+	  <p>
+	    Bolts move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		01
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		400 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		7.5
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		5% of target's MaxHP
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		300
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		15
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		100
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/GreaseMonkey.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Grease Monkey
+	  </p>
+	  <p>
+	    <b>Grease Monkeys</b> are healer troops that heals all friendly troops by a fixed amount in a small AOE around it.
+	  </p>
+	  <p>
+	    Grease Monkeys don't really attack, but they will either choose to heal or move on any given step. They will always choose to heal if there is a damaged (HP < MaxHP) troop within its range. Healing can never take a unit above its Max HP.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		02
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		300 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		12
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Healing</b>
+	      </td>
+	      <td>
+		10 HP
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		75
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		10
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		200
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/walker.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Walker
+	  </p>
+	  <p>
+	    <b>Walkers</b> are speedy (high speed, stride) and durable (high HP) troop that can be quickly deployed to contribute to ongoing fights. Has pretty low DPS, but its mobility, above-average reach and very reasonable cost helps compensate for this.
+	  </p>
+	  <p>
+	    Walkers move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		03
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		800 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		30
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		5
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		800
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		10
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		200
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/aimbot.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Aimbot
+	  </p>
+	  <p>
+	    <b>Aimbots</b> are snipers that do very high damage with a ridiculous reach and incredibly low speed/stride/HP. They also have a decently high cost.  Aimbots can shoot into neighboring lanes. This unit is great for long range presence, but definitely needs to be coddled.
+	  </p>
+	  <p>
+	    Aimbots move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		04
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		3000 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		1
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		100
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		100
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		5
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		1000
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/hardrive.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Hard Drive
+	  </p>
+	  <p>
+	    <b>Hard Drives</b> are bulky melee fighters with above-average (but not totally cost efficient) HP, low speed, high damage and high cost. Additionally they have a caveat that a single instance of damage can only deal up to 30 damage to a Hard Drive. Perfect for breaking through high damage areas, but is countered by high DPS troops.
+	  </p>
+	  <p>
+	    Hard Drives move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		05
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		2500 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		12
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		50
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		500
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		5
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		50
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/scrapheap.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Scrapheap
+	  </p>
+	  <p>
+	    <b>Scrapheaps</b> are bulky and pricey melee fighters with ridiculous HP that damage themselves over time. They have low damage and are a little slow in terms of speed, but otherwise are similar in stats to a Nut. When they die they create two Nuts and two Bolts in their stead. This unit is heavily a defensive one.
+	  </p>
+	  <p>
+	    Scrapheaps move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		06
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		9000 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		12
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		8
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		9000
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		5
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		120
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/gasguzzler.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Gas Guzzler
+	  </p>
+	  <p>
+	    <b>Gas Guzzlers</b> are large units that start with a massive amount of HP, do damage equal to their HP and walk incredibly slowly with a very low range. Decently expensive and also costs a little bit of income, but is also a must-deal-with threat.
+	  </p>
+	  <p>
+	    Gas Guzzlers move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		07
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		10000 bits, 50 income
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		12
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		This unit's HP
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		10000
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		5
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		50
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/terminator.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Terminator
+	  </p>
+	  <p>
+	    <b>Terminators</b> are super-soldier troops that have incredibly high DPS and below-average health, but otherwise have comparable stats to Nuts. Terminators are extremely expensive.
+	  </p>
+	  <p>
+	    Terminators move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		08
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		8000 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		12
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		100
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		80
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		6
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		120
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/blackhat.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Blackhat
+	  </p>
+	  <p>
+	    <b>Blackhats</b> are somewhat expensive assassins that instantly kill troops with very high speed, very low range, and low HP. Blackhats disable enemy towers within the lane they operate while they're out. Disabled towers will not attack or generate money.
+	  </p>
+	  <p>
+	    Blackhats move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		09
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		2500 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		60
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		100% of target's MaxHP
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		50
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		6
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		50
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/malware.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Malware
+	  </p>
+	  <p>
+	    <b>Malware</b> are viruses that have pretty low HP and average reach/speed/stride, but above average damage. They infect troops that they attack. When infected troops die, another Malware will spawn.
+	  </p>
+	  <p>
+	    Malware move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		10
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		6000 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		12
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		30
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		80
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		4
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		200
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/ghandi.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Gandhi
+	  </p>
+	  <p>
+	    <b>Gandhi</b> is an exorbitantly expensive troop that vaporizes all troops in its lane when it’s created. It does absolutely nothing when it’s out and has very low HP. If Gandhi reaches the other side of the stage you win the game. A player can only buy a single Gandhi during a game.
+	  </p>
+	  <p>
+	    Gandhi just moves each turn.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		11
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		500000 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		60
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		Gandhi does not attack
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		50
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Stride</b>
+	      </td>
+	      <td>
+		6
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		50
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+      </dl>
+      <h3 id="towers">Towers 101</h3>
+    <p class="lead">Your colony can't just thrive on troops, however! You'll be placing towers in the plots alongside each lane to supplement your army.</p>
+    <p>Towers have each of the following characteristics that you'll need to worry about:</p>
     <ul>
-      <li>Directions (for orientations) are typically represented as numbers. Left corresponds to 0, up is 1, right is 2 and down is 3.</li>
-      <li>The game board is an 11x11 grid, and the x and y coordinates go from (0, 0) to (10, 10). Note that incrementing and decrementing x-values moves you horizontally, and doing that to y-values moves you vertically. (0, 0) represents the top left corner and (10, 10) is the bottom right corner.</li>
+      <li><b>X, Y</b>: Pretty self explanatory. Towers also have X, Y just like troops, although they are stationary and can only be spawned in very specific plots. There is a side-lane of plots 50px above and 50px below each troop lane. Plots are 100 pixels wide and go from 300 pixels to 1300 pixels in each side-lane. (As a result, there's 11 plots per side-lane, two side-lanes per lane, six total side-lanes and 66 total plots).
+      <li><b>HP/MaxHP</b>: Pretty self explanatory. Towers also keep track of their maximum HP as well as their current running HP. If it goes to 0 or below that tower is considered dead and will be cleaned up at the end of the frame.</li>
+      <li><b>Enum</b>: Each troop and tower has an enum value that tells the game what type of unit it is.</li>
+      <li><b>Damage</b>: If a tower deals damage (and there are many that do and do not), this is how much damage this troop will do in a single step.</li>
+      <li><b>Cost</b>: You must have at least X bits and Y income to purchase this unit on a given turn. Towers pretty much all require an upfront bit cost and also an income cost.</li>
+      <li><b>Speed</b>: This tower acts every (60/speed) frames. Higher speed means it moves more frequently.</li>
     </ul>
-    <dl class="dl-horizontal">
-    <dt>hardBlockBoard<br>softBlockBoard</dt>
-    <dd>
-    <div class="well">
-    <samp>
-    u'hardBlockBoard': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    <br>u'softBlockBoard': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    </samp>
-    </div>
-    hardBlockBoard/softBlockBoard is a 121-length array that tells you where all the hard/soft blocks are (1) and aren't (0) on the map. If square (x, y) has a hard/soft block, then the array value at index (x * 11 + y) = 1.
-    </dd>
-    <dt>boardSize</dt>
-    <dd>
-    <div class="well">
-    <samp>
-    u'boardSize': 11
-    </samp>
-    </div>
-    boardSize tells you the length of any side of the board grid. It defaults to 11 and this will probably not change.
-    </dd>
-    <dt>moveOrder<br>moveIterator<br>playerIndex</dt>
-    <dd>
-    <div class="well">
-    <samp>u'moveOrder': [1, 0]
-    <br>u'moveIterator': 0
-    <br>u'playerIndex': 1
-    </samp>
-    </div>
-    <p>moveOrder is a list representing the move order for this specific turn. Player indices populate this move order list, and index 0 will move first. You can figure out where you are in this list using the moveIterator, which is the exact index that the moveOrder is at in the server. Since you are receiving a post response, you can expect that moveOrder[moveIterator] = your player index, but just for convenience your playerIndex is given too.</p>
-    <p>Note that the moveOrder changes each turn: the player that moves first one turn moves last the next turn.</p>
-    </dd>
-    <dt>gameID<br>playerID</dt>
-    <dd><div class="well">
-    <samp>u'gameID': u'57e1d18e04fa591c2c1ddca4'
-    <br>u'playerID': u'57e1d18e04fa591c2c1ddca3'
-    </samp>
-    </div>
-    <p>The gameID is the ID of the game. The player ID is your specific player ID. Save these, you're going to need them to submit your moves.</p>
-    <p>Neither the gameID or playerID is the same as your dev key.</p>
-    </dd>
-    <dt>state</dt>
-    <dd><div class="well">
-    <samp>u'state': u'in progress'
-    </samp>
-    </div>
-    <p>The state is either 'in progress' or 'complete'. Typically the state will be in progress, until only one or zero players remain. You will be sent a post response when the game ends, but the state will be 'complete' then. At that point, sending a move for that game will do nothing.</p>
-    </dd>
-    <dt>player<br>opponent</dt>
-    <dd><div class="well">
-    <samp>u'player': {u'bluePortal': {u'y': 7, u'x': 9, u'direction': 3}, u'orientation': 1, u'orangePortal': {u'y': 9, u'x': 7, u'direction': 2}, u'coins': 0, u'bombCount': 1, u'bombPierce': 0, u'alive': True, u'y': 8, u'x': 9, u'bombRange': 3}
-    <br>u'opponent': {u'bluePortal': None, u'orientation': 0, u'orangePortal': None, u'coins': 0, u'bombCount': 0, u'bombPierce': 0, u'alive': True, u'y': 1, u'x': 1, u'bombRange': 3}
-    </samp>
-    </div>
-    player and opponent are formatted the same way, here's the breakdown:
-    <ul>
-      <li><b>orientation</b> - the direction that player is facing (0 is left, 1 is up, 2 is right, 3 is down)</li>
-      <li><b>bluePortal, orangePortal</b> - either None or an object that tells you the (x, y) coordinates of the block the portal is on, and the face (again, 0 is left, 1 is up, 2 is right, 3 is down) it is on. For example, in the given sample output, player.bluePortal has direction 3, which means it's on the bottom face of the block at (9, 7).</li>
-      <li><b>bombRange, bombCount, bombPierce, coins, x, y</b> - these are all your values for these attributes of the player</li>
-      <li><b>alive</b> - True/False depending on whether that player still exists on the game board or not.</li>
-    </ul>
-    </dd>
-    <dt>bombMap</dt>
-    <dd>
-    <div class="well">
-    <samp>
-    u'bombMap': {u'2,1': {u'owner': 0, u'tick': 1}}
-    </samp>
-    </div>
-    <p>bombMap is a JSON object that acts as a map between x, y coordinates and bombs. The keys are strings which are in 'x,y' format.</p>
-    <p>Each bomb has an owner, which refers to a playerIndex, and a tick count, which tells you how many turns it has left on the board.</p>
-    </dd>
-    <dt>portalMap</dt>
-    <dd><div class="well">
-    <samp>
-    u'portalMap': {u'7,9': {u'2': {u'owner': 1, u'portalColor': u'orange'}}, u'9,7': {u'3': {u'owner': 1, u'portalColor': u'blue'}}}
-    </samp>
-    </div>
-    <p>You can find the orange/blue portal data in the player/opponent output, but if you want to find them all in one coherent place use the portalMap.</p>
-    <p>Keys are strings in 'x,y' format for the square that the portals are on, and values are mappings between directions (which would be opposite from the direction that you walk into the portal) facing out and the portal object. The portal object has an owner (player index) and color (either orange or blue).</p>
-    </dd>
-    <dt>trailMap</dt>
-    <dd>
-    <div class="well">
-    <samp>
-    u'trailMap': {u'7,9': {u'1': {u'tick': 1, u'type': u'h'}}, u'8,10': {u'1': {u'tick': 1, u'type': u'v'}}, u'9,9': {u'1': {u'tick': 1, u'type': u'h'}}, u'10,9': {u'1': {u'tick': 1, u'type': u'h'}}, u'8,9': {u'1': {u'tick': 1, u'type': u'origin'}}
-    </samp>
-    </div>
-    <p>trailMap is a JSON object that acts as a map between x, y coordinates and explosion trail squares. The keys are strings which are in 'x,y' format.</p>
-    <p>On each square there is a mapping of player indices to trail objects. Player indices are the same as the ones given in the moveOrder and playerIndex. Explosion trail objects have <b>ticks</b>, which represent how many more turns they'll exist on the game board, and <b>types</b>, which are literally for graphical representation.</p>
-    <p>For the purposes of creating an AI, all you really need to know is that you should avoid the squares that have objects in this trailMap for movement</p>
-    </dd>
-    </dl>
-    <a href="#toc">Back to top</a>
+    <p>
+      Just like with troops, you submit a buy action for a tower in a specific plot. Note that you can only build plots within your territory, which will be explained later. After the tower is created, it'll run on its own AI, so you don't have to worry about coding one for it!
+    </p>
+    <p>Now for what you were waiting for: the tower selection!
+      <dl class="dl-horizontal">
+	<dt><img src="/static/img/peashooter.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Peashooter
+	  </p>
+	  <p>
+	    <b>Peashooters</b> are towers that deploy quickly with high damage per second, high speed and medium range. Its low cost is justified by the fact that it is quite fragile.
+	  </p>
+	  <p>
+	    Peashooters have a very simple targeting AI that is not unlike troop targeting. A Peashooter will simply shoot at the first target it sees until it dies or moves out of range.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		50
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		500 bits, 100 income
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		12
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		10
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		200
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		300
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/firewall.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Firewall
+	  </p>
+	  <p>
+	    <b>Firewalls</b> are medium range/medium cost towers that do a low amount of area-of-effect damage to all enemy troops within its range. These towers are quite beefy.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		51
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		1000 bits, 150 income
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		12
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		10
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		300
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		300
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/guardian.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Guardian
+	  </p>
+	  <p>
+	    <b>Guardians</b> do incredible amounts of damage with a decent range and high speed that is offset by its high cost and low HP.
+	  </p>
+	  <p>
+	    Guardian targeting AI is the same as the Peashooter AI -- it attacks the first unit it sees until it dies, and then moves on.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		52
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		5000 bits, 300 income
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		20
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		30
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		600
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		250
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/bank.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Bank
+	  </p>
+	  <p>
+	    <b>Banks</b> are standard towers that increase your income by a standard fixed amount.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		53
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		1000 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		500
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Income Boost</b>
+	      </td>
+	      <td>
+		100 income
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/junkyard.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Junkyard
+	  </p>
+	  <p>
+	    When units die within the range of the <b>Junkyard</b>, the owner of the Junkyard will make a fixed, decent chunk of change back. Junkyards otherwise do not grant or cost any stable income.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		54
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		1000 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		300
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Income Boost</b>
+	      </td>
+	      <td>
+		500 bits per unit that dies within range
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Range (for bit collection)</b>
+	      </td>
+	      <td>
+		500
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/startup.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Start-Up
+	  </p>
+	  <p>
+	    <b>Start-Ups</b> are banks that increase your income by a small fixed amount that grows linearly over time up till a max value.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		55
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		3000 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		400
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Income Boost</b>
+	      </td>
+	      <td>
+		100 income, which increases linearly at a rate of 4 income every 60 frames until a max value of 500 income
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/corporation.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Corporation
+	  </p>
+	  <p>
+	    <b>Corporations</b> are expensive banks that increase your income by a fixed amount that is multiplied exponentially by the number of how many of these towers you own.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		56
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		25000 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		1000
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Income Boost</b>
+	      </td>
+	      <td>
+		200 income * (number of corporations owned by you squared)
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/warpdrive.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Warp Drive
+	  </p>
+	  <p>
+	    Friendly troops in a <b>Warp Drive</b>’s lane spawn from the Warp Drive instead of from the original core. Decently cheap, but are fragile targets.
+	  </p>
+	  <p>
+	    Having multiple Warp Drives in a single lane (either above or below) will simply make the unit spawn from the furthest out Warp Drive.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		57
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		1000 bits
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		400
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/jammingstation.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Jamming Station
+	  </p>
+	  <p>
+	    <b>Jamming Stations</b> are crippling towers that slow the stride and speed of enemy troops in a medium sized range around it. Pretty beefy towers, with a moderate cost.
+	  </p>
+	  <p>
+	    In the backend, speed is coded in the opposite direction -- units know that they act every X frames as opposed to acting with a speed of 60 FPS / X speed. A crippling tower attack increases the number of frames between troop actions by one up until a minimum value of 1 action per 15 frames (or a speed of 4), and reduces the troop's stride by 1 to a min value of 3 stride.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		58
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		3000 bits, 150 income
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		2
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		3000
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		200
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/Hotspot.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Hotspot
+	  </p>
+	  <p>
+	    <b>Hotspots</b> increase the damage of friendly units within their lane. They also heal them a little as well. Hotspots are quite expensive and are fragile targets.
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		59
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Cost</b>
+	      </td>
+	      <td>
+		10000 bits, 500 income
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		6
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage Boost / Heal</b>
+	      </td>
+	      <td>
+		1 damage per iteration, 10 HP per iteration
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		400
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		It affects all friendly troops within its lane.
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+      </dl>
+      <a href="#toc">Back to top</a>
+      <h4 id="objectives">Objectives 101</h4>
+    <p class="lead">As mentioned before, you spawn with a main core that you need to protect at all costs. You die if it dies. Additionally, you have three lane objectives that you should protect as secondary objectives, because they affect your territory space (TO BE IMPLEMENTED). Lane objectives spawn with you, but don't get created for any other reason.
+
+      <dl class="dl-horizontal">
+	<dt><!--<img src="/static/img/peashooter.png"></dt>--> (IMAGE GOES HERE)
+	<dd>
+	  <p class="lead">
+	    Main Core
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		-2
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		3
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		100
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		10000
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		300
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+	<dt><img src="static/img/Tower1_Blue.png"></dt>
+	<dd>
+	  <p class="lead">
+	    Lane Objectives
+	  </p>
+	  <p>
+	    These determine your lane vision. (TO BE UPDATED LATER)
+	  </p>
+	  <table class="table">
+	    <tr>
+	      <td>
+		<b>Enum</b>
+	      </td>
+	      <td>
+		-1
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Speed</b>
+	      </td>
+	      <td>
+		4
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Damage</b>
+	      </td>
+	      <td>
+		30
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP/MaxHP</b>
+	      </td>
+	      <td>
+		1000
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach</b>
+	      </td>
+	      <td>
+		150
+	      </td>
+	    </tr>
+	  </table>
+	</dd>
+      </dl>
+      <a href="#toc">Back to top</a>
+      <h4 id="gameconstants">Game Constants</h4>
+      <img src="static/img/background.png">
+      For the purposes of this entire document, (0, 0) is the bottom left corner and (1600, 600) is the top right corner of the screen.
+      <table class="table">
+	<tr>
+	  <td>Game Dimensions</td>
+	  <td>1600px (width) by 600px (height)</td>
+	</tr>
+	<tr>
+	  <td>Plot Dimensions</td>
+	  <td>Every 100 pixels from x = 300px to x = 1300px.<br>As a result, there are 11 plots per side-lane, two side-lanes per lane and overall 66 plots (from 00 to 65).</td>
+	</tr>
+	<tr>
+	  <td>Side-lanes</td>
+	  <td>There is a side-lane 50px above and below each lane.</td>
+	</tr>
+	<tr>
+	  <td>Lane Constants</td>
+	  <td>Top-lane is at y = 475, mid-lane is at y = 280, and bot-lane is at y = 100.
+	</tr>
+	<tr>
+	  <td>Objective Constants</td>
+	  <td>Player 1's objectives spawn at x = 200, and player 2's objectives spawn at x = 1400.
+	</tr>
+	<tr>
+	  <td>Territory</td>
+	  <td>Your territory defaults to exactly halfway between the main cores.</td>
+	</tr>
+      </table>
+      <h4 id="enginedetails">Engine details</h4>
+    <p>Each frame, the engine goes through a very predescribed set of actions in order to resolve game states as fairly as possible.
+    <p>The steps are as follows:
+      <li>Player inputs are read and resolved. If towers/troops are bought (and they can be afforded), they are spawned.</li>
+      <li>Each tower and troop decides what they are going to do, or if they can even do anything (this depends on their speed). (This is a preparation stage, and no tower/troop actually acts here.)</li>
+      <li>All towers and troops iterate.</li>
+      <li>Towers and troops are cleaned up if they have sub-zero HP.</li>
+      <li>If a player's main core is seen to be dead, the game terminates.</li>
+      <a href="#toc">Back to top</a>
+      <h3 id="developingyourai">Developing your AI</h3>
+      <dl class="dl-horizontal">
+	<dt>Coding your AI</dt>
+	<dd><p>All of the game logic is handled internally on the server! All you need to worry about is how you want to interpret the board state into a move. Read the Sample Output breakdown below for more details on how to do that. <b>We've also provided some sample AIs to get you get started!</b> See below.
+	  <p>For some inspiration on how best to play the game, hit up Games > Training Mode from the top nav bar!
+	  <p><b>Note that if a bot takes more than <strike>5 seconds</strike> <b>(Note: currently 15 seconds to deal with strange timeout issues)</b> to input a move, the game will be ended as a win for the other player. If the game was not sufficiently long enough (less than 3 moves), the game will be aborted instead, which will not award any elo points to either player.</b></dd>
+	<dt>Testing your bot<br>(AND QUALIFYING)</dt>
+	<dd><p>Before trying the game out on the actual matchmaking server, you should definitely try it against our practice bot! All it does is make random moves, and it never drops bombs. <b>Your matches against the practice bot will not affect your matchmaking rating at all.</b> To do this, have your AI send a post request to:
+	    <pre>http://aicomp.io/api/games/practice</pre>
+	    with the following information:
+	    <pre>{ devkey: your dev key goes here, username: your username goes here }</pre>
+	    This will simulate playing an actual game, and the server will act as normal sending you post responses to your moves in the form of the sample output before whenever it's your turn. You can follow the game real-time by going to Games > List Games and finding the one that involves your bot. Or, you can simply go to the following link to watch:
+	    <pre>http://aicomp.io/games/(game ID)</pre>
+	    To submit a move, send a post request to:
+	    <pre>http://aicomp.io/api/games/submit/(gameID as interpreted from output)</pre>
+	    with data:
+	    <pre>{ devkey: your dev key goes here, playerID: playerID as interpreted from output, move: your move to submit, see legal list below }</pre>
+	    Your AI is not going to get a post response until it's your move again (or if the game ends), so sit back and relax! You've submitted your move.
+	    <h4>Note that in order to qualify for the main events, you'll need to defeat our practice bot! It shouldn't be too bad... so go nuts!</h4>
+	    <br><br>
+	</dd>
+	<dt>Matchmaking details</dt>
+	<dd>To search for a game against a real opponent, have your AI send a post request to:
+	  <pre>http://aicomp.io/api/games/search</pre>
+	  with the following information:
+	  <pre>{ devkey: your dev key goes here, username: your username goes here }</pre>
+	  This will put your account into matchmaking. Once there are two players in matchmaking, the server will start a game between the two players. The server will send your AI a post response (in response to your matchmaking request) once a game has started AND it's your move. If you're the second player, the server will send your AI a post response after the first player moves. Note that whenever the server responds to your request with the board state, it's generally your turn.
+	  <br><br>When you've received the server output in JSON format, first interpret it and extract the gameID and playerID (see the Sample Output breakdown below). Then, in order to submit your move send a post request to:
+	  <pre>http://aicomp.io/api/games/submit/(gameID as interpreted from output)</pre>
+	  with data:
+	  <pre>{ devkey: your dev key goes here, playerID: playerID as interpreted from output, move: your move to submit, see legal list below }</pre>
+	  Your AI is not going to get a post response until it's your move again (or if the game ends), so sit back and relax! You've submitted your move.
+	  <br><br>
+	</dd>
+	<dt>Sample AIs<br>(Click to expand)</dt>
+	<dd>
+	  <uib-accordion close-others="oneAtATime">
+            <div uib-accordion-group class="panel-default" heading="&nbsp;Python Sample AI">
+              The below sample Python AI randomly generates moves and plays:
+	      <pre>
+		import time
+		import requests # if not installed already, run python -m pip install requests OR pip install requests, whatever you normally do
+		import random
+		r = requests.post('http://aicomp.io/api/games/search', data={'devkey': "devkey", 'username': 'username'}) # search for new game
+		json = r.json() # when request comes back, that means you've found a match! (validation if server goes down?)
+		print(json)
+		gameID = json['gameID']
+		playerID = json['playerID']
+		print(gameID)
+		print(playerID)
+		possibleMoves = ['mu', 'ml', 'mr', 'md', 'tu', 'tl', 'tr', 'td', 'b', '', 'op', 'bp', 'buy_count', 'buy_range', 'buy_pierce', 'buy_block']
+		output = {'state': 'in progress'}
+		while output['state'] != 'complete':
+		randomInt = random.randint(0,len(possibleMoves)-1)
+		r = requests.post('http://aicomp.io/api/games/submit/' + gameID, data={'playerID': playerID, 'move': possibleMoves[randomInt], 'devkey': "devkey"}); # submit sample move
+		json = r.json()
+		print(json)
+		output = json
+	      </pre>
+	    </div>
+	    <div uib-accordion-group class="panel-default" heading="&nbsp;Go Sample AI (thanks to Matt Poegel for writing this!)">
+              Download <a href="/sampleAIs/Golang Sample AI.zip">here</a> (Right Click > Save As), instructions are in the README file. (Thanks Matt!)
+	    </div>
+	    <div uib-accordion-group class="panel-default" heading="&nbsp;C++ Sample AI (thanks to Mike Yang for writing this!)">
+              Download <a href="/sampleAIs/C++ Sample AI.zip">here</a> (Right Click > Save As), instructions are in the CPP file. (Thanks Mike!)
+	    </div>
+	  </uib-accordion>
+	</dd>
+	<dt>Legal Moves</dt>
+	<dd>All of the legal moves are covered in depth above in the Game Rules, but just for your convenience...
+	  <uib-accordion close-others="oneAtATime">
+	    <div uib-accordion-group class="panel-default" heading="&nbsp;(Click here to expand)">
+              <ul>
+		<li><kbd>mu</kbd> - move up</li>
+		<li><kbd>ml</kbd> - move left</li>
+		<li><kbd>md</kbd> - move down</li>
+		<li><kbd>mr</kbd> - move right</li>
+		<li><kbd>tu</kbd> - turn up</li>
+		<li><kbd>tl</kbd> - turn left</li>
+		<li><kbd>td</kbd> - turn down</li>
+		<li><kbd>tr</kbd> - turn right</li>
+		<li><kbd>b</kbd> - place bomb</li>
+		<li><kbd>op</kbd> - shoot orange portal</li>
+		<li><kbd>bp</kbd> - shoot blue portal</li>
+		<li><kbd>(empty string)</kbd> - do nothing</li>
+		<li><kbd>buy_count</kbd> - costs 5, increases number of bombs you can have out by 1 (bomb count)</li>
+		<li><kbd>buy_pierce</kbd> - costs 5, increases range of your bombs after collision with solid objects</li>
+		<li><kbd>buy_range</kbd> - costs 5, increases raw range of bombs</li>
+		<li><kbd>buy_block</kbd> - costs &lt;value of block&gt;, creates a block in the square you’re facing assuming there’s not a solid object already there</li>
+		<li>Value formula (min 1, even if the formula returns 0): <pre>floor((board size - 1 - x) * x * (board size - 1 - y) * y * 10 / ((board size - 1)^4 / 16))</pre></li>
+	      </ul>
+	    </div>
+	</uib-accordion></dd>
+      </dl>
+      <a href="#toc">Back to top</a>
+      <h3 id="sampleoutput">Sample output</h3>
+      <pre>
+	{
+	u'hardBlockBoard': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+	u'boardSize': 11,
+	u'gameID': u'57e1d18e04fa591c2c1ddca4',
+	u'bombMap': {u'2,1': {u'owner': 0, u'tick': 1}},
+	u'moveIterator': 0,
+	u'playerID': u'57e1d18e04fa591c2c1ddca3',
+	u'portalMap': {u'7,9': {u'2': {u'owner': 1, u'portalColor': u'orange'}}, u'9,7': {u'3': {u'owner': 1, u'portalColor': u'blue'}}},
+	u'playerIndex': 1,
+	u'trailMap': {},
+	u'player': {u'bluePortal': {u'y': 7, u'x': 9, u'direction': 3}, u'orientation': 1, u'orangePortal': {u'y': 9, u'x': 7, u'direction': 2}, u'coins': 0, u'bombCount': 1, u'bombPierce': 0, u'alive': True, u'y': 8, u'x': 9, u'bombRange': 3},
+	u'state': u'in progress',
+	u'softBlockBoard': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	u'moveOrder': [1, 0],
+	u'opponent': {u'bluePortal': None, u'orientation': 0, u'orangePortal': None, u'coins': 0, u'bombCount': 0, u'bombPierce': 0, u'alive': True, u'y': 1, u'x': 1, u'bombRange': 3}
+	}</pre>
+      <a href="#toc">Back to top</a>
+      <h3 id="interpretingoutput">Interpreting the output</h3>
+      This may look really complicated, but it all makes sense when you break it down.
+      <br><br>A few definitions:
+      <ul>
+	<li>Directions (for orientations) are typically represented as numbers. Left corresponds to 0, up is 1, right is 2 and down is 3.</li>
+	<li>The game board is an 11x11 grid, and the x and y coordinates go from (0, 0) to (10, 10). Note that incrementing and decrementing x-values moves you horizontally, and doing that to y-values moves you vertically. (0, 0) represents the top left corner and (10, 10) is the bottom right corner.</li>
+      </ul>
+      <dl class="dl-horizontal">
+	<dt>hardBlockBoard<br>softBlockBoard</dt>
+	<dd>
+	  <div class="well">
+	    <samp>
+	      u'hardBlockBoard': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+	      <br>u'softBlockBoard': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	    </samp>
+	  </div>
+	  hardBlockBoard/softBlockBoard is a 121-length array that tells you where all the hard/soft blocks are (1) and aren't (0) on the map. If square (x, y) has a hard/soft block, then the array value at index (x * 11 + y) = 1.
+	</dd>
+	<dt>boardSize</dt>
+	<dd>
+	  <div class="well">
+	    <samp>
+	      u'boardSize': 11
+	    </samp>
+	  </div>
+	  boardSize tells you the length of any side of the board grid. It defaults to 11 and this will probably not change.
+	</dd>
+	<dt>moveOrder<br>moveIterator<br>playerIndex</dt>
+	<dd>
+	  <div class="well">
+	    <samp>u'moveOrder': [1, 0]
+	      <br>u'moveIterator': 0
+	      <br>u'playerIndex': 1
+	    </samp>
+	  </div>
+	  <p>moveOrder is a list representing the move order for this specific turn. Player indices populate this move order list, and index 0 will move first. You can figure out where you are in this list using the moveIterator, which is the exact index that the moveOrder is at in the server. Since you are receiving a post response, you can expect that moveOrder[moveIterator] = your player index, but just for convenience your playerIndex is given too.</p>
+	  <p>Note that the moveOrder changes each turn: the player that moves first one turn moves last the next turn.</p>
+	</dd>
+	<dt>gameID<br>playerID</dt>
+	<dd><div class="well">
+	    <samp>u'gameID': u'57e1d18e04fa591c2c1ddca4'
+	      <br>u'playerID': u'57e1d18e04fa591c2c1ddca3'
+	    </samp>
+	  </div>
+	  <p>The gameID is the ID of the game. The player ID is your specific player ID. Save these, you're going to need them to submit your moves.</p>
+	  <p>Neither the gameID or playerID is the same as your dev key.</p>
+	</dd>
+	<dt>state</dt>
+	<dd><div class="well">
+	    <samp>u'state': u'in progress'
+	    </samp>
+	  </div>
+	  <p>The state is either 'in progress' or 'complete'. Typically the state will be in progress, until only one or zero players remain. You will be sent a post response when the game ends, but the state will be 'complete' then. At that point, sending a move for that game will do nothing.</p>
+	</dd>
+	<dt>player<br>opponent</dt>
+	<dd><div class="well">
+	    <samp>u'player': {u'bluePortal': {u'y': 7, u'x': 9, u'direction': 3}, u'orientation': 1, u'orangePortal': {u'y': 9, u'x': 7, u'direction': 2}, u'coins': 0, u'bombCount': 1, u'bombPierce': 0, u'alive': True, u'y': 8, u'x': 9, u'bombRange': 3}
+	      <br>u'opponent': {u'bluePortal': None, u'orientation': 0, u'orangePortal': None, u'coins': 0, u'bombCount': 0, u'bombPierce': 0, u'alive': True, u'y': 1, u'x': 1, u'bombRange': 3}
+	    </samp>
+	  </div>
+	  player and opponent are formatted the same way, here's the breakdown:
+	  <ul>
+	    <li><b>orientation</b> - the direction that player is facing (0 is left, 1 is up, 2 is right, 3 is down)</li>
+	    <li><b>bluePortal, orangePortal</b> - either None or an object that tells you the (x, y) coordinates of the block the portal is on, and the face (again, 0 is left, 1 is up, 2 is right, 3 is down) it is on. For example, in the given sample output, player.bluePortal has direction 3, which means it's on the bottom face of the block at (9, 7).</li>
+	    <li><b>bombRange, bombCount, bombPierce, coins, x, y</b> - these are all your values for these attributes of the player</li>
+	    <li><b>alive</b> - True/False depending on whether that player still exists on the game board or not.</li>
+	  </ul>
+	</dd>
+	<dt>bombMap</dt>
+	<dd>
+	  <div class="well">
+	    <samp>
+	      u'bombMap': {u'2,1': {u'owner': 0, u'tick': 1}}
+	    </samp>
+	  </div>
+	  <p>bombMap is a JSON object that acts as a map between x, y coordinates and bombs. The keys are strings which are in 'x,y' format.</p>
+	  <p>Each bomb has an owner, which refers to a playerIndex, and a tick count, which tells you how many turns it has left on the board.</p>
+	</dd>
+	<dt>portalMap</dt>
+	<dd><div class="well">
+	    <samp>
+	      u'portalMap': {u'7,9': {u'2': {u'owner': 1, u'portalColor': u'orange'}}, u'9,7': {u'3': {u'owner': 1, u'portalColor': u'blue'}}}
+	    </samp>
+	  </div>
+	  <p>You can find the orange/blue portal data in the player/opponent output, but if you want to find them all in one coherent place use the portalMap.</p>
+	  <p>Keys are strings in 'x,y' format for the square that the portals are on, and values are mappings between directions (which would be opposite from the direction that you walk into the portal) facing out and the portal object. The portal object has an owner (player index) and color (either orange or blue).</p>
+	</dd>
+	<dt>trailMap</dt>
+	<dd>
+	  <div class="well">
+	    <samp>
+	      u'trailMap': {u'7,9': {u'1': {u'tick': 1, u'type': u'h'}}, u'8,10': {u'1': {u'tick': 1, u'type': u'v'}}, u'9,9': {u'1': {u'tick': 1, u'type': u'h'}}, u'10,9': {u'1': {u'tick': 1, u'type': u'h'}}, u'8,9': {u'1': {u'tick': 1, u'type': u'origin'}}
+	    </samp>
+	  </div>
+	  <p>trailMap is a JSON object that acts as a map between x, y coordinates and explosion trail squares. The keys are strings which are in 'x,y' format.</p>
+	  <p>On each square there is a mapping of player indices to trail objects. Player indices are the same as the ones given in the moveOrder and playerIndex. Explosion trail objects have <b>ticks</b>, which represent how many more turns they'll exist on the game board, and <b>types</b>, which are literally for graphical representation.</p>
+	  <p>For the purposes of creating an AI, all you really need to know is that you should avoid the squares that have objects in this trailMap for movement</p>
+	</dd>
+      </dl>
+      <a href="#toc">Back to top</a>
   </div>
   <br><center>Any additional questions? Reach out! Email Darwin Ding at dingd@rpi.edu</center>
 </section>
