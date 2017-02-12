@@ -181,7 +181,6 @@ func New(port, staticDir string, db *dbinterface.DB) *Server {
 	if err != nil {
 		log.Println(err)
 	}
-
 	os.Mkdir("./identicons", 0777)
 	s := Server{
 		port:      port,
