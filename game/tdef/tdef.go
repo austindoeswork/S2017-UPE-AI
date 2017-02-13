@@ -63,14 +63,63 @@ func getPlotPosition(plot int) (int, int) {
 	return x, y
 }
 
+func NewOutputQueue(size, minpop int) *OutputQueue {
+	return &OutputQueue{
+		nodes:  make([][]byte, size),
+		size:   size,
+		minpop: minpop,
+	}
+}
+
+// Queue is a basic FIFO queue based on a circular list that resizes as needed.
+type OutputQueue struct {
+	nodes [][]byte
+	size  int
+	head  int
+	tail  int
+	count int
+
+	minpop int
+}
+
+// Push adds a node to the queue.
+func (q *OutputQueue) Push(n []byte) {
+	if q.head == q.tail && q.count > 0 {
+		nodes := make([][]byte, len(q.nodes)+q.size)
+		copy(nodes, q.nodes[q.head:])
+		copy(nodes[len(q.nodes)-q.head:], q.nodes[:q.head])
+		q.head = 0
+		q.tail = len(q.nodes)
+		q.nodes = nodes
+	}
+	q.nodes[q.tail] = n
+	q.tail = (q.tail + 1) % len(q.nodes)
+	q.count++
+}
+
+// Pop removes and returns a node from the queue in first to last order.
+func (q *OutputQueue) Pop() []byte {
+	if q.count < q.minpop {
+		return nil
+	}
+	node := q.nodes[q.head]
+	q.head = (q.head + 1) % len(q.nodes)
+	q.count--
+	return node
+}
+
 type TowerDefense struct {
-	p1input chan []byte
-	p2input chan []byte
-	p1cmd   []byte
-	p2cmd   []byte
-	output  chan []byte //pushes gamestate at framerate
-	quit    chan bool
-	status  int
+	p1input  chan []byte
+	p2input  chan []byte
+	p1output chan []byte
+	p2output chan []byte
+
+	p1cmd  []byte
+	p2cmd  []byte
+	output chan []byte //pushes gamestate at framerate
+	oq     *OutputQueue
+	quit   chan bool
+	status int
 
 	players [2]*Player // in the future perhaps make this another const: NUMPLAYERS
 
@@ -83,16 +132,31 @@ type TowerDefense struct {
 	demoGame bool
 }
 
-func New(width, height, fps int, demoGame bool) (*TowerDefense, []chan<- []byte, <-chan []byte) {
+func New(width, height, fps int, demoGame bool) (*TowerDefense, []*Controller, <-chan []byte) {
 	outputChan := make(chan []byte)
 	p1 := NewPlayer(1, demoGame)
 	p2 := NewPlayer(2, demoGame)
 	p1input := make(chan []byte, 5)
 	p2input := make(chan []byte, 5)
+	p1output := make(chan []byte, 5)
+	p2output := make(chan []byte, 5)
+	p1controller := &Controller{
+		1,
+		p1input,
+		p1output,
+	}
+	p2controller := &Controller{
+		2,
+		p2input,
+		p2output,
+	}
 	return &TowerDefense{
 		p1input:  p1input,
 		p2input:  p2input,
+		p1output: p1output,
+		p2output: p2output,
 		output:   outputChan,
+		oq:       NewOutputQueue(600, 500),
 		quit:     make(chan bool),
 		status:   READY,
 		players:  [2]*Player{p1, p2},
@@ -101,8 +165,9 @@ func New(width, height, fps int, demoGame bool) (*TowerDefense, []chan<- []byte,
 		fps:      fps,
 		frame:    0,
 		winner:   -1,
-		demoGame: demoGame,
-	}, []chan<- []byte{p1input, p2input}, outputChan
+		// demoGame: demoGame,
+		demoGame: false,
+	}, []*Controller{p1controller, p2controller}, outputChan
 }
 
 func (t *TowerDefense) DetermineWinner() {
@@ -155,13 +220,25 @@ func (t *TowerDefense) Start() error {
 				t.p1cmd = nil
 				t.p2cmd = nil
 
+				//TODO send p1 & p2 fogged output
 				select {
-				case t.output <- t.stateJSON(): //send output
+				case t.p1output <- t.stateJSON():
 				default:
 				}
+				select {
+				case t.p2output <- t.stateJSON():
+				default:
+				}
+
+				//send delayed output
+				t.sendWatcher(t.stateJSON())
+
 				if t.demoGame == false &&
 					(!t.players[0].IsAlive() || !t.players[1].IsAlive() || t.frame == int64(t.fps*300)) {
 					t.DetermineWinner()
+				}
+
+				if !t.players[0].IsAlive() || !t.players[1].IsAlive() {
 					t.status = DONE
 					log.Println("GAME DIED OF NATURAL CAUSES")
 					close(t.output)
@@ -280,6 +357,18 @@ func (t *TowerDefense) updateInputs() {
 			p2done = true
 		}
 	}
+}
+
+func (t *TowerDefense) sendWatcher(m []byte) {
+	t.oq.Push(m)
+	out := t.oq.Pop()
+	if out != nil {
+		select {
+		case t.output <- out: //send output
+		default:
+		}
+	}
+
 }
 
 func (t *TowerDefense) stateJSON() []byte {

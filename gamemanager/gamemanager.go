@@ -118,7 +118,7 @@ func (gm *GameManager) ListGames() []string {
 	return list
 }
 
-func (gm *GameManager) ControlGame(gameName string, userName string, quit chan bool) (chan<- []byte, error) {
+func (gm *GameManager) ControlGame(gameName string, userName string, quit chan bool) (game.Controller, error) {
 	gw, exists := gm.games[gameName]
 	if !exists {
 		return nil, fmt.Errorf("ERR no such game")
@@ -126,7 +126,8 @@ func (gm *GameManager) ControlGame(gameName string, userName string, quit chan b
 	if gw.Status() == game.DONE {
 		return nil, fmt.Errorf("ERR game over")
 	}
-	input, err := gw.getOpenInput(userName)
+
+	controller, err := gw.getOpenController(userName)
 	if err != nil {
 		return nil, err
 	}
@@ -135,16 +136,16 @@ func (gm *GameManager) ControlGame(gameName string, userName string, quit chan b
 		select {
 		case <-quit:
 			log.Printf("game: %s %s controller QUIT", gameName, userName)
-			err := gw.closeInput(input)
+			err := gw.closeController(controller)
 			if err != nil {
-				log.Panic(err) // TODO idiomatic way to log unexpected errors?
+				log.Println(err)
 			}
 			return
 		}
 	}()
 
 	log.Printf("game: %s %s controller GIVEN", gameName, userName)
-	return input, nil
+	return controller, nil
 }
 
 func (gm *GameManager) WatchGame(gameName string, quit chan bool) (<-chan []byte, error) {
@@ -177,25 +178,25 @@ type GameWrapper struct {
 	game.Game
 	// TODO think about resetting connections
 	// gameInput maps an input to whether they are connected
-	gameInputMap map[chan<- []byte]string
-	activeInputs int
-	gameOutput   <-chan []byte
-	listenerMap  map[chan []byte]bool
+	gameControllerMap map[game.Controller]string
+	activeControllers int
+	gameOutput        <-chan []byte
+	listenerMap       map[chan []byte]bool
 }
 
 // TODO allow creation of different games (pong, scrabble, whatever)
-func NewGameWrapper(demoGame bool) *GameWrapper {
-	g, inputs, output := game.NewTowerDef(demoGame)
-	gameInputMap := make(map[chan<- []byte]string)
+func NewGameWrapper(isdemo bool) *GameWrapper {
+	g, controllers, output := game.NewTowerDef(isdemo)
+	gameControllerMap := make(map[game.Controller]string)
 	listenerMap := make(map[chan []byte]bool)
 
-	for _, in := range inputs {
-		gameInputMap[in] = ""
+	for _, c := range controllers {
+		gameControllerMap[c] = ""
 	}
 
 	gw := &GameWrapper{
 		g,
-		gameInputMap,
+		gameControllerMap,
 		0,
 		output,
 		listenerMap,
@@ -228,36 +229,36 @@ func (gw *GameWrapper) multiplex() {
 }
 
 func (gw *GameWrapper) Ready() bool {
-	return gw.activeInputs == gw.MinPlayers()
+	return gw.activeControllers == gw.MinPlayers()
 }
 
-// getOpenInput returns the first open input chan it encounters
-func (gw *GameWrapper) getOpenInput(userName string) (chan<- []byte, error) {
+// getOpenController returns the first open controller it encounters
+func (gw *GameWrapper) getOpenController(userName string) (game.Controller, error) {
 	if userName == "" {
 		return nil, fmt.Errorf("ERR invalid username")
 	}
-	for input, currentUser := range gw.gameInputMap {
+	for c, currentUser := range gw.gameControllerMap {
 		if currentUser == "" {
-			gw.gameInputMap[input] = userName
-			gw.activeInputs++
-			if gw.activeInputs == gw.MinPlayers() {
+			gw.gameControllerMap[c] = userName
+			gw.activeControllers++
+			if gw.activeControllers == gw.MinPlayers() {
 				gw.Start()
 			}
-			return input, nil
+			return c, nil
 		}
 	}
-	return nil, fmt.Errorf("ERR no open input chan")
+	return nil, fmt.Errorf("ERR no open controller")
 }
 
-func (gw *GameWrapper) closeInput(input chan<- []byte) error {
-	if _, exists := gw.gameInputMap[input]; !exists {
+func (gw *GameWrapper) closeController(c game.Controller) error {
+	if _, exists := gw.gameControllerMap[c]; !exists {
 		return fmt.Errorf("ERR no such input chan")
 	}
-	gw.activeInputs--
-	if gw.activeInputs == 0 && gw.Status() != game.DONE {
+	gw.activeControllers--
+	if gw.activeControllers == 0 && gw.Status() != game.DONE {
 		gw.Quit()
 	}
-	gw.gameInputMap[input] = ""
+	gw.gameControllerMap[c] = ""
 	return nil
 }
 

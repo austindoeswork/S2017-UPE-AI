@@ -21,6 +21,12 @@ const (
 // A game will close it's output socket when quit is called
 // it will also close when the game ends
 
+type Controller interface {
+	Player() int
+	Input() chan<- []byte
+	Output() <-chan []byte
+}
+
 type Game interface {
 	Start() error
 	Quit()
@@ -29,8 +35,8 @@ type Game interface {
 	MinPlayers() int
 }
 
-func NewTowerDef(demoGame bool) (*tdef.TowerDefense, []chan<- []byte, <-chan []byte) {
-	p, inArr, out := tdef.New(1600, 600, 60, demoGame)
+func NewTowerDef(isdemo bool) (*tdef.TowerDefense, []*tdef.Controller, <-chan []byte) {
+	p, inArr, out := tdef.New(1600, 600, 60, isdemo)
 	return p, inArr, out
 }
 
