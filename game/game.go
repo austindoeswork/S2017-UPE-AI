@@ -36,7 +36,7 @@ type Game interface {
 }
 
 func NewTowerDef(isdemo bool) (*tdef.TowerDefense, []*tdef.Controller, <-chan []byte) {
-	p, inArr, out := tdef.New(1600, 600, 60, isdemo)
+	p, inArr, out := tdef.New(1600, 600, 30, isdemo)
 	return p, inArr, out
 }
 

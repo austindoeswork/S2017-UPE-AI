@@ -1,6 +1,7 @@
 package tdef
 
 import (
+	"bytes"
 	"fmt"
 )
 
@@ -36,7 +37,7 @@ Unit enum:
 
 // Troops and towers are units. All of their internal variables are private to promote good coding practice
 type Unit interface {
-	ExportJSON() string // ExportJSON is used for sending information to the front-end
+	ExportJSON(buffer *bytes.Buffer)  // ExportJSON is used for sending information to the front-end
 	Enum() int          // type of unit (i.e. 0 is nut)
 	Owner() int
 	X() int
@@ -97,8 +98,8 @@ type UnitBase struct {
 func (ub *UnitBase) Owner() int {
 	return ub.owner
 }
-func (ub *UnitBase) ExportJSON() string { // rest of information is not really important to front-end
-	return fmt.Sprintf(`{"owner": %d, "x": %d, "y": %d, "maxhp": %d, "hp": %d, "enum": %d}`, ub.owner, ub.x, ub.y, ub.maxhp, ub.hp, ub.enum)
+func (ub *UnitBase) ExportJSON(buffer *bytes.Buffer) { // rest of information is not really important to front-end
+	buffer.WriteString(fmt.Sprintf(`{"owner": %d, "x": %d, "y": %d, "maxhp": %d, "hp": %d, "enum": %d}`, ub.owner, ub.x, ub.y, ub.maxhp, ub.hp, ub.enum))
 }
 func (ub *UnitBase) Enum() int {
 	return ub.enum

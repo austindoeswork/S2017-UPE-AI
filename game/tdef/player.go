@@ -1,6 +1,7 @@
 package tdef
 
 import (
+	"bytes"
 	"fmt"
 	"math"
 )
@@ -12,10 +13,8 @@ type Player struct {
 	income int // X coins per second
 	bits   int // total number of coins
 
-	Spawns [3]int // X coordinates of the three lanes (0, 1, 2 = x positions for lanes 1, 2, 3)
-
 	MainTower Unit // if this dies you die
-
+ 
 	Units  []Unit         // list of all units
 	Towers [NUMPLOTS]Unit // list of all towers (CORE AND OBJECTIVES ARE NOT TOWERS), this is organized by plot
 
@@ -58,7 +57,13 @@ func (p *Player) SetBits(bits int) {
 
 // TODO: remove lane from here, players can hold their own spawns
 // returns true if player can afford unit, false otherwise
-func (p *Player) BuyTroop(x, lane, enum int, opponent *Player) bool {
+func (p *Player) BuyTroop(lane, enum int, opponent *Player) bool {
+	var x int
+	if p.owner == 1 {
+		x = 0
+	} else {
+		x = GAMEWIDTH - 1
+	}
 	troop := NewTroop(x, lane, p.owner, enum)
 	for _, element := range p.Towers {
 		if element == nil {
@@ -121,16 +126,13 @@ func (p *Player) AddUnit(unit Unit) {
 
 func NewPlayer(owner int, demoGame bool) *Player {
 	var corex, objx int
-	var spawns [3]int
 	switch owner {
 	case 1:
 		corex = 0
 		objx = XOFFSET
-		spawns = [3]int{0, 0, 0}
 	case 2:
 		corex = GAMEWIDTH - 1
 		objx = GAMEWIDTH - 1 - XOFFSET
-		spawns = [3]int{GAMEWIDTH - 1, GAMEWIDTH - 1, GAMEWIDTH - 1}
 	}
 	var mainTower Unit
 	var bits, income int
@@ -147,7 +149,6 @@ func NewPlayer(owner int, demoGame bool) *Player {
 		owner:     owner,
 		income:    income,
 		bits:      bits,
-		Spawns:    spawns,
 		MainTower: mainTower,
 		Units:     []Unit{NewObjective(objx, TOPY, owner), NewObjective(objx, MIDY, owner), NewObjective(objx, BOTY, owner)}, // inits lane objectives
 		Towers:    [NUMPLOTS]Unit{},
@@ -195,27 +196,29 @@ func (p *Player) FindClosestUnit(unit Unit) (Unit, float64) {
 }
 
 // generates a JSON object in string form that is used for display purposes
-func (p *Player) ExportJSON() string { // used for exporting to screen
-	unitString := `"towers": [`
+func (p *Player) ExportJSON(buffer *bytes.Buffer) { // used for exporting to screen
+	buffer.WriteString(fmt.Sprintf(`{"owner": %d, "income": %d, "bits": %d, `, p.owner, p.income, p.bits))
+	buffer.WriteString(`"towers": [`)
 	for index, element := range p.Towers {
 		if element == nil {
-			unitString += `"nil"`
+			buffer.WriteString(`"nil"`)
 		} else {
-			unitString += element.ExportJSON()
+			element.ExportJSON(buffer)
 		}
 		if index != len(p.Towers)-1 {
-			unitString += ","
+			buffer.WriteString(",")
 		}
 	}
-	unitString += `], "troops": [`
+	buffer.WriteString(`], "troops": [`)
 	for index, element := range p.Units {
-		unitString += element.ExportJSON()
+		element.ExportJSON(buffer)
 		if index != len(p.Units)-1 {
-			unitString += ","
+			buffer.WriteString(",")
 		}
 	}
-	unitString += `], "mainTower": ` + p.MainTower.ExportJSON() + "}"
-	return fmt.Sprintf(`{"owner": %d, "income": %d, "bits": %d, `, p.owner, p.income, p.bits) + unitString
+	buffer.WriteString(`], "mainTower": `)
+	p.MainTower.ExportJSON(buffer)
+	buffer.WriteString("}")
 }
 
 // iterates before anything happens, just a frame initialization stage

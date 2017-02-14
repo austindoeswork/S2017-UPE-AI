@@ -1,6 +1,7 @@
 package tdef
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"strconv"
@@ -332,7 +333,7 @@ func controlPlayer(tdef *TowerDefense, input string, playernum int) {
 
 	player := tdef.players[playernum-1]
 	if unitEnum < 50 {
-		player.BuyTroop(player.Spawns[lane-1], lane, unitEnum, tdef.players[playernum%2])
+		player.BuyTroop(lane, unitEnum, tdef.players[playernum%2])
 	} else {
 		player.BuyTower(lane, unitEnum, tdef.players[playernum%2]) // note that lane for towers means plot
 	}
@@ -372,7 +373,12 @@ func (t *TowerDefense) sendWatcher(m []byte) {
 }
 
 func (t *TowerDefense) stateJSON() []byte {
-	outString := fmt.Sprintf(`{ "w": %d, "h": %d, `, t.width, t.height)
-	outString += `"p1":` + t.players[0].ExportJSON() + `, "p2":` + t.players[1].ExportJSON() + "}"
-	return []byte(outString)
+	var buffer bytes.Buffer
+	buffer.WriteString(fmt.Sprintf(`{ "w": %d, "h": %d, `, t.width, t.height))
+	buffer.WriteString(`"p1":`)
+	t.players[0].ExportJSON(&buffer)
+	buffer.WriteString(`, "p2":`)
+	t.players[1].ExportJSON(&buffer)
+	buffer.WriteString("}")
+	return buffer.Bytes()
 }
