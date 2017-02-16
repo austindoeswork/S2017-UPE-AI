@@ -166,8 +166,7 @@ func New(width, height, fps int, demoGame bool) (*TowerDefense, []*Controller, <
 		fps:      fps,
 		frame:    0,
 		winner:   -1,
-		// demoGame: demoGame,
-		demoGame: false,
+		demoGame: demoGame,
 	}, []*Controller{p1controller, p2controller}, outputChan
 }
 
@@ -222,14 +221,14 @@ func (t *TowerDefense) Start() error {
 				t.p2cmd = nil
 
 				//TODO send p1 & p2 fogged output
-				select {
+				/* select {
 				case t.p1output <- t.stateJSON():
 				default:
 				}
 				select {
 				case t.p2output <- t.stateJSON():
 				default:
-				}
+				} */
 
 				//send delayed output
 				t.sendWatcher(t.stateJSON())

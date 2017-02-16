@@ -35,7 +35,7 @@ function wswatch() {
     wsopen(wspath, wsroute, gname, "");
 }
 function wsmainpagewatch() {
-    var wspath = "ws://localhost:8080";
+    var wspath = "ws://159.203.72.133";
     var wsroute = "/wswatch"
     var gname = "mainpagegame";
     wsopen(wspath, wsroute, gname, "");

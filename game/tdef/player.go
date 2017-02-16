@@ -23,6 +23,7 @@ type Player struct {
 
 	// special unit things
 	madeGandhi bool // true if Gandhi has been made (player cannot make another gandhi), false otherwise
+	demoGame bool
 }
 
 // Determine's a player's tiebreak score in the event of time running out
@@ -127,7 +128,7 @@ func (p *Player) BuyTower(plot, enum int, opponent *Player) bool {
 
 // TROOPS CANNOT BE ADDED OUTSIDE OF THE LANES
 func (p *Player) AddUnit(unit Unit) {
-	if unit == nil {
+	if unit == nil || (p.demoGame == true && len(p.Top) + len(p.Mid) + len(p.Bot) >= 50) { // last clause stops the gameTV from overfilling
 		return
 	} else if unit.Y() == TOPY {
 		p.Top = append(p.Top, unit)
@@ -168,6 +169,7 @@ func NewPlayer(owner int, demoGame bool) *Player {
 		Mid: []Unit{NewObjective(objx, MIDY, owner)},
 		Bot: []Unit{NewObjective(objx, BOTY, owner)},
 		Towers:    [NUMPLOTS]Unit{},
+		demoGame: demoGame,
 	}
 }
 
