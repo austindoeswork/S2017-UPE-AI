@@ -2,18 +2,18 @@
 {{template "header" .}}
 <section>
   <div class="jumbotron">
-    <h1>AICOMP 2.0</h1>
+    <h1>NP COMPETE</h1>
     <p>UPE's second iteration of the coolest programming/AI competition you've never realized you've wanted to be a part of.</p>
   </div>
   <p><span class="label label-danger" id="status">STATUS: Not connected.</span></p>
-  <p><span id="fps"></span>
+  <p>Framerate: <span id="fps"></span>
   <div id="gameTV">
   </div>
   <div id="score">
     <div class="col-md-6" class="panel-body">
       <table class="table col-md-6">
 	<tr>
-	  <td>Player 1: <span id="p1name"></span></td> <!-- TODO: implement with identification from server -->
+	  <td>Player 1: <span id="p1name">Deep Blue</span></td> <!-- TODO: implement with identification from server -->
 	</tr>
 	<tr>
 	  <td>Core HP:</td>
@@ -32,7 +32,7 @@
     <div class="col-md-6" class="panel-body">
       <table class="table">
 	<tr>
-	  <td>Player 2: <span id="p2name"></span></td>
+	  <td>Player 2: <span id="p2name">HAL 9000</span></td>
 	</tr>
 	<tr>
 	  <td>Core HP:</td>
@@ -64,48 +64,25 @@
         To learn more about how to play and how to connect to the game, check out the <a href="./docs">full documentation and API.</a>
       <p>This server, equipped with matchmaking capabilities, will be running 24/7 to allow teams to test their AIs against the rest of the competition. By winning games and improving your rating, you can fight your way to the top of our <a href="./leaderboard">leaderboard</a>!
         <h3>Rules</h3>
-        The competition will be broken down into sections. Quals, Semifinals, Finals, and Boss mode. Code only has to be turned in if you are a finalist. Feel free to modify/improve/train your AI model in between the different competitions. 
+        The competition will be broken down into sections: Qualifiers, Semi-finals and Finals. Feel free to modify/improve/train your AI model in between the different sections! 
         <dl class="dl-horizontal" style="margin-top: 5%;">
           <dt>Quals</dt>
-          <dd><p>For Quals, you just have to beat our little dinky practice bot that just runs around doing random moves (except playing a bomb, so it won't kill itself!) Losing, or drawing it won't qualify you, you'll actually have to make it all the way over and kill it. Good luck!
+          <dd><p>We will be soon announcing what will be needed to qualify for the actual competition, so make sure to read up on the documentation and play around with the game in the mean time!</p>
           </dd>
           <dt>Semifinals</dt>
-          <dd>Semifinals is a online competition that will will happen on November 30th. You will be given a time slot to compete as well as the link to connect to. This will be a round robin competition where the top 8 teams will move on to the final round.</dd>
+          <dd><p>More information coming soon, this will be a live event!</p></dd>
           <dt>Finals</dt>
-          <dd>Finals is bracketed single elimination where the winner will take all. We will be reserving a room, streaming the event, and providing refreshments. The Top three teams will each compete against each other for the cash prizes. <br> <br>
-
-            3rd place: $500 <br>
-            2nd place: $1,000<br>
-            1st place: $1,500<br><br>
-
-            Also, the winner of the Finals will be the only team allowed to move onto Boss Mode...
-          </dd>
-          <dt>Boss Mode</dt>
-          <dd>Think you can write a better bot than UPE can? Then do it. The winner of the final round will be given the chance to face off against the bot developed by UPE. If your bot beats our bot (unlikely) then you will receive a bonus $1,000, for a total of $2,500
-          </dd>
+          <dd><p>More information coming soon, this will be a live event with prizes!</p></dd>
         </dl>
         <h3>Timeline</h3>
-        Nov 2nd - Nov 20th: Quals<br>
-        Nov 30th: Semifinals<br>
-        Dec 5th: Finals + Boss Mode
-        <h3>How do I get involved?</h3>
-        <ul>
-          <li>
-            If you're not familiar with Bomberman, rectify that immediately! It's a classic retro game that you may have played when you were a kid. The rules for this competition are somewhat different from traditional Bomberman, so go to <b>Games > Training Mode</b> to play around with it for yourself or read up in the <b>Documentation</b>!
-          </li>
-          <li>
-            Create an account from the Sign Up page, and get started making your AI! The details of testing your AI against the server are in the Documentation!
-          </li>
-          <li>
-            Have fun!
-          </li>
-        </ul>
+	<b>Qualifiers will be open over the course of February and much of March. More information coming soon.</b>
+	
         <div class="row">
           <div class="col-md-3">
             <h3>Learn</h3>
             <ul>
-              <li>Read the <a href="./docs">Bomberman documentation</a>
-              <li><a href="./games/training">Play around with the game yourself</a>
+              <li>Read the <a href="./docs">Tower Defense documentation</a>
+              <li><a href="./game">Play around with the game yourself!</a>
             </ul>
           </div>
           <div class="col-md-3">
@@ -114,11 +91,11 @@
           </div>
           <div class="col-md-3">
             <h3>Test</h3>
-            <p>Testing your AI against other AIs on the matchmaking server is super easy using our API! You can even test your AI against a sample practice bot that just moves randomly! Check out the Documentation for more details.</p>
+            <p>Testing your AI against other AIs on the matchmaking server is super easy using our API! Check out the Documentation for more details.</p>
           </div>
           <div class="col-md-3">
             <h3>Compete</h3>
-            <p>More on this coming later! There will be a seeding tournament and a main event that's open to entry to all interested RPI teams.</p>
+            <p>More on this coming later!</p>
           </div>
 	</div>
     </div>

@@ -10,13 +10,14 @@
   <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
       <div class="navbar-header">
-	<a class="navbar-brand active" href="/">AICOMP</a>
+	<a class="navbar-brand active" href="/">NP Compete</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
 	<ul class="nav navbar-nav navbar-left">
           <li {{if eq .Title "Game"}} class="active" {{end}}><a href="/game">Play</a></li>
 	  <li {{if eq .Title "Documentation"}} class="active" {{end}}><a href="/docs">Documentation</a></li>
-	 </ul>
+	  <li {{if eq .Title "Leaderboard"}} class="active" {{end}}><a href="/leaderboard">Leaderboard</a></li>
+	</ul>
 	<ul class="nav navbar-nav navbar-right">
 	 {{if .Username}} <!-- logged in -->
 	  <li class="dropdown">

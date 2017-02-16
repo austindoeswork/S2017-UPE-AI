@@ -158,7 +158,15 @@ func (u *GreaseMonkey) ReceiveDamage(damage int) {
 }
 func (u *GreaseMonkey) Prep(owner *Player, opponent *Player) {
 	u.move = true // grease monkeys only move if they don't heal ANYTHING within range
-	for _, element := range owner.Units {
+	var lane []Unit
+	if u.y == TOPY {
+		lane = owner.Top
+	} else if u.y == MIDY {
+		lane = owner.Mid
+	} else {
+		lane = owner.Bot
+	}
+	for _, element := range lane {
 		if element == u { // it doesn't heal itself
 			continue
 		}
@@ -837,12 +845,24 @@ func (u *Gandhi) Iterate(owner *Player, opponent *Player) {
 }
 func (u *Gandhi) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 500000)
-	for _, element := range owner.Units {
+	var myLane []Unit
+	var theirLane []Unit
+	if u.y == TOPY {
+		myLane = owner.Top
+		theirLane = opponent.Top
+	} else if u.y == MIDY {
+		myLane = owner.Mid
+		theirLane = opponent.Mid
+	} else {
+		myLane = owner.Bot
+		theirLane = opponent.Bot
+	}
+	for _, element := range myLane {
 		if element != u && intAbsDiff(element.Y(), u.y) <= 1 { // ghetto way of checking lane
 			element.ReceiveDamage(1000000)
 		}
 	}
-	for _, element := range opponent.Units {
+	for _, element := range theirLane {
 		if intAbsDiff(element.Y(), u.y) <= 1 { // ghetto way of checking lane
 			element.ReceiveDamage(1000000)
 		}

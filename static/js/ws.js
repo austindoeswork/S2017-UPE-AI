@@ -52,12 +52,16 @@ function wsopen(wspath, wsroute, gname, devkey) {
     }
 
     ws.onopen = function(evt) {
-	if (devkey != "") {
-	    send(devkey);
-	    setstatus("Sent devkey to server", "label label-info");
-	}
-	else {
-	    setstatus("Please enter your devkey", "label label-warning");
+	if (wsroute != "/wswatch") {
+	    if (devkey != "") {
+		send(devkey);
+		setstatus("Sent devkey to server", "label label-info");
+	    }
+	    else {
+		setstatus("Please enter your devkey", "label label-warning");
+	    }
+	} else {
+	    setstatus("Websocket connected for watcher", "label label-info");
 	}
     }
     ws.onclose = function(evt) {

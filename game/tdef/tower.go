@@ -37,10 +37,10 @@ func NewInvincibleCore(x, y, owner int) Unit {
 		x:      x,
 		y:      y,
 		owner:  owner,
-		damage: 10000,
+		damage: 1000000,
 		maxhp:  10000,
 		hp:     10000,
-		speed:  20,
+		speed:  1,
 		stride: 0,
 		reach:  300,
 	}}
@@ -170,9 +170,25 @@ func (u *Firewall) ReceiveDamage(damage int) {
 func (u *Firewall) Prep(owner *Player, opponent *Player) {}
 func (u *Firewall) Iterate(owner *Player, opponent *Player) {
 	if u.enabled == true {
-		for _, element := range opponent.Units {
-			if intAbsDiff(element.X(), u.x) <= u.reach && intAbsDiff(element.Y(), u.y) <= u.reach {
-				element.ReceiveDamage(u.damage)
+		if intAbsDiff(TOPY, u.y) <= u.reach {
+			for _, element := range opponent.Top {
+				if intAbsDiff(element.X(), u.x) <= u.reach {
+					element.ReceiveDamage(u.damage)
+				}
+			}
+		}
+		if intAbsDiff(MIDY, u.y) <= u.reach {
+			for _, element := range opponent.Mid {
+				if intAbsDiff(element.X(), u.x) <= u.reach {
+					element.ReceiveDamage(u.damage)
+				}
+			}
+		}
+		if intAbsDiff(BOTY, u.y) <= u.reach {
+			for _, element := range opponent.Bot {
+				if intAbsDiff(element.X(), u.x) <= u.reach {
+					element.ReceiveDamage(u.damage)
+				}
 			}
 		}
 	}
@@ -550,7 +566,27 @@ func (u *JammingStation) ReceiveDamage(damage int) {
 func (u *JammingStation) Prep(owner *Player, opponent *Player) {}
 func (u *JammingStation) Iterate(owner *Player, opponent *Player) {
 	if u.enabled == true {
-		for _, element := range opponent.Units {
+		for _, element := range opponent.Top {
+			if intAbsDiff(element.X(), u.x) <= u.reach && intAbsDiff(element.Y(), u.y) <= u.reach {
+				if element.Speed() < 15 { // minimum speed
+					element.SetSpeed(element.Speed() + 1)
+				}
+				if element.Stride() > 3 { // minimum stride
+					element.SetStride(element.Stride() - 1)
+				}
+			}
+		}
+		for _, element := range opponent.Mid {
+			if intAbsDiff(element.X(), u.x) <= u.reach && intAbsDiff(element.Y(), u.y) <= u.reach {
+				if element.Speed() < 15 { // minimum speed
+					element.SetSpeed(element.Speed() + 1)
+				}
+				if element.Stride() > 3 { // minimum stride
+					element.SetStride(element.Stride() - 1)
+				}
+			}
+		}
+		for _, element := range opponent.Bot {
 			if intAbsDiff(element.X(), u.x) <= u.reach && intAbsDiff(element.Y(), u.y) <= u.reach {
 				if element.Speed() < 15 { // minimum speed
 					element.SetSpeed(element.Speed() + 1)
@@ -607,8 +643,28 @@ func (u *Hotspot) ReceiveDamage(damage int) {
 func (u *Hotspot) Prep(owner *Player, opponent *Player) {}
 func (u *Hotspot) Iterate(owner *Player, opponent *Player) {
 	if u.enabled == true {
-		for _, element := range owner.Units {
-			if intAbsDiff(element.Y(), u.y) <= 100 {
+		if intAbsDiff(TOPY, u.y) <= u.reach {
+			for _, element := range owner.Top {
+				element.SetDamage(element.Damage() + 1)
+				if element.HP() < element.MaxHP() {
+					element.SetHP(element.HP() + 10)
+					if element.HP() > element.MaxHP() {
+						element.SetHP(element.MaxHP())
+					}
+				}
+			}
+		} else if intAbsDiff(MIDY, u.y) <= u.reach {
+			for _, element := range owner.Mid {
+				element.SetDamage(element.Damage() + 1)
+				if element.HP() < element.MaxHP() {
+					element.SetHP(element.HP() + 10)
+					if element.HP() > element.MaxHP() {
+						element.SetHP(element.MaxHP())
+					}
+				}
+			}
+		} else {
+			for _, element := range owner.Bot {
 				element.SetDamage(element.Damage() + 1)
 				if element.HP() < element.MaxHP() {
 					element.SetHP(element.HP() + 10)
@@ -640,7 +696,7 @@ func NewHotspot(x, y, owner int) Unit {
 		hp:       400,
 		speed:    10,
 		stride:   0,
-		reach:    300,
+		reach:    50,
 		enabled:  true,
 		infected: false,
 	}}

@@ -11,6 +11,8 @@ import (
 	"os" // when calling ExecuteTemplate you can use os.Stdout instead to output to screen
 
 	"math/rand" // used for the main game TV move generation (MOVE FROM HERE)
+	"bytes" // used for main game TV move generation (MOVE FROM HERE)
+	
 	"regexp"
 	"strconv"
 
@@ -39,21 +41,36 @@ type Server struct {
 }
 
 // TODO MOVE FROM THIS FILE
-// generates a unit move bXX YY, where XX is 00 thru 11 and YY is 01 thru 03
+// generates either a troop move bXX YY, where XX is 00 thru 11 and YY is 01 thru 03
+// or generates a tower move bXX YY, where XX is 50 thru 59 and YY is 01 thru 65
 // these are fed into the sample game TV
 func generateSampleGameMove() []byte {
-	var move []byte
-	unitChoice := rand.Intn(12)
-	if unitChoice >= 10 {
-		move = append(move, []byte(strconv.Itoa(unitChoice))...)
-	} else {
-		move = append(move, append([]byte("0"), []byte(strconv.Itoa(unitChoice))...)...)
+	var buffer bytes.Buffer
+	buffer.Write([]byte("b"))
+	troopOrTower := rand.Intn(2)
+	if troopOrTower == 0 { // make troop
+		troopChoice := rand.Intn(12)
+		if troopChoice >= 10 {
+			buffer.WriteString(strconv.Itoa(troopChoice))
+		} else {
+			buffer.Write([]byte("0"))
+			buffer.WriteString(strconv.Itoa(troopChoice))
+		}
+		buffer.Write([]byte(" 0"))
+		buffer.WriteString(strconv.Itoa(rand.Intn(3) + 1)) // lane choice
+	} else { // troopOrTower == 1, make tower
+		towerChoice := rand.Intn(10) + 50
+		plotChoice := rand.Intn(66)
+		buffer.WriteString(strconv.Itoa(towerChoice))
+		buffer.Write([]byte(" "))
+		if plotChoice >= 10 {
+			buffer.WriteString(strconv.Itoa(plotChoice))
+		} else {
+			buffer.Write([]byte("0"))
+			buffer.WriteString(strconv.Itoa(plotChoice))
+		}
 	}
-	move = append([]byte("b"), move...)
-	laneChoice := rand.Intn(3) + 1
-	move = append(move, append([]byte(" 0"), []byte(strconv.Itoa(laneChoice))...)...)
-	// fmt.Println(string(move[:]))
-	return move
+	return buffer.Bytes()
 }
 
 // TODO MOVE FROM THIS FILE
@@ -151,7 +168,7 @@ func (s *Server) Start() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.staticDir))))
 	http.HandleFunc("/game", s.handleGame)
 	http.HandleFunc("/gamelist", s.handleGameList)
-	// http.HandleFunc("/userlist", s.handleUserList)
+	http.HandleFunc("/leaderboard", s.handleLeaderboard)
 	http.HandleFunc("/signout", s.handleLogout) // ?? for some reason on my machine if this is logout it doesn't detect it...
 	http.HandleFunc("/login", s.handleLogin)
 	http.HandleFunc("/signup", s.handleSignup)

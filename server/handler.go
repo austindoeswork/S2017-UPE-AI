@@ -73,6 +73,19 @@ func (s *Server) handleLogout(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, "/", http.StatusFound)
 }
 
+func (s *Server) handleLeaderboard(res http.ResponseWriter, req *http.Request) {
+	data, err := s.db.GetLeaderboard()
+	if err != nil {
+		s.ExecuteUserTemplate(res, req, "leaderboard", Page{Title: "Leaderboard", Data: nil})
+	} else {
+		for index, _ := range data {
+			data[index].ProfilePicture, _ = LoadIdenticon(data[index].ProfilePicture)
+		}
+		s.ExecuteUserTemplate(res, req, "leaderboard", Page{Title: "Leaderboard", Data: data})
+	}
+}
+
+
 // TODO should this be replaced with a try catch block?
 // called by /profile
 func (s *Server) handleProfile(res http.ResponseWriter, req *http.Request) {

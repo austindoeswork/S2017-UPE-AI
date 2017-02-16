@@ -25,9 +25,12 @@
 	  <li><a href="#objectives">Objectives 101</a></li>
 	  <li><a href="#gameconstants">Game Constants</a></li>
           <li><a href="#enginedetails">Engine Details</a></li>
-          <li><a href="#developingyourai">Developing your AI</a></li>
+	  <li>Developing your AI (coming soon)</li>
+	  <li>Sample Output (coming soon)</li>
+	  <li>Interpreting Output (coming soon</li>
+          <!-- <li><a href="#developingyourai">Developing your AI</a></li>
 	  <li><a href="#sampleoutput">Sample Output</a></li>
-	  <li><a href="#interpretingoutput">Interpreting Output</a></li>
+	  <li><a href="#interpretingoutput">Interpreting Output</a></li>-->
 	</ul>
       </p>
     </div>
@@ -53,7 +56,7 @@
 
 	<p>You can check out the code on <a href="https://github.com/austindoeswork/S2017-UPE-AI">github</a>.</p>
 
-	<p>The game progresses in real-time at a rate of 60 FPS, where players can input up to a single action per frame. These actions can either consist of buying a tower in one of the plots that exist along each of the lanes, or buying a troop to progress down any of the lanes. Note that you don't actually directly control the actions of any particular unit after its been created, they all have set AIs. You'll find that just managing where/when to buy them will still be quite a handful!</p>
+	<p>The game progresses in real-time at a rate of 30 FPS, where players can input up to a single action per frame. These actions can either consist of buying a tower in one of the plots that exist along each of the lanes, or buying a troop to progress down any of the lanes. Note that you don't actually directly control the actions of any particular unit after its been created, they all have set AIs. You'll find that just managing where/when to buy them will still be quite a handful!</p>
 
 	<p>You buy troops/towers using <b>bits</b>, the local currency. You get these bits every second depending on what your <b>income</b> is (which can be increased/decreased throughout the course of the game). You have a base income of 500 bits/sec when the game starts.</p>
       </div>
@@ -68,7 +71,7 @@
       <li><b>Enum</b>: Each troop and tower has an enum value that tells the game what type of unit it is.</li>
       <li><b>Damage</b>: Most troops are single-target shooters (as opposed to AOE), and damage is how much damage this troop will do in a single step.</li>
       <li><b>Cost</b>: You must have at least X bits and Y income to purchase this unit on a given turn. The vast majority of troops simply cost a bit value.</li>
-      <li><b>Speed</b>: This troop acts every (60/speed) frames. Higher speed means it moves more frequently.</li>
+      <li><b>Speed</b>: This troop acts every (30/speed) frames. Higher speed means it moves more frequently.</li>
       <li><b>Stride</b>: When this troop chooses to move, it will move (stride) pixels in the direction of its player. If you are the blue player, the troop will move to the right. If red, left.</li>
       <li>Additionally, some troops have special characteristics that separate them from the crowd. Make sure to read all of the troops below!
     </ul>
@@ -83,7 +86,7 @@
 	    Nut
 	  </p>
 	  <p>
-	    <b>Nuts</b> are standard foot-soldier with below average HP, average stride/reach and high speed/damage. This unit is great for high DPS but needs to be supplemented with meatier troops. The Nut is the cheapest unit in the game, and the most cost efficient.
+	    <b>Nuts</b> are standard foot-soldiers with below average HP, average stride/reach and high speed/damage. This unit is great for high DPS (damage per second) but needs to be supplemented with meatier troops. The Nut is the cheapest unit in the game, and the most cost efficient.
 	  </p>
 	  <p>
 	    Nuts move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
@@ -223,7 +226,7 @@
 	    Grease Monkey
 	  </p>
 	  <p>
-	    <b>Grease Monkeys</b> are healer troops that heals all friendly troops by a fixed amount in a small AOE around it.
+	    <b>Grease Monkeys</b> are healer troops that heal all friendly troops by a fixed amount in a small range around it.
 	  </p>
 	  <p>
 	    Grease Monkeys don't really attack, but they will either choose to heal or move on any given step. They will always choose to heal if there is a damaged (HP < MaxHP) troop within its range. Healing can never take a unit above its Max HP.
@@ -927,7 +930,7 @@
       <li><b>Enum</b>: Each troop and tower has an enum value that tells the game what type of unit it is.</li>
       <li><b>Damage</b>: If a tower deals damage (and there are many that do and do not), this is how much damage this troop will do in a single step.</li>
       <li><b>Cost</b>: You must have at least X bits and Y income to purchase this unit on a given turn. Towers pretty much all require an upfront bit cost and also an income cost.</li>
-      <li><b>Speed</b>: This tower acts every (60/speed) frames. Higher speed means it moves more frequently.</li>
+      <li><b>Speed</b>: This tower acts every (30/speed) frames. Higher speed means it moves more frequently.</li>
     </ul>
     <p>
       Just like with troops, you submit a buy action for a tower in a specific plot. Note that you can only build plots within your territory, which will be explained later. After the tower is created, it'll run on its own AI, so you don't have to worry about coding one for it!
@@ -1249,7 +1252,7 @@
 		<b>Income Boost</b>
 	      </td>
 	      <td>
-		100 income, which increases linearly at a rate of 4 income every 60 frames until a max value of 500 income
+		100 income, which increases linearly at a rate of 4 income every 30 frames until a max value of 500 income
 	      </td>
 	    </tr>
 	  </table>
@@ -1344,7 +1347,7 @@
 	    <b>Jamming Stations</b> are crippling towers that slow the stride and speed of enemy troops in a medium sized range around it. Pretty beefy towers, with a moderate cost.
 	  </p>
 	  <p>
-	    In the backend, speed is coded in the opposite direction -- units know that they act every X frames as opposed to acting with a speed of 60 FPS / X speed. A crippling tower attack increases the number of frames between troop actions by one up until a minimum value of 1 action per 15 frames (or a speed of 4), and reduces the troop's stride by 1 to a min value of 3 stride.
+	    In the backend, speed is coded in the opposite direction -- units know that they act every X frames as opposed to acting with a speed of 30 FPS / X speed. A crippling tower attack increases the number of frames between troop actions by one up until a minimum value of 1 action per 15 frames (or a speed of 4), and reduces the troop's stride by 1 to a min value of 3 stride.
 	  </p>
 	  <table class="table">
 	    <tr>
@@ -1451,7 +1454,7 @@
       </dl>
       <a href="#toc">Back to top</a>
       <h4 id="objectives">Objectives 101</h4>
-    <p class="lead">As mentioned before, you spawn with a main core that you need to protect at all costs. You die if it dies. Additionally, you have three lane objectives that you should protect as secondary objectives, because they affect your territory space (TO BE IMPLEMENTED). Lane objectives spawn with you, but don't get created for any other reason.
+    <p class="lead">As mentioned before, you spawn with a main core that you need to protect at all costs. You die if it dies. Additionally, you have three lane objectives that you should protect as secondary objectives, because they affect your territory space. Lane objectives spawn with you, but don't get created for any other reason.
 
       <dl class="dl-horizontal">
 	<dt><!--<img src="/static/img/peashooter.png"></dt>--> (IMAGE GOES HERE)
@@ -1556,9 +1559,12 @@
       </dl>
       <a href="#toc">Back to top</a>
       <h4 id="gameconstants">Game Constants</h4>
-      <img src="static/img/background.png">
-      For the purposes of this entire document, (0, 0) is the bottom left corner and (1600, 600) is the top right corner of the screen.
+      <img src="static/img/background.png" width="100%">
       <table class="table">
+	<tr>
+	  <td>Game Orientation</td>
+	  <td>(0, 0) is the bottom left corner and (1600, 600) is the top right corner of the screen.</td>
+	</tr>
 	<tr>
 	  <td>Game Dimensions</td>
 	  <td>1600px (width) by 600px (height)</td>
@@ -1593,7 +1599,7 @@
       <li>Towers and troops are cleaned up if they have sub-zero HP.</li>
       <li>If a player's main core is seen to be dead, the game terminates.</li>
       <a href="#toc">Back to top</a>
-      <h3 id="developingyourai">Developing your AI</h3>
+      <!-- <h3 id="developingyourai">Developing your AI</h3>
       <dl class="dl-horizontal">
 	<dt>Coding your AI</dt>
 	<dd><p>All of the game logic is handled internally on the server! All you need to worry about is how you want to interpret the board state into a move. Read the Sample Output breakdown below for more details on how to do that. <b>We've also provided some sample AIs to get you get started!</b> See below.
@@ -1807,7 +1813,7 @@
 	</dd>
       </dl>
       <a href="#toc">Back to top</a>
-  </div>
+  </div> -->
   <br><center>Any additional questions? Reach out! Email Darwin Ding at dingd@rpi.edu</center>
 </section>
 {{template "footer" .}}

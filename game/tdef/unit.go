@@ -72,6 +72,20 @@ type Unit interface {
 	Birth(owner *Player, opponent *Player)   // called by unit creation, used for interesting spawn effects like Gandhi
 }
 
+// THE FOLLOWING INTERFACE MAKES UNIT SLICES SORTABLE
+type SortByX []Unit
+func (u SortByX) Len() int {
+	return len(u)
+}
+
+func (u SortByX) Swap(i, j int) {
+	u[i], u[j] = u[j], u[i]
+}
+
+func (u SortByX) Less(i, j int) bool {
+	return u[i].X() <= u[i].Y()
+}
+
 // UnitBase is a very basic implementation of a Unit that is overridden for all purposes
 // Even simple units like Nuts should pull from here. UnitBases are not meant to be actual units.
 type UnitBase struct {

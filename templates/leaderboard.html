@@ -1,0 +1,30 @@
+{{define "leaderboard"}}
+{{template "header" .}}
+
+<table class="table table-striped">
+  {{range .Data}} <!-- iterate thru all elements -->
+  <tr>
+    <td>
+      <div xid="profile-pic-small" class="col-md-6">
+	<img src="data:image/png;base64,{{.ProfilePicture}}" alt="Profile Picture">
+      </div>
+      <div class="col-md-6">
+	<div class="profile-item">
+	  <div class="name">Username</div>
+	  <div>{{.Username}}</div>
+	</div>
+	<div class="profile-item">
+	  <div class="name">Name</div>
+	  <div>{{.Name}}</div>
+	</div>
+	<div class="profile-item">
+	  <div class="name">ELO</div>
+	  <div>{{.ELO}}</div>
+	</div>
+    </td>
+  </tr>
+  {{end}}
+</table>
+
+{{template "footer" .}}
+{{end}}

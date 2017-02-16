@@ -167,9 +167,9 @@ func (d *DB) GetUser(username string) (*User, error) {
 }
 
 // GetUserList gets all users, pretty much exclusively for display
-func (d *DB) GetUserList() ([]User, error) {
+func (d *DB) GetLeaderboard() ([]User, error) {
 	users := []User{}
-	rows, err := d.db.Query("SELECT name, email, ELO, pictureLoc, apikey, username FROM users")
+	rows, err := d.db.Query("SELECT name, email, ELO, pictureLoc, username FROM users")
 	if err != nil {
 		return nil, err
 	}
@@ -178,9 +178,8 @@ func (d *DB) GetUserList() ([]User, error) {
 		var email string
 		var elo float64
 		var pictureLoc string
-		var apikey string
 		var username string
-		err = rows.Scan(&name, &email, &elo, &pictureLoc, &apikey, &username)
+		err = rows.Scan(&name, &email, &elo, &pictureLoc, &username)
 		if err != nil {
 			return nil, err
 		}
@@ -190,7 +189,6 @@ func (d *DB) GetUserList() ([]User, error) {
 			ProfilePicture: pictureLoc,
 			Username:       username,
 			ELO:            elo,
-			Apikey:         apikey, // TODO: GET RID OF SHOWING APIKEYS TO EVERYONE ON USERLIST LOL
 		})
 	}
 	return users, nil
