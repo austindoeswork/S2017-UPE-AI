@@ -10,9 +10,8 @@ import (
 	"net/http"
 	"time"
 
-	"bufio" // file-reading imports to deal with CREDENTIALS file
+	// file-reading imports to deal with CREDENTIALS file
 	"log"
-	"os"
 
 	"errors"
 
@@ -34,38 +33,26 @@ It works as a basic form of encryption, but it is still symmetric.
 It should be pretty crackable assuming someone wants to put in the time, but it's very simple to improve the security here
 and the worst case scenario is someone gets to see someone else's apikey, which is not the end of the world.
 */
-func NewDB() *DB {
-	var credentials string
-	file, err := os.Open("dbinterface/CREDENTIALS")
-	if err != nil { // default, if credentials doesn't exist
-		credentials = "root:@/" // USAGE: "username:password@IP-address/"
-	} else { // TODO: add IP address to CREDENTIALS file?
-		defer file.Close()
-		scanner := bufio.NewScanner(file)
-		scanner.Scan() // get username "user:<username>"
-		text := scanner.Text()
-		credentials = text[5:]
-		scanner.Scan() // get password "pass:<password>"
-		text = scanner.Text()
-		credentials += ":" + text[5:] + "@/"
-	}
-	db, err := sql.Open("mysql", credentials) // assumes there is a MySQL instance existing with user root and no password
+func makeCred(dbuser, dbpass, dbaddr string) string {
+	return dbuser + ":" + dbpass + "@" + dbaddr + "/"
+}
+func NewDB(dbaddr, dbname, dbuser, dbpass string) *DB {
+	creds := makeCred(dbuser, dbpass, dbaddr)
+	db, err := sql.Open("mysql", creds)
 	if err != nil {
 		panic(err)
 	}
 
-	// CREATES DATABASE aicomp IF IT DOESN'T EXIST
-	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS aicomp;")
+	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS " + dbname + ";")
 	if err != nil {
 		panic(err)
 	}
 
-	db, err = sql.Open("mysql", credentials+"aicomp")
+	db, err = sql.Open("mysql", creds+dbname)
 	if err != nil {
 		panic(err)
 	}
 
-	// CREATE TABLE users WITHIN aicomp IF IT DOESN'T EXIST
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS users(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
 	createdAt DATETIME, name VARCHAR(50), email VARCHAR(50), username VARCHAR(50), ELO FLOAT,
 	pictureLoc VARCHAR(50), password VARCHAR(120), apikey VARCHAR(50));`)
