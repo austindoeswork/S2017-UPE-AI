@@ -67,6 +67,9 @@ func (p *Player) SetBits(bits int) {
 
 // returns true if player can afford unit, false otherwise
 func (p *Player) BuyTroop(lane, enum int, opponent *Player) bool {
+	if p.demoGame == true && len(p.Top) + len(p.Mid) + len(p.Bot) >= 50 { // stops gameTV from overfilling
+		return false
+	}
 	var x int
 	if p.owner == 1 {
 		x = 0
@@ -128,7 +131,7 @@ func (p *Player) BuyTower(plot, enum int, opponent *Player) bool {
 
 // TROOPS CANNOT BE ADDED OUTSIDE OF THE LANES
 func (p *Player) AddUnit(unit Unit) {
-	if unit == nil || (p.demoGame == true && len(p.Top) + len(p.Mid) + len(p.Bot) >= 50) { // last clause stops the gameTV from overfilling
+	if unit == nil { // last clause stops the gameTV from overfilling
 		return
 	} else if unit.Y() == TOPY {
 		p.Top = append(p.Top, unit)

@@ -1,5 +1,15 @@
 # UPE AI COMP SPRING 2017
 
+## DEPLOYMENT
+
+First, run ./build_linux.sh, this will build the binary (we have been building on Go 1.7.3)
+
+Then run ./deploy.sh user@serverIPgoesHere, this will deploy all the necessaries onto the server.
+
+Make sure on the server, mysql-server is installed, and that after you deploy you edit the dbinterface/CREDENTIALS file to have correct username/password combo.
+
+On linux servers, you'll need to sudo the binary to allow it to run on port 80. sudo nohup ./S2017-UPE-AI & is the command I normally use to run the binary in the background (so that when the terminal closes, the binary does not stop running). The output will be logged in nohup.out, so you can still see crash logs.
+
 ## Installation
 
 Really convenient way to install Go: http://www.hostingadvice.com/how-to/install-golang-on-ubuntu/ (-Darwin)

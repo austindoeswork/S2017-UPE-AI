@@ -18,8 +18,25 @@ func (u *InvincibleCore) CheckBuyable(income, bits int) bool {
 func (u *InvincibleCore) ReceiveDamage(damage int) {}
 func (u *InvincibleCore) Prep(owner *Player, opponent *Player) {
 	if !u.VerifyTarget() {
-		unit, _ := opponent.FindClosestUnit(u)
-		u.target = unit
+		var minUnit Unit
+		minUnit = nil
+		if len(opponent.Top) > 0 &&
+			(minUnit == nil || intAbsDiff(u.X(), opponent.Top[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+			minUnit = opponent.Top[len(opponent.Top)-1]
+		}
+		if len(opponent.Mid) > 0 &&
+			(minUnit == nil || intAbsDiff(u.X(), opponent.Mid[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+			minUnit = opponent.Mid[len(opponent.Mid)-1]
+		}
+		if len(opponent.Bot) > 0 &&
+			(minUnit == nil || intAbsDiff(u.X(), opponent.Bot[len(opponent.Bot)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+			minUnit = opponent.Bot[len(opponent.Bot)-1]
+		}
+		if minUnit != nil && intAbsDiff(u.X(), minUnit.X()) > u.Reach() {
+			u.target = nil
+		} else {
+			u.target = minUnit
+		}
 	}
 }
 func (u *InvincibleCore) Iterate(owner *Player, opponent *Player) {
@@ -59,8 +76,25 @@ func (u *Core) ReceiveDamage(damage int) {
 }
 func (u *Core) Prep(owner *Player, opponent *Player) {
 	if !u.VerifyTarget() {
-		unit, _ := opponent.FindClosestUnit(u)
-		u.target = unit
+		var minUnit Unit
+		minUnit = nil
+		if len(opponent.Top) > 0 &&
+			(minUnit == nil || intAbsDiff(u.X(), opponent.Top[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+			minUnit = opponent.Top[len(opponent.Top)-1]
+		}
+		if len(opponent.Mid) > 0 &&
+			(minUnit == nil || intAbsDiff(u.X(), opponent.Mid[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+			minUnit = opponent.Mid[len(opponent.Mid)-1]
+		}
+		if len(opponent.Bot) > 0 &&
+			(minUnit == nil || intAbsDiff(u.X(), opponent.Bot[len(opponent.Bot)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+			minUnit = opponent.Bot[len(opponent.Bot)-1]
+		}
+		if minUnit != nil && intAbsDiff(u.X(), minUnit.X()) > u.Reach() {
+			u.target = nil
+		} else {
+			u.target = minUnit
+		}
 	}
 }
 func (u *Core) Iterate(owner *Player, opponent *Player) {
