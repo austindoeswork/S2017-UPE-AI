@@ -169,7 +169,7 @@ func (d *DB) GetUser(username string) (*User, error) {
 // GetUserList gets all users, pretty much exclusively for display
 func (d *DB) GetLeaderboard() ([]User, error) {
 	users := []User{}
-	rows, err := d.db.Query("SELECT name, email, ELO, pictureLoc, username FROM users")
+	rows, err := d.db.Query("SELECT name, email, ELO, pictureLoc, username FROM users ORDER BY ELO DESC")
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +193,6 @@ func (d *DB) GetLeaderboard() ([]User, error) {
 	}
 	return users, nil
 }
-
 
 func (d *DB) GetUserFromApiKey(apikey string) (*User, error) {
 	var username string

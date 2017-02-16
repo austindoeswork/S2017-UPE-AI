@@ -20,17 +20,32 @@ func (u *InvincibleCore) Prep(owner *Player, opponent *Player) {
 	if !u.VerifyTarget() {
 		var minUnit Unit
 		minUnit = nil
-		if len(opponent.Top) > 0 &&
-			(minUnit == nil || intAbsDiff(u.X(), opponent.Top[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
-			minUnit = opponent.Top[len(opponent.Top)-1]
-		}
-		if len(opponent.Mid) > 0 &&
-			(minUnit == nil || intAbsDiff(u.X(), opponent.Mid[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
-			minUnit = opponent.Mid[len(opponent.Mid)-1]
-		}
-		if len(opponent.Bot) > 0 &&
-			(minUnit == nil || intAbsDiff(u.X(), opponent.Bot[len(opponent.Bot)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
-			minUnit = opponent.Bot[len(opponent.Bot)-1]
+		if u.owner == 1 {
+			if len(opponent.Top) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Top[0].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Top[0]
+			}
+			if len(opponent.Mid) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Mid[0].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Mid[0]
+			}
+			if len(opponent.Bot) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Bot[0].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Bot[0]
+			}
+		} else if u.owner == 2 {
+			if len(opponent.Top) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Top[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Top[len(opponent.Top)-1]
+			}
+			if len(opponent.Mid) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Mid[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Mid[len(opponent.Mid)-1]
+			}
+			if len(opponent.Bot) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Bot[len(opponent.Bot)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Bot[len(opponent.Bot)-1]
+			}
 		}
 		if minUnit != nil && intAbsDiff(u.X(), minUnit.X()) > u.Reach() {
 			u.target = nil
@@ -78,17 +93,32 @@ func (u *Core) Prep(owner *Player, opponent *Player) {
 	if !u.VerifyTarget() {
 		var minUnit Unit
 		minUnit = nil
-		if len(opponent.Top) > 0 &&
-			(minUnit == nil || intAbsDiff(u.X(), opponent.Top[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
-			minUnit = opponent.Top[len(opponent.Top)-1]
-		}
-		if len(opponent.Mid) > 0 &&
-			(minUnit == nil || intAbsDiff(u.X(), opponent.Mid[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
-			minUnit = opponent.Mid[len(opponent.Mid)-1]
-		}
-		if len(opponent.Bot) > 0 &&
-			(minUnit == nil || intAbsDiff(u.X(), opponent.Bot[len(opponent.Bot)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
-			minUnit = opponent.Bot[len(opponent.Bot)-1]
+		if u.owner == 1 {
+			if len(opponent.Top) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Top[0].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Top[0]
+			}
+			if len(opponent.Mid) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Mid[0].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Mid[0]
+			}
+			if len(opponent.Bot) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Bot[0].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Bot[0]
+			}
+		} else if u.owner == 2 {
+			if len(opponent.Top) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Top[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Top[len(opponent.Top)-1]
+			}
+			if len(opponent.Mid) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Mid[len(opponent.Mid)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Mid[len(opponent.Mid)-1]
+			}
+			if len(opponent.Bot) > 0 &&
+				(minUnit == nil || intAbsDiff(u.X(), opponent.Bot[len(opponent.Bot)-1].X()) < intAbsDiff(minUnit.X(), u.X())) {
+				minUnit = opponent.Bot[len(opponent.Bot)-1]
+			}
 		}
 		if minUnit != nil && intAbsDiff(u.X(), minUnit.X()) > u.Reach() {
 			u.target = nil
@@ -439,6 +469,7 @@ func (u *StartUp) SetEnabled(owner *Player, enable bool) { // override of UnitBa
 
 func (u *StartUp) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 3000)
+	owner.SetIncome(owner.Income() + u.income)
 }
 func (u *StartUp) Die(owner *Player, opponent *Player) {
 	if u.enabled == true { // to avoid corner case where a disabled bank is killed before reenabling

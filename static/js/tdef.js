@@ -232,7 +232,7 @@ var timestamp = Date.now();
 function renderGrid(data) {
     frames++;
     d = JSON.parse(data);
-    units = d.p1.troops.concat(d.p2.troops);
+    units = d.p1.troops.concat(d.p2.troops); // TODO: make it so the top towers are drawn first, then the lane, then the bottom towers (prevents clipping weird)
     for (i = 0; i < d.p1.towers.length; i++) {
 	if (d.p1.towers[i] != 'nil') {
 	    units.push(d.p1.towers[i]);

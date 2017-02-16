@@ -95,7 +95,7 @@ func (u *Bolt) Prep(owner *Player, opponent *Player) {
 }
 func (u *Bolt) Iterate(owner *Player, opponent *Player) {
 	if u.target != nil {
-		u.target.ReceiveDamage(u.target.MaxHP()/20)
+		u.target.ReceiveDamage(u.target.MaxHP() / 20)
 	} else {
 		if u.owner == 1 {
 			u.x += u.stride
@@ -369,7 +369,7 @@ func NewAimbot(x, y, owner int) Unit {
 		hp:       100,
 		maxhp:    100,
 		stride:   5,
-		reach:    1000,
+		reach:    700,
 		enabled:  true,
 		infected: false,
 	}}
@@ -388,10 +388,10 @@ func (u *HardDrive) CheckBuyable(income, bits int) bool {
 	return bits >= 2500
 }
 func (u *HardDrive) ReceiveDamage(damage int) {
-	if damage < 30 || damage == 1000000 { // ghetto way of letting HardDrives get around Gandhi
+	if damage < 20 || damage == 1000000 { // ghetto way of letting HardDrives get around Gandhi
 		u.hp -= damage
 	} else {
-		u.hp -= 30
+		u.hp -= 20
 	}
 }
 func (u *HardDrive) Prep(owner *Player, opponent *Player) {
@@ -766,7 +766,7 @@ func (u *Malware) Iterate(owner *Player, opponent *Player) {
 	}
 }
 func (u *Malware) Birth(owner *Player, opponent *Player) {
-	owner.SetBits(owner.Bits() - 2500)
+	owner.SetBits(owner.Bits() - 6000)
 }
 func (u *Malware) Die(owner *Player, opponent *Player) {
 	if u.infected == true {

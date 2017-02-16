@@ -15,15 +15,15 @@ type Player struct {
 	bits   int // total number of coins
 
 	MainTower Unit // if this dies you die
- 
-	Top []Unit // list of top lane units
-	Mid []Unit // ditto for mid lane
-	Bot []Unit // ditto for bot lane
+
+	Top    []Unit         // list of top lane units
+	Mid    []Unit         // ditto for mid lane
+	Bot    []Unit         // ditto for bot lane
 	Towers [NUMPLOTS]Unit // list of all towers (CORE AND OBJECTIVES ARE NOT TOWERS), this is organized by plot
 
 	// special unit things
 	madeGandhi bool // true if Gandhi has been made (player cannot make another gandhi), false otherwise
-	demoGame bool
+	demoGame   bool
 }
 
 // Determine's a player's tiebreak score in the event of time running out
@@ -67,7 +67,7 @@ func (p *Player) SetBits(bits int) {
 
 // returns true if player can afford unit, false otherwise
 func (p *Player) BuyTroop(lane, enum int, opponent *Player) bool {
-	if p.demoGame == true && len(p.Top) + len(p.Mid) + len(p.Bot) >= 50 { // stops gameTV from overfilling
+	if p.demoGame == true && len(p.Top)+len(p.Mid)+len(p.Bot) >= 50 { // stops gameTV from overfilling
 		return false
 	}
 	var x int
@@ -160,7 +160,7 @@ func NewPlayer(owner int, demoGame bool) *Player {
 		income = 10000
 	} else {
 		mainTower = NewCore(corex, MIDY, owner) // need to figure out where maintowers belong, temporarily on midlane
-		bits = 1000000                          // TODO: change to 0 (made it ridic high for testing)
+		bits = 0
 		income = 500
 	}
 	return &Player{
@@ -168,11 +168,11 @@ func NewPlayer(owner int, demoGame bool) *Player {
 		income:    income,
 		bits:      bits,
 		MainTower: mainTower,
-		Top:     []Unit{NewObjective(objx, TOPY, owner)}, // inits lane objectives
-		Mid: []Unit{NewObjective(objx, MIDY, owner)},
-		Bot: []Unit{NewObjective(objx, BOTY, owner)},
+		Top:       []Unit{NewObjective(objx, TOPY, owner)}, // inits lane objectives
+		Mid:       []Unit{NewObjective(objx, MIDY, owner)},
+		Bot:       []Unit{NewObjective(objx, BOTY, owner)},
 		Towers:    [NUMPLOTS]Unit{},
-		demoGame: demoGame,
+		demoGame:  demoGame,
 	}
 }
 
@@ -180,54 +180,40 @@ func NewPlayer(owner int, demoGame bool) *Player {
 // binary search to find the *Unit closest to u in list based on X value
 func (p *Player) BinarySearchUnits(list []Unit, u Unit) Unit {
 	// empty list
-	if len(list) == 0 { return nil }
+	if len(list) == 0 {
+		return nil
+	}
 
 	start := 0
 	end := len(list) - 1
 
 	for start <= end {
 		mid := (start + end) / 2
-
-		// lower bound
-		if mid == 0 {
-			if len(list) == 1 {
-				return list[0]
-			} else {
-				if intAbsDiff(list[0].X(), u.X()) < intAbsDiff(list[1].X(), u.X()) {
-					return list[0]
-				} else {
-					return list[1]
-				}
-			}
-		}
-
-		// upper bound
-		if mid == len(list) - 1 {
-			return list[len(list) - 1]
-		}
-
-		// X value match exactly
-		if list[mid].X() == u.X() || list[mid+1].X() == u.X() {
-			return u
-		}
-
-		// range is good enough
-		if list[mid].X() < u.X() && list[mid+1].X() > u.X() {
-			if intAbsDiff(list[mid].X(), u.X()) < intAbsDiff(list[mid+1].X(), u.X()) {
-				return list[mid]
-			} else {
-				return list[mid+1]
-			}
-		}
-
-		// find the right range
-		if list[mid].X() < u.X() {
+		if u.X() > list[mid].X() {
 			start = mid + 1
+		} else if u.X() < list[mid].X() {
+			end = mid - 1
 		} else {
-			end = mid
+			break
 		}
 	}
-	return nil
+
+	var minUnit Unit
+	minUnit = nil
+	for i := start - 1; i <= end+1; i++ {
+		if i < 0 || i >= len(list) {
+			continue
+		}
+		if minUnit == nil || intAbsDiff(u.X(), minUnit.X()) > intAbsDiff(u.X(), list[i].X()) {
+			minUnit = list[i]
+		}
+	}
+
+	if intAbsDiff(minUnit.X(), u.X()) <= u.Reach() {
+		return minUnit
+	} else {
+		return nil
+	}
 }
 
 func getEuclidDist(unit1 Unit, unit2 Unit) float64 {
@@ -244,7 +230,7 @@ func (p *Player) FindClosestUnit(unit Unit) (Unit, float64) {
 		if found != nil {
 			dist := getEuclidDist(unit, found)
 			if intAbsDiff(unit.X(), found.X()) <= unit.Reach() &&
-				(minUnit == nil || minDist < dist) {
+				(minUnit == nil || dist < minDist) {
 				minUnit = found
 				minDist = dist
 			}
@@ -255,7 +241,7 @@ func (p *Player) FindClosestUnit(unit Unit) (Unit, float64) {
 		if found != nil {
 			dist := getEuclidDist(unit, found)
 			if intAbsDiff(unit.X(), found.X()) <= unit.Reach() &&
-				(minUnit == nil || minDist < dist) {
+				(minUnit == nil || dist < minDist) {
 				minUnit = found
 				minDist = dist
 			}
@@ -266,17 +252,17 @@ func (p *Player) FindClosestUnit(unit Unit) (Unit, float64) {
 		if found != nil {
 			dist := getEuclidDist(unit, found)
 			if intAbsDiff(unit.X(), found.X()) <= unit.Reach() &&
-				(minUnit == nil || minDist < dist) {
+				(minUnit == nil || dist < minDist) {
 				minUnit = found
 				minDist = dist
 			}
 		}
 	}
-	
+
 	if minUnit != nil {
 		minDist = math.Pow(float64(unit.X()-minUnit.X()), 2) + math.Pow(float64(unit.Y()-minUnit.Y()), 2)
 	}
-	
+
 	for _, element := range p.Towers {
 		if element == nil { // p.Towers will always be the total number of plots
 			continue
@@ -320,12 +306,12 @@ func (p *Player) ExportJSON(buffer *bytes.Buffer) { // used for exporting to scr
 	for i := 0; i < totalSize; i++ {
 		if i < len(p.Top) {
 			p.Top[i].ExportJSON(buffer)
-		} else if i - len(p.Top) < len(p.Mid) {
-			p.Mid[i - len(p.Top)].ExportJSON(buffer)
+		} else if i-len(p.Top) < len(p.Mid) {
+			p.Mid[i-len(p.Top)].ExportJSON(buffer)
 		} else {
-			p.Bot[i - len(p.Top) - len(p.Mid)].ExportJSON(buffer)
+			p.Bot[i-len(p.Top)-len(p.Mid)].ExportJSON(buffer)
 		}
-		if i != totalSize - 1 {
+		if i != totalSize-1 {
 			buffer.WriteString(",")
 		}
 	}
@@ -361,7 +347,7 @@ func (p *Player) prepLane(other *Player, lane []Unit, frame int64) {
 // if they have an invalid target, but find a new valid one, they'll shoot at it
 // else, they'll move.
 // this function call does not actually trigger shooting or moving, this just sets the "target" ptr of each unit.
-func (p *Player) PrepUnits(other *Player, frame int64) {	
+func (p *Player) PrepUnits(other *Player, frame int64) {
 	p.prepLane(other, p.Top, frame)
 	p.prepLane(other, p.Mid, frame)
 	p.prepLane(other, p.Bot, frame)
@@ -415,17 +401,16 @@ Functions that pertain to the cleanup of units in the game, this step happens at
 Troops/towers that die (go below 0 HP) do not die until this phase, which is when everything is cleaned at once.
 */
 
-func (p *Player) triggerTroopDeath(other *Player, lane []Unit) []Unit {
+func (p *Player) triggerTroopDeath(other *Player, lane []Unit) {
 	for _, element := range lane { // first pass, let the dead units have their death
 		if element.HP() <= 0 {
 			element.Die(p, other) // we iterate twice because sometimes the length of p.Units changes in Die()
 		}
 	}
-	return lane
 }
 
 func (p *Player) removeDeadTroops(lane []Unit) []Unit {
-	alive := 0                        // number of alive units
+	alive := 0                     // number of alive units
 	for _, element := range lane { // second pass, remove dead units
 		if element.HP() > 0 {
 			lane[alive] = element
@@ -438,13 +423,13 @@ func (p *Player) removeDeadTroops(lane []Unit) []Unit {
 
 // units with <=0 hp don't die until this step, they are cleaned up here.
 func (p *Player) UnitCleanup(other *Player) {
-	p.Top = p.triggerTroopDeath(other, p.Top)
-	p.Mid = p.triggerTroopDeath(other, p.Mid)
-	p.Bot = p.triggerTroopDeath(other, p.Bot)
+	p.triggerTroopDeath(other, p.Top)
+	p.triggerTroopDeath(other, p.Mid)
+	p.triggerTroopDeath(other, p.Bot)
 	p.Top = p.removeDeadTroops(p.Top)
 	p.Mid = p.removeDeadTroops(p.Mid)
 	p.Bot = p.removeDeadTroops(p.Bot)
-	
+
 	for index, element := range p.Towers {
 		if element == nil { // note that Towers is an array that will always be of size NUMPLOTS, not a slice
 			continue

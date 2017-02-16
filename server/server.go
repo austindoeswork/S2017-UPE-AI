@@ -10,9 +10,9 @@ import (
 
 	"os" // when calling ExecuteTemplate you can use os.Stdout instead to output to screen
 
+	"bytes"     // used for main game TV move generation (MOVE FROM HERE)
 	"math/rand" // used for the main game TV move generation (MOVE FROM HERE)
-	"bytes" // used for main game TV move generation (MOVE FROM HERE)
-	
+
 	"regexp"
 	"strconv"
 
@@ -47,9 +47,12 @@ type Server struct {
 func generateSampleGameMove() []byte {
 	var buffer bytes.Buffer
 	buffer.Write([]byte("b"))
-	troopOrTower := rand.Intn(2)
-	if troopOrTower == 0 { // make troop
+	troopOrTower := rand.Intn(4)
+	if troopOrTower >= 1 { // make troop
 		troopChoice := rand.Intn(12)
+		if troopChoice == 4 { // aimbots are not fun to watch T B H
+			troopChoice = rand.Intn(12)
+		}
 		if troopChoice >= 10 {
 			buffer.WriteString(strconv.Itoa(troopChoice))
 		} else {
@@ -58,7 +61,7 @@ func generateSampleGameMove() []byte {
 		}
 		buffer.Write([]byte(" 0"))
 		buffer.WriteString(strconv.Itoa(rand.Intn(3) + 1)) // lane choice
-	} else { // troopOrTower == 1, make tower
+	} else { // make tower
 		towerChoice := rand.Intn(10) + 50
 		plotChoice := rand.Intn(66)
 		buffer.WriteString(strconv.Itoa(towerChoice))

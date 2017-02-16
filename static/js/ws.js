@@ -17,7 +17,6 @@ function addListeners() {
 function wsplay() {
     var wspath = document.getElementById("wspathinput").value;
     var wsroute = "/wsplay";
-    // var gname = document.getElementById("gamename").value;
     var devkey = document.getElementById("devkey").value;
     wsopen(wspath, wsroute, "", devkey);
 }

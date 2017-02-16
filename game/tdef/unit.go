@@ -37,8 +37,8 @@ Unit enum:
 
 // Troops and towers are units. All of their internal variables are private to promote good coding practice
 type Unit interface {
-	ExportJSON(buffer *bytes.Buffer)  // ExportJSON is used for sending information to the front-end
-	Enum() int          // type of unit (i.e. 0 is nut)
+	ExportJSON(buffer *bytes.Buffer) // ExportJSON is used for sending information to the front-end
+	Enum() int                       // type of unit (i.e. 0 is nut)
 	Owner() int
 	X() int
 	Y() int
@@ -74,6 +74,7 @@ type Unit interface {
 
 // THE FOLLOWING INTERFACE MAKES UNIT SLICES SORTABLE
 type SortByX []Unit
+
 func (u SortByX) Len() int {
 	return len(u)
 }
