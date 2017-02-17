@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	serverURL := "ws://localhost:8080/wsplay"
-	devkey := "LaurettasEagerlyBoorishSponge"
+	serverURL := "ws://npcompete.io/wsplay"
+	devkey := "YOURKEYHERE"
 
 	//open websocket
 	var dialer *websocket.Dialer
@@ -26,8 +26,10 @@ func main() {
 	checkErr(err)
 	fmt.Printf("%s\n", msg)
 
+	//send game inputs
 	for {
 		_, msg, err = conn.ReadMessage()
+		_ = msg
 		checkErr(err)
 		// fmt.Printf("%s\n", msg) // uncomment this to output all frames
 		conn.WriteMessage(1, []byte("b00 02"))
