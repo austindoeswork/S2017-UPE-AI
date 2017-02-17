@@ -82,6 +82,8 @@ func getConfig() (*config.Config, error) {
 		if err := c.Validate(); err != nil {
 			continue
 		}
+		cb, _ := json.MarshalIndent(&c, "", "  ")
+		fmt.Printf("config: %s\n%s\n", configPath, string(cb))
 		return &c, nil
 	}
 	return nil, errors.New("failed to read config")
