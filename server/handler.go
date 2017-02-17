@@ -280,6 +280,18 @@ func (s *Server) playConn(conn *websocket.Conn, gameName, userName string) {
 		}
 	}()
 
+	connectedMsg := struct {
+		Player   int
+		UserName string
+		GameName string
+	}{
+		gameCtrl.Player(),
+		userName,
+		gameName,
+	}
+
+	conn.WriteJSON(&connectedMsg)
+
 	gameInput := gameCtrl.Input()
 	gameOutput := gameCtrl.Output()
 
