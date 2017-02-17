@@ -221,17 +221,18 @@ func (t *TowerDefense) Start() error {
 				t.p2cmd = nil
 
 				//TODO send p1 & p2 fogged output
-				/* select {
-				case t.p1output <- t.stateJSON():
+				output := t.stateJSON()
+				select {
+				case t.p1output <- output:
 				default:
 				}
 				select {
-				case t.p2output <- t.stateJSON():
+				case t.p2output <- output:
 				default:
-				} */
+				}
 
 				//send delayed output
-				t.sendWatcher(t.stateJSON())
+				t.sendWatcher(output)
 
 				if t.demoGame == false &&
 					(!t.players[0].IsAlive() || !t.players[1].IsAlive() || t.frame == int64(t.fps*300)) {
