@@ -317,12 +317,12 @@ function draw(units){
 	
 	thisUnit.x = units[i].x;
 	thisUnit.y = GAME_HEIGHT - units[i].y - thisUnit.height;
-	/* if (thisUnit.scale.x < 0) {
-	    thisUnit.scale.x = -(thisUnit.y)/(GAME_HEIGHT);
+	if (units[i].y >= 425) {
+	    thisUnit.x = 300 + (GAME_WIDTH - 600)/GAME_WIDTH * thisUnit.x;
 	}
-	else {
-	    thisUnit.scale.x = (thisUnit.y)/(GAME_HEIGHT);
-	} */
+	else if (units[i].y >= 230) {
+	    thisUnit.x = 150 + (GAME_WIDTH - 300)/GAME_WIDTH * thisUnit.x;
+	}
 	if (units[i].enum == -1) { // objective towers kind of take up the entire lane
 	    thisUnit.y += thisUnit.height/4;
 	}

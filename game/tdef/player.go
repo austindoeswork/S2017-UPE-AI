@@ -194,12 +194,11 @@ func (p *Player) BinarySearchUnits(list []Unit, u Unit) Unit {
 		} else if u.X() < list[mid].X() {
 			end = mid - 1
 		} else {
-			break
+			return list[mid]
 		}
 	}
 
 	var minUnit Unit
-	minUnit = nil
 	for i := start - 1; i <= end+1; i++ {
 		if i < 0 || i >= len(list) {
 			continue
@@ -269,7 +268,7 @@ func (p *Player) FindClosestUnit(unit Unit) (Unit, float64) {
 		}
 		diffX := intAbsDiff(unit.X(), element.X())
 		diffY := intAbsDiff(unit.Y(), element.Y())
-		dist := math.Pow(float64(unit.X()-element.X()), 2) + math.Pow(float64(unit.Y()-element.Y()), 2)
+		dist := getEuclidDist(unit, element)
 		if (minUnit == nil || dist < minDist) && diffX <= unit.Reach() && diffY <= unit.Reach() {
 			minDist = dist
 			minUnit = element
@@ -340,6 +339,7 @@ func (p *Player) prepLane(other *Player, lane []Unit, frame int64) {
 			element.Prep(p, other)
 		}
 	}
+	
 }
 
 // iterates over each of a player's units to see whether they should shoot or move.

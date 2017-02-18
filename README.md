@@ -6,7 +6,7 @@ First, run ./build_linux.sh, this will build the binary (we have been building o
 
 Then run ./deploy.sh user@serverIPgoesHere, this will deploy all the necessaries onto the server.
 
-Make sure on the server, mysql-server is installed, and that after you deploy you edit the dbinterface/CREDENTIALS file to have correct username/password combo.
+Make sure on the server, mysql-server is installed, and that after you deploy you edit the npc.conf file to have correct username/password combo.
 
 On linux servers, you'll need to sudo the binary to allow it to run on port 80. sudo nohup ./S2017-UPE-AI & is the command I normally use to run the binary in the background (so that when the terminal closes, the binary does not stop running). The output will be logged in nohup.out, so you can still see crash logs.
 

@@ -7,7 +7,7 @@
       <p>
         <h1>Documentation</h1>
 	<p class="lead">We're still updating the game as we add new features, so this documentation might change up a little as we balance numbers and tweak values!</p>
-      Last edited: Web, Feb 15
+      Last edited: Sat, Feb 18
       </p>
     </div>
   </div>
@@ -25,7 +25,7 @@
 	  <li><a href="#objectives">Objectives 101</a></li>
 	  <li><a href="#gameconstants">Game Constants</a></li>
           <li><a href="#enginedetails">Engine Details</a></li>
-	  <li>Developing your AI (coming soon)</li>
+	  <li><a href="#developingyourai">Developing your AI</a></li>
 	  <li>Sample Output (coming soon)</li>
 	  <li>Interpreting Output (coming soon)</li>
           <!-- <li><a href="#developingyourai">Developing your AI</a></li>
@@ -1592,109 +1592,34 @@
       </table>
       <h4 id="enginedetails">Engine details</h4>
     <p>Each frame, the engine goes through a very predescribed set of actions in order to resolve game states as fairly as possible.
-    <p>The steps are as follows:
-      <li>Player inputs are read and resolved. If towers/troops are bought (and they can be afforded), they are spawned.</li>
-      <li>Each tower and troop decides what they are going to do, or if they can even do anything (this depends on their speed). (This is a preparation stage, and no tower/troop actually acts here.)</li>
-      <li>All towers and troops iterate.</li>
-      <li>Towers and troops are cleaned up if they have sub-zero HP.</li>
-      <li>If a player's main core is seen to be dead, the game terminates.</li>
-      <a href="#toc">Back to top</a>
-      <!-- <h3 id="developingyourai">Developing your AI</h3>
-      <dl class="dl-horizontal">
-	<dt>Coding your AI</dt>
-	<dd><p>All of the game logic is handled internally on the server! All you need to worry about is how you want to interpret the board state into a move. Read the Sample Output breakdown below for more details on how to do that. <b>We've also provided some sample AIs to get you get started!</b> See below.
-	  <p>For some inspiration on how best to play the game, hit up Games > Training Mode from the top nav bar!
-	  <p><b>Note that if a bot takes more than <strike>5 seconds</strike> <b>(Note: currently 15 seconds to deal with strange timeout issues)</b> to input a move, the game will be ended as a win for the other player. If the game was not sufficiently long enough (less than 3 moves), the game will be aborted instead, which will not award any elo points to either player.</b></dd>
-	<dt>Testing your bot<br>(AND QUALIFYING)</dt>
-	<dd><p>Before trying the game out on the actual matchmaking server, you should definitely try it against our practice bot! All it does is make random moves, and it never drops bombs. <b>Your matches against the practice bot will not affect your matchmaking rating at all.</b> To do this, have your AI send a post request to:
-	    <pre>http://aicomp.io/api/games/practice</pre>
-	    with the following information:
-	    <pre>{ devkey: your dev key goes here, username: your username goes here }</pre>
-	    This will simulate playing an actual game, and the server will act as normal sending you post responses to your moves in the form of the sample output before whenever it's your turn. You can follow the game real-time by going to Games > List Games and finding the one that involves your bot. Or, you can simply go to the following link to watch:
-	    <pre>http://aicomp.io/games/(game ID)</pre>
-	    To submit a move, send a post request to:
-	    <pre>http://aicomp.io/api/games/submit/(gameID as interpreted from output)</pre>
-	    with data:
-	    <pre>{ devkey: your dev key goes here, playerID: playerID as interpreted from output, move: your move to submit, see legal list below }</pre>
-	    Your AI is not going to get a post response until it's your move again (or if the game ends), so sit back and relax! You've submitted your move.
-	    <h4>Note that in order to qualify for the main events, you'll need to defeat our practice bot! It shouldn't be too bad... so go nuts!</h4>
-	    <br><br>
-	</dd>
-	<dt>Matchmaking details</dt>
-	<dd>To search for a game against a real opponent, have your AI send a post request to:
-	  <pre>http://aicomp.io/api/games/search</pre>
-	  with the following information:
-	  <pre>{ devkey: your dev key goes here, username: your username goes here }</pre>
-	  This will put your account into matchmaking. Once there are two players in matchmaking, the server will start a game between the two players. The server will send your AI a post response (in response to your matchmaking request) once a game has started AND it's your move. If you're the second player, the server will send your AI a post response after the first player moves. Note that whenever the server responds to your request with the board state, it's generally your turn.
-	  <br><br>When you've received the server output in JSON format, first interpret it and extract the gameID and playerID (see the Sample Output breakdown below). Then, in order to submit your move send a post request to:
-	  <pre>http://aicomp.io/api/games/submit/(gameID as interpreted from output)</pre>
-	  with data:
-	  <pre>{ devkey: your dev key goes here, playerID: playerID as interpreted from output, move: your move to submit, see legal list below }</pre>
-	  Your AI is not going to get a post response until it's your move again (or if the game ends), so sit back and relax! You've submitted your move.
-	  <br><br>
-	</dd>
-	<dt>Sample AIs<br>(Click to expand)</dt>
-	<dd>
-	  <uib-accordion close-others="oneAtATime">
-            <div uib-accordion-group class="panel-default" heading="&nbsp;Python Sample AI">
-              The below sample Python AI randomly generates moves and plays:
-	      <pre>
-		import time
-		import requests # if not installed already, run python -m pip install requests OR pip install requests, whatever you normally do
-		import random
-		r = requests.post('http://aicomp.io/api/games/search', data={'devkey': "devkey", 'username': 'username'}) # search for new game
-		json = r.json() # when request comes back, that means you've found a match! (validation if server goes down?)
-		print(json)
-		gameID = json['gameID']
-		playerID = json['playerID']
-		print(gameID)
-		print(playerID)
-		possibleMoves = ['mu', 'ml', 'mr', 'md', 'tu', 'tl', 'tr', 'td', 'b', '', 'op', 'bp', 'buy_count', 'buy_range', 'buy_pierce', 'buy_block']
-		output = {'state': 'in progress'}
-		while output['state'] != 'complete':
-		randomInt = random.randint(0,len(possibleMoves)-1)
-		r = requests.post('http://aicomp.io/api/games/submit/' + gameID, data={'playerID': playerID, 'move': possibleMoves[randomInt], 'devkey': "devkey"}); # submit sample move
-		json = r.json()
-		print(json)
-		output = json
-	      </pre>
-	    </div>
-	    <div uib-accordion-group class="panel-default" heading="&nbsp;Go Sample AI (thanks to Matt Poegel for writing this!)">
-              Download <a href="/sampleAIs/Golang Sample AI.zip">here</a> (Right Click > Save As), instructions are in the README file. (Thanks Matt!)
-	    </div>
-	    <div uib-accordion-group class="panel-default" heading="&nbsp;C++ Sample AI (thanks to Mike Yang for writing this!)">
-              Download <a href="/sampleAIs/C++ Sample AI.zip">here</a> (Right Click > Save As), instructions are in the CPP file. (Thanks Mike!)
-	    </div>
-	  </uib-accordion>
-	</dd>
-	<dt>Legal Moves</dt>
-	<dd>All of the legal moves are covered in depth above in the Game Rules, but just for your convenience...
-	  <uib-accordion close-others="oneAtATime">
-	    <div uib-accordion-group class="panel-default" heading="&nbsp;(Click here to expand)">
-              <ul>
-		<li><kbd>mu</kbd> - move up</li>
-		<li><kbd>ml</kbd> - move left</li>
-		<li><kbd>md</kbd> - move down</li>
-		<li><kbd>mr</kbd> - move right</li>
-		<li><kbd>tu</kbd> - turn up</li>
-		<li><kbd>tl</kbd> - turn left</li>
-		<li><kbd>td</kbd> - turn down</li>
-		<li><kbd>tr</kbd> - turn right</li>
-		<li><kbd>b</kbd> - place bomb</li>
-		<li><kbd>op</kbd> - shoot orange portal</li>
-		<li><kbd>bp</kbd> - shoot blue portal</li>
-		<li><kbd>(empty string)</kbd> - do nothing</li>
-		<li><kbd>buy_count</kbd> - costs 5, increases number of bombs you can have out by 1 (bomb count)</li>
-		<li><kbd>buy_pierce</kbd> - costs 5, increases range of your bombs after collision with solid objects</li>
-		<li><kbd>buy_range</kbd> - costs 5, increases raw range of bombs</li>
-		<li><kbd>buy_block</kbd> - costs &lt;value of block&gt;, creates a block in the square you’re facing assuming there’s not a solid object already there</li>
-		<li>Value formula (min 1, even if the formula returns 0): <pre>floor((board size - 1 - x) * x * (board size - 1 - y) * y * 10 / ((board size - 1)^4 / 16))</pre></li>
-	      </ul>
-	    </div>
-	</uib-accordion></dd>
-      </dl>
-      <a href="#toc">Back to top</a>
-      <h3 id="sampleoutput">Sample output</h3>
+    <p>The steps are as follows:</p>
+    <li>Player inputs are read and resolved. If towers/troops are bought (and they can be afforded), they are spawned.</li>
+    <li>Each tower and troop decides what they are going to do, or if they can even do anything (this depends on their speed). (This is a preparation stage, and no tower/troop actually acts here.)</li>
+    <li>All towers and troops iterate.</li>
+    <li>Towers and troops are cleaned up if they have sub-zero HP.</li>
+    <li>If a player's main core is seen to be dead, the game terminates.</li>
+    <a href="#toc">Back to top</a>
+    <h4 id="developingyourai">Developing your AI</h4>
+    <p class="lead">You're essentially building a websocket client, which pretty much all languages are capable of. If you're having trouble getting started, please feel free to expand off of the Sample AIs we've provided (below). We're going to keep expanding the list of sample AIs to try to cover the languages we think people will be developing in.</p>
+    <p>The workflow is as follows:</p>
+    <ul>
+      <li>Your client will create a connection to either <kbd>ws://npcompete.io/wsplay</kbd> (for matchmaking, which will match you against the next opponent that does this), or to <kbd>ws://npcompete.io/wsjoin?game=GAMENAME</kbd> (for joining a specific lobby, which will match you against the next player who joins that lobby as well).
+      <li>Once the connection is established, you need to send a message which is simply your devkey! Your devkey will be used to identify you for the competition, so make sure to know yours and not share it!
+      <li>While the websocket is open, feel free to send moves at your own volition! The game will be sending output at a rate of 30 FPS. This output will contain the game board state that you can see.
+    </ul>
+    <h5>Sample AIs</h5>
+    <p>Sample AIs can currently be found at the following directory for the following languages:</p>
+    <ul>
+      <li>Go: <a href="https://github.com/austindoeswork/S2017-UPE-AI/tree/master/examples/go">https://github.com/austindoeswork/S2017-UPE-AI/tree/master/examples/go</a>
+      <li>C++: <a href="https://github.com/austindoeswork/S2017-UPE-AI/tree/master/examples/c++">https://github.com/austindoeswork/S2017-UPE-AI/tree/master/examples/c++</a>
+    </ul>
+    <h5>Legal Moves</h5>
+    <p class="lead">As of right now, the only commands allowed are buy commands, either for towers or troops. All of these are pretty much formatted the same way, and will be described below.</p>
+    <p>Buying troops is formatted the following way: <kbd>bXX YY</kbd>, where XX is the enum of the troop (00 thru 11) and YY is the lane of the troop (01 thru 03). The enums of the troops are listed above in Troop 101. Lane 01 is top lane, 02 is mid lane and 03 is bot lane.</p>
+    <p>Buying towers is formatted very similarly, as: <kbd>bXX YY</kbd>, where XX is the enum of the tower (50 thru 59) and YY is the plot (00 thru 65). The enums of towers are similarly listed above in Tower 101. Plot 00 is in the top left corner, and plot 65 is in the bottom right corner. Remember that towers can only be built within your territory owned as a player (currently implemented as your half of the field, but will be changed soon).</p>
+    <p>When issuing a buy command, MAKE SURE THAT BOTH THE ENUM AND LOCATION IS 2 DIGITS, even if the enum or location is less than 10 (preface with 0 as necessary).</p>
+    <a href="#toc">Back to top</a>
+      <!--<h3 id="sampleoutput">Sample output</h3>
       <pre>
 	{
 	u'hardBlockBoard': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],

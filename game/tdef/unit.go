@@ -84,7 +84,7 @@ func (u SortByX) Swap(i, j int) {
 }
 
 func (u SortByX) Less(i, j int) bool {
-	return u[i].X() <= u[i].Y()
+	return u[i].X() <= u[j].X()
 }
 
 // UnitBase is a very basic implementation of a Unit that is overridden for all purposes

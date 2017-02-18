@@ -13,6 +13,7 @@ aicomp
 // ignore used key files
 dbinterface/words/used/*.txt
 dbinterface/CREDENTIALS
+npc.conf
 
 node_modules
 identicons
