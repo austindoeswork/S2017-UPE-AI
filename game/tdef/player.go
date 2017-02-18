@@ -339,7 +339,7 @@ func (p *Player) prepLane(other *Player, lane []Unit, frame int64) {
 			element.Prep(p, other)
 		}
 	}
-	
+
 }
 
 // iterates over each of a player's units to see whether they should shoot or move.
