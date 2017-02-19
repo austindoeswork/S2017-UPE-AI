@@ -50,7 +50,7 @@ func generateSampleGameMove() []byte {
 	troopOrTower := rand.Intn(4)
 	if troopOrTower >= 1 { // make troop
 		troopChoice := rand.Intn(12)
-		if troopChoice == 4 { // aimbots are not fun to watch T B H
+		for troopChoice == 4 { // aimbots are not fun to watch T B H
 			troopChoice = rand.Intn(12)
 		}
 		if troopChoice >= 10 {
@@ -141,7 +141,7 @@ func (s *Server) CreateSampleGameTV() {
 		if !s.gm.HasGame(gameName) { // with the invincibleCore, this should never end, but just in case??
 			return
 		}
-		time.Sleep(1000)
+		time.Sleep(1000) // how expensive is this? maybe replace with something else?
 		gameCtrl1.Input() <- generateSampleGameMove()
 		gameCtrl2.Input() <- generateSampleGameMove()
 	}
@@ -170,7 +170,7 @@ func (s *Server) Start() {
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.staticDir))))
 	http.HandleFunc("/game", s.handleGame)
-	http.HandleFunc("/gamelist", s.handleGameList)
+	http.HandleFunc("/watch", s.handleWatch)
 	http.HandleFunc("/leaderboard", s.handleLeaderboard)
 	http.HandleFunc("/signout", s.handleLogout) // ?? for some reason on my machine if this is logout it doesn't detect it...
 	http.HandleFunc("/login", s.handleLogin)

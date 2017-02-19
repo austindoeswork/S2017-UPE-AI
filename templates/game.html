@@ -9,26 +9,18 @@
   <div class="panel-heading">
     <h2 class="panel-title">
       Web controller
-      <button data-toggle="collapse" style="margin-left:20px" class="btn btn-primary" data-target="#controllerBody">Show/hide</button>
-      <button data-toggle="collapse" style="margin-left:20px" class="btn btn-primary" data-target="#helpBody">Toggle help</button>
     </h2>
   </div>
-  <div class="panel-body" class="collapse" id="controllerBody">
-    <blockquote id="helpBody">
-      <p>Input your devkey (found in your profile), then either enter a gamename and join/watch that game, or simply enter matchmaking which will pair you against the next querying opponent.</p>
-    </blockquote>
+  <div class="panel-body" class="collapse">
+    <p class="lead">Input your devkey (found in your profile), then either enter a gamename and join that game, or simply enter matchmaking which will pair you against the next querying opponent.</p>
     <div class="form-group">
       <label class="control-label" for="devkey">Devkey (required for matchmaking/room entering)</label>
       <input class="form-control input-sm" id="devkey" type="text">
       <label class="control-label" for="gamename">Gamename (required for room entering)</label>
       <input class="form-control input-sm" id="gamename" type="text">
     </div>
-    <p><button class="btn btn-default" id="join">Join game name room</button> <button class="btn btn-default" id="watch">Watch room (game name specified)</button>
+    <p><button class="btn btn-default" id="join">Join game name room</button>
     <button class="btn btn-default" id="play">Enter matchmaking (no game name)</button>
-    <p><input id="wspathinput" type="text">
-      <script>
-	document.getElementById("wspathinput").value = "ws://" + location.hostname + ":" + location.port;
-      </script>
     <button class="btn btn-danger" id="close">Close websocket</button>
   </div>
 </div>
@@ -77,23 +69,48 @@ Framerate: <span id="fps">:)</span>
 <div id="gameController" class="panel panel-warning col-md-12">
   <h3>Game Controller</h3>
   <div class="panel-body">
-    <INPUT TYPE="Radio" Name="troopEnum" Value="00" checked="checked">Nut
-    <INPUT TYPE="Radio" Name="troopEnum" Value="01">Bolt
-    <INPUT TYPE="Radio" Name="troopEnum" Value="02">Grease Monkey
-    <INPUT TYPE="Radio" Name="troopEnum" Value="03">Walker
-    <INPUT TYPE="Radio" Name="troopEnum" Value="04">Aimbot
-    <INPUT TYPE="Radio" Name="troopEnum" Value="05">Hard Drive
-    <INPUT TYPE="Radio" Name="troopEnum" Value="06">Scrapheap
-    <INPUT TYPE="Radio" Name="troopEnum" Value="07">Gas Guzzler
-    <INPUT TYPE="Radio" Name="troopEnum" Value="08">Terminator
-    <INPUT TYPE="Radio" Name="troopEnum" Value="09">Blackhat
-    <INPUT TYPE="Radio" Name="troopEnum" Value="10">Malware
-    <INPUT TYPE="Radio" Name="troopEnum" Value="11">Gandhi
-    <br><button onclick="buyTroop('01')">send unit top</button><button onclick="buyTroop('02')">send unit mid</button><button onclick="buyTroop('03')">send unit bot</button>
+    <h5>Issue Troop buy action</h5>
     <div>
       <table class="table">
 	<tr>
-	  <td><INPUT TYPE="Radio" Name="towerEnum" Value="50" checked="checked">Peashooter
+	  <td>
+	    <p>Select troop to buy:</p>
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="00" checked="checked">Nut
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="01">Bolt
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="02">Grease Monkey
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="03">Walker
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="04">Aimbot
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="05">Hard Drive
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="06">Scrapheap
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="07">Gas Guzzler
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="08">Terminator
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="09">Blackhat
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="10">Malware
+	    <INPUT TYPE="Radio" Name="troopEnum" Value="11">Gandhi
+	  </td>
+	</tr>
+	<tr><td><p>Select a lane to drop it in:</p></td></tr>
+	<tr>
+	  <td><button class="btn btn-default" onclick="buyTroop('01')">send unit top</button><button class="btn btn-default" onclick="buyTroop('02')">send unit mid</button><button class="btn btn-default" onclick="buyTroop('03')">send unit bot</button>
+    </td>
+	</tr>
+      </table>
+    </div>
+    <h5>Issue Tower buy action</h5>
+    <div>
+      <table class="table">
+	<tr>
+	  <td>
+	    <p>Select tower to buy:</p>
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    <INPUT TYPE="Radio" Name="towerEnum" Value="50" checked="checked">Peashooter
 	    <INPUT TYPE="Radio" Name="towerEnum" Value="51">Firewall
 	    <INPUT TYPE="Radio" Name="towerEnum" Value="52">Guardian
 	    <INPUT TYPE="Radio" Name="towerEnum" Value="53">Bank
@@ -105,6 +122,7 @@ Framerate: <span id="fps">:)</span>
 	    <INPUT TYPE="Radio" Name="towerEnum" Value="59">Hotspot
 	  </td>
 	</tr>
+	<tr><td><p>Select a plot to drop it in:</p></td></tr>
 	<tr>
 	  <td><div id="towerController"></div></td>
 	</tr>

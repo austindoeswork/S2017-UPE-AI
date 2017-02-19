@@ -10,7 +10,7 @@ Make sure on the server, mysql-server is installed, and that after you deploy yo
 
 On linux servers, you'll need to sudo the binary to allow it to run on port 80. sudo nohup ./S2017-UPE-AI & is the command I normally use to run the binary in the background (so that when the terminal closes, the binary does not stop running). The output will be logged in nohup.out, so you can still see crash logs.
 
-## Installation
+## Installation (for editing and local testing)
 
 Really convenient way to install Go: http://www.hostingadvice.com/how-to/install-golang-on-ubuntu/ (-Darwin)
 

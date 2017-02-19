@@ -1,0 +1,81 @@
+{{define "watch"}}
+{{template "header" .}}
+
+<h1>Watch</h1>
+<p class="lead">Select one of the games from the ongoing matches going on below! Lobby games and matchmaking games will all show up there!</p>
+<p>Note that there is a 20 second delay for watchers, in order to discourage cheating our fog of war (yet to be implemented). If you're experiencing abnormally long wait times to watch a game, you might be trying to connect to a game that just started!</p>
+
+<p><span class="label label-danger" id="status">STATUS: Not connected.</span></p>
+<p>Framerate: <span id="fps">:)</span></p>
+<div id="gameTV"></div>
+<div id="score">
+  <div class="col-md-6" class="panel-body">
+    <table class="table col-md-6">
+      <tr>
+	<td>Player 1: <span id="p1name"></span></td> <!-- TODO: implement with identification from server -->
+      </tr>
+      <tr>
+	<td>Core HP:</td>
+	<td><span id="p1hp"></span></td>
+      </tr>
+      <tr>
+	<td>Bits:</td>
+	<td><span id="p1bits"></span></td>
+      </tr>
+      <tr>
+	<td>Income:</td>
+	<td><span id="p1income"></span></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-md-6" class="panel-body">
+    <table class="table">
+      <tr>
+	<td>Player 2: <span id="p2name"></span></td>
+      </tr>
+      <tr>
+	<td>Core HP:</td>
+	<td><span id="p2hp"></span></td>
+      </tr>
+      <tr>
+	<td>Bits:</td>
+	<td><span id="p2bits"></span></td>
+      </tr>
+      <tr>
+	<td>Income:</td>
+	<td><span id="p2income"></span></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.2.2/pixi.min.js"></script>
+<script src="/static/js/ws.js"></script>
+<script src="/static/js/tdef.js"></script>
+<script>
+  function watchGame(gameName) {
+  setstatus("Loading game: " + gameName, "label label-info");
+  if (ws) {
+  ws.close();
+  ws = null;
+  wsgamelistwatch(gameName);
+  }
+  else {
+  wsgamelistwatch(gameName);
+  }
+  }
+</script>
+<h3>Ongoing games: select one to watch!</h3>
+<p class="lead">Fun fact: any game names below that are long strings of random numbers are likely matchmaking games!</p>
+<table class="table table-striped">
+  {{range .Data}} <!-- iterate thru all elements -->
+  <tr>
+    <td>
+      <button class="btn btn-primary" onclick="watchGame({{.}})"><h4>{{.}}</h4></button>
+    </td>
+  </tr>
+  {{end}}
+</table>
+
+{{template "footer" .}}
+{{end}}

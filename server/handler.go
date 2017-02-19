@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -338,15 +337,8 @@ func chanToWS(gameOutput <-chan []byte, conn *websocket.Conn) {
 	}
 }
 
-func (s *Server) handleGameList(w http.ResponseWriter, r *http.Request) {
-	gamelist := (s.gm.ListGames())
-	b, err := json.Marshal(&gamelist)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	w.Write(b)
-	return
+func (s *Server) handleWatch(res http.ResponseWriter, req *http.Request) {
+	s.ExecuteUserTemplate(res, req, "watch", Page{Title: "Watch", Data: s.gm.ListGames()})
 }
 
 func (s *Server) handleGame(res http.ResponseWriter, req *http.Request) {
