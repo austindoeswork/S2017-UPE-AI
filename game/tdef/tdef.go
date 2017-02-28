@@ -241,6 +241,15 @@ func (t *TowerDefense) Start() error {
 				}
 
 				if !t.players[0].IsAlive() || !t.players[1].IsAlive() {
+					for i := 0; i < 500; i++ {
+						t.oq.Push(nil)
+					}
+					for fr := t.oq.Pop(); fr != nil; fr = t.oq.Pop() {
+						select {
+						case <-clk.C:
+							t.sendWatcher(fr)
+						}
+					}
 					t.status = DONE
 					log.Println("GAME DIED OF NATURAL CAUSES")
 					close(t.output)
