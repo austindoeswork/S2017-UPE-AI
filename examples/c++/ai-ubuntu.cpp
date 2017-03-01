@@ -22,7 +22,7 @@ void handle_message(const std::string & message)
 
 int main() {
   std::string serverURL = "ws://npcompete.io";
-  std::string devkey = "TrumansLoudlySquareBellybutton";
+  std::string devkey = "YourDevKeyGoesHere";
   std::string input;
 
   // figure out room name, edit serverURL if necessary
@@ -30,7 +30,7 @@ int main() {
   std::getline(std::cin, input);
 
   if (input.size() > 0) {
-    serverURL += "/wsjoin?game=" + input;
+    serverURL += "/wswatch?game=" + input;
   } else {
     serverURL += "/wsplay";
   }

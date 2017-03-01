@@ -1,13 +1,24 @@
-<!-- TODO: fix header blocking the title of href jumps within page -->
 {{define "docs"}}
 {{template "header" .}}
+<style>
+  .anchor{
+  display: block;
+  height: 65px; /*same height as header*/
+  margin-top: -65px; /*same height as header*/
+  visibility: hidden;
+  }
+
+  h3 {
+  margin-top: 65px;
+  }
+</style>
 <section>
   <div class="jumbotron text-center">
     <div class="row">
       <p>
         <h1>Documentation</h1>
 	<p class="lead">We're still updating the game as we add new features, so this documentation might change up a little as we balance numbers and tweak values!</p>
-      Last edited: Sat, Feb 18
+      Last edited: Wed, Mar 1
       </p>
     </div>
   </div>
@@ -28,15 +39,13 @@
 	  <li><a href="#developingyourai">Developing your AI</a></li>
 	  <li>Sample Output (coming soon)</li>
 	  <li>Interpreting Output (coming soon)</li>
-          <!-- <li><a href="#developingyourai">Developing your AI</a></li>
-	  <li><a href="#sampleoutput">Sample Output</a></li>
-	  <li><a href="#interpretingoutput">Interpreting Output</a></li>-->
 	</ul>
       </p>
     </div>
   </div>
   <div>
-    <h3 id="gettingstarted">Getting started</h3>
+    <span class="anchor" id="gettingstarted"></span>
+    <h3>Getting started</h3>
     <p>
       <h5>
 	<ul>
@@ -48,9 +57,10 @@
       </h5>
     </p>
     <div class="row">
-      <img src="img/docs/sampleboard.png" align="right" style="width: 25%; margin: 20px;"></img>
+      <img src="static/img/docs/sample_player_1.jpg" align="right" style="width: 25%; margin: 20px; margin-top: 100px;"></img>
       <div class="col-xs-8">
-	<h3 id="premise">Premise</h3>
+	<span class="anchor" id="premise"></span>
+	<h3>Premise</h3>
 	<p class="lead">In some dystopian, robotic future, you're just a colony trying to survive. Conveniently placed across three horizontally aligned lanes is another colony, which sucks and must be destroyed. This 1600 x 600 pixel grid is only large enough for one of you, after all.</p>
 	<p>The game this time around is a 1v1 tower defense that takes place over the course of five minutes. Each player begins with a core, which are the main objectives to take out in this game. Each player additionally has a smaller objective tower in each lane. After five minutes, if both main cores are still standing, a tie-breaker process occurs to determine a winner.</p>
 
@@ -61,8 +71,9 @@
 	<p>You buy troops/towers using <b>bits</b>, the local currency. You get these bits every second depending on what your <b>income</b> is (which can be increased/decreased throughout the course of the game). You have a base income of 500 bits/sec when the game starts.</p>
       </div>
     </div>
-    
-    <h3 id="troops">Troops 101</h3>
+
+    <span class="anchor" id="troops"></span>
+    <h3>Troops 101</h3>
     <p class="lead">Troops are the main game objects you will need to worry about, as they'll comprise the majority of your attack and defense. Here you'll get an introduction to all of the troops you'll have to play with.</p>
     <p>Troops have each of the following characteristics that you'll need to worry about:</p>
     <ul>
@@ -921,7 +932,8 @@
 	  </table>
 	</dd>
       </dl>
-      <h3 id="towers">Towers 101</h3>
+      <span class="anchor" id="towers"></span>
+      <h3>Towers 101</h3>
     <p class="lead">Your colony can't just thrive on troops, however! You'll be placing towers in the plots alongside each lane to supplement your army.</p>
     <p>Towers have each of the following characteristics that you'll need to worry about:</p>
     <ul>
@@ -1453,11 +1465,12 @@
 	</dd>
       </dl>
       <a href="#toc">Back to top</a>
-      <h4 id="objectives">Objectives 101</h4>
+      <span class="anchor" id="objectives"></span>
+      <h3>Objectives 101</h3>
     <p class="lead">As mentioned before, you spawn with a main core that you need to protect at all costs. You die if it dies. Additionally, you have three lane objectives that you should protect as secondary objectives, because they affect your territory space. Lane objectives spawn with you, but don't get created for any other reason.
 
       <dl class="dl-horizontal">
-	<dt><!--<img src="/static/img/peashooter.png"></dt>--> (IMAGE GOES HERE)
+	<dt></dt>
 	<dd>
 	  <p class="lead">
 	    Main Core
@@ -1558,7 +1571,8 @@
 	</dd>
       </dl>
       <a href="#toc">Back to top</a>
-      <h4 id="gameconstants">Game Constants</h4>
+      <span class="anchor" id="gameconstants"></span>
+      <h3>Game Constants</h3>
       <img src="static/img/background.png" width="100%">
       <table class="table">
 	<tr>
@@ -1590,7 +1604,8 @@
 	  <td>Your territory defaults to exactly halfway between the main cores.</td>
 	</tr>
       </table>
-      <h4 id="enginedetails">Engine details</h4>
+      <span class="anchor" id="enginedetails"></span>
+      <h3>Engine details</h3>
     <p>Each frame, the engine goes through a very predescribed set of actions in order to resolve game states as fairly as possible.
     <p>The steps are as follows:</p>
     <li>Player inputs are read and resolved. If towers/troops are bought (and they can be afforded), they are spawned.</li>
@@ -1599,7 +1614,8 @@
     <li>Towers and troops are cleaned up if they have sub-zero HP.</li>
     <li>If a player's main core is seen to be dead, the game terminates.</li>
     <a href="#toc">Back to top</a>
-    <h4 id="developingyourai">Developing your AI</h4>
+    <span class="anchor" id="developingyourai"></span>
+    <h3>Developing your AI</h3>
     <p class="lead">You're essentially building a websocket client, which pretty much all languages are capable of. If you're having trouble getting started, please feel free to expand off of the Sample AIs we've provided (below). We're going to keep expanding the list of sample AIs to try to cover the languages we think people will be developing in.</p>
     <p>The workflow is as follows:</p>
     <ul>
@@ -1612,133 +1628,309 @@
     <ul>
       <li>Go: <a href="https://github.com/austindoeswork/S2017-UPE-AI/tree/master/examples/go">https://github.com/austindoeswork/S2017-UPE-AI/tree/master/examples/go</a>
       <li>C++: <a href="https://github.com/austindoeswork/S2017-UPE-AI/tree/master/examples/c++">https://github.com/austindoeswork/S2017-UPE-AI/tree/master/examples/c++</a>
+      <li>Python: <a href="https://github.com/austindoeswork/S2017-UPE-AI/tree/master/examples/python">https://github.com/austindoeswork/S2017-UPE-AI/tree/master/examples/python</a>
     </ul>
     <h5>Legal Moves</h5>
     <p class="lead">As of right now, the only commands allowed are buy commands, either for towers or troops. All of these are pretty much formatted the same way, and will be described below.</p>
     <p>Buying troops is formatted the following way: <kbd>bXX YY</kbd>, where XX is the enum of the troop (00 thru 11) and YY is the lane of the troop (01 thru 03). The enums of the troops are listed above in Troop 101. Lane 01 is top lane, 02 is mid lane and 03 is bot lane.</p>
+    <p>Just for your convenience, here's a table of all the unit enums:</p>
+    <table class="table">
+      <tr>
+	<td>Nut</td>
+	<td>00</td>
+      </tr>
+      <tr>
+	<td>Bolt</td>
+	<td>01</td>
+      </tr>
+      <tr>
+	<td>Grease Monkey</td>
+	<td>02</td>
+      </tr>
+      <tr>
+	<td>Walker</td>
+	<td>03</td>
+      </tr>
+      <tr>
+	<td>Aimbot</td>
+	<td>04</td>
+      </tr>
+      <tr>
+	<td>Hard Drive</td>
+	<td>05</td>
+      </tr>
+      <tr>
+	<td>Scrapheap</td>
+	<td>06</td>
+      </tr>
+      <tr>
+	<td>Gas Guzzler</td>
+	<td>07</td>
+      </tr>
+      <tr>
+	<td>Terminator</td>
+	<td>08</td>
+      </tr>
+      <tr>
+	<td>Blackhat</td>
+	<td>09</td>
+      </tr>
+      <tr>
+	<td>Malware</td>
+	<td>10</td>
+      </tr>
+      <tr>
+	<td>Gandhi</td>
+	<td>11</td>
+      </tr>
+    </table>
     <p>Buying towers is formatted very similarly, as: <kbd>bXX YY</kbd>, where XX is the enum of the tower (50 thru 59) and YY is the plot (00 thru 65). The enums of towers are similarly listed above in Tower 101. Plot 00 is in the top left corner, and plot 65 is in the bottom right corner. Remember that towers can only be built within your territory owned as a player (currently implemented as your half of the field, but will be changed soon).</p>
     <p>When issuing a buy command, MAKE SURE THAT BOTH THE ENUM AND LOCATION IS 2 DIGITS, even if the enum or location is less than 10 (preface with 0 as necessary).</p>
+    <table class="table">
+      <tr>
+	<td>Peashooter</td>
+	<td>50</td>
+      </tr>
+      <tr>
+	<td>Firewall</td>
+	<td>51</td>
+      </tr>
+      <tr>
+	<td>Guardian</td>
+	<td>52</td>
+      </tr>
+      <tr>
+	<td>Bank</td>
+	<td>53</td>
+      </tr>
+      <tr>
+	<td>Junkyard</td>
+	<td>54</td>
+      </tr>
+      <tr>
+	<td>Start Up</td>
+	<td>55</td>
+      </tr>
+      <tr>
+	<td>Corporation</td>
+	<td>56</td>
+      </tr>
+      <tr>
+	<td>Warp Drive</td>
+	<td>57</td>
+      </tr>
+      <tr>
+	<td>Jamming Station</td>
+	<td>58</td>
+      </tr>
+      <tr>
+	<td>Hotspot</td>
+	<td>59</td>
+      </tr>
+    </table>
     <a href="#toc">Back to top</a>
-      <!--<h3 id="sampleoutput">Sample output</h3>
-      <pre>
-	{
-	u'hardBlockBoard': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-	u'boardSize': 11,
-	u'gameID': u'57e1d18e04fa591c2c1ddca4',
-	u'bombMap': {u'2,1': {u'owner': 0, u'tick': 1}},
-	u'moveIterator': 0,
-	u'playerID': u'57e1d18e04fa591c2c1ddca3',
-	u'portalMap': {u'7,9': {u'2': {u'owner': 1, u'portalColor': u'orange'}}, u'9,7': {u'3': {u'owner': 1, u'portalColor': u'blue'}}},
-	u'playerIndex': 1,
-	u'trailMap': {},
-	u'player': {u'bluePortal': {u'y': 7, u'x': 9, u'direction': 3}, u'orientation': 1, u'orangePortal': {u'y': 9, u'x': 7, u'direction': 2}, u'coins': 0, u'bombCount': 1, u'bombPierce': 0, u'alive': True, u'y': 8, u'x': 9, u'bombRange': 3},
-	u'state': u'in progress',
-	u'softBlockBoard': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-	u'moveOrder': [1, 0],
-	u'opponent': {u'bluePortal': None, u'orientation': 0, u'orangePortal': None, u'coins': 0, u'bombCount': 0, u'bombPierce': 0, u'alive': True, u'y': 1, u'x': 1, u'bombRange': 3}
-	}</pre>
-      <a href="#toc">Back to top</a>
-      <h3 id="interpretingoutput">Interpreting the output</h3>
-      This may look really complicated, but it all makes sense when you break it down.
-      <br><br>A few definitions:
-      <ul>
-	<li>Directions (for orientations) are typically represented as numbers. Left corresponds to 0, up is 1, right is 2 and down is 3.</li>
-	<li>The game board is an 11x11 grid, and the x and y coordinates go from (0, 0) to (10, 10). Note that incrementing and decrementing x-values moves you horizontally, and doing that to y-values moves you vertically. (0, 0) represents the top left corner and (10, 10) is the bottom right corner.</li>
-      </ul>
-      <dl class="dl-horizontal">
-	<dt>hardBlockBoard<br>softBlockBoard</dt>
-	<dd>
-	  <div class="well">
-	    <samp>
-	      u'hardBlockBoard': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-	      <br>u'softBlockBoard': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-	    </samp>
-	  </div>
-	  hardBlockBoard/softBlockBoard is a 121-length array that tells you where all the hard/soft blocks are (1) and aren't (0) on the map. If square (x, y) has a hard/soft block, then the array value at index (x * 11 + y) = 1.
-	</dd>
-	<dt>boardSize</dt>
-	<dd>
-	  <div class="well">
-	    <samp>
-	      u'boardSize': 11
-	    </samp>
-	  </div>
-	  boardSize tells you the length of any side of the board grid. It defaults to 11 and this will probably not change.
-	</dd>
-	<dt>moveOrder<br>moveIterator<br>playerIndex</dt>
-	<dd>
-	  <div class="well">
-	    <samp>u'moveOrder': [1, 0]
-	      <br>u'moveIterator': 0
-	      <br>u'playerIndex': 1
-	    </samp>
-	  </div>
-	  <p>moveOrder is a list representing the move order for this specific turn. Player indices populate this move order list, and index 0 will move first. You can figure out where you are in this list using the moveIterator, which is the exact index that the moveOrder is at in the server. Since you are receiving a post response, you can expect that moveOrder[moveIterator] = your player index, but just for convenience your playerIndex is given too.</p>
-	  <p>Note that the moveOrder changes each turn: the player that moves first one turn moves last the next turn.</p>
-	</dd>
-	<dt>gameID<br>playerID</dt>
-	<dd><div class="well">
-	    <samp>u'gameID': u'57e1d18e04fa591c2c1ddca4'
-	      <br>u'playerID': u'57e1d18e04fa591c2c1ddca3'
-	    </samp>
-	  </div>
-	  <p>The gameID is the ID of the game. The player ID is your specific player ID. Save these, you're going to need them to submit your moves.</p>
-	  <p>Neither the gameID or playerID is the same as your dev key.</p>
-	</dd>
-	<dt>state</dt>
-	<dd><div class="well">
-	    <samp>u'state': u'in progress'
-	    </samp>
-	  </div>
-	  <p>The state is either 'in progress' or 'complete'. Typically the state will be in progress, until only one or zero players remain. You will be sent a post response when the game ends, but the state will be 'complete' then. At that point, sending a move for that game will do nothing.</p>
-	</dd>
-	<dt>player<br>opponent</dt>
-	<dd><div class="well">
-	    <samp>u'player': {u'bluePortal': {u'y': 7, u'x': 9, u'direction': 3}, u'orientation': 1, u'orangePortal': {u'y': 9, u'x': 7, u'direction': 2}, u'coins': 0, u'bombCount': 1, u'bombPierce': 0, u'alive': True, u'y': 8, u'x': 9, u'bombRange': 3}
-	      <br>u'opponent': {u'bluePortal': None, u'orientation': 0, u'orangePortal': None, u'coins': 0, u'bombCount': 0, u'bombPierce': 0, u'alive': True, u'y': 1, u'x': 1, u'bombRange': 3}
-	    </samp>
-	  </div>
-	  player and opponent are formatted the same way, here's the breakdown:
-	  <ul>
-	    <li><b>orientation</b> - the direction that player is facing (0 is left, 1 is up, 2 is right, 3 is down)</li>
-	    <li><b>bluePortal, orangePortal</b> - either None or an object that tells you the (x, y) coordinates of the block the portal is on, and the face (again, 0 is left, 1 is up, 2 is right, 3 is down) it is on. For example, in the given sample output, player.bluePortal has direction 3, which means it's on the bottom face of the block at (9, 7).</li>
-	    <li><b>bombRange, bombCount, bombPierce, coins, x, y</b> - these are all your values for these attributes of the player</li>
-	    <li><b>alive</b> - True/False depending on whether that player still exists on the game board or not.</li>
-	  </ul>
-	</dd>
-	<dt>bombMap</dt>
-	<dd>
-	  <div class="well">
-	    <samp>
-	      u'bombMap': {u'2,1': {u'owner': 0, u'tick': 1}}
-	    </samp>
-	  </div>
-	  <p>bombMap is a JSON object that acts as a map between x, y coordinates and bombs. The keys are strings which are in 'x,y' format.</p>
-	  <p>Each bomb has an owner, which refers to a playerIndex, and a tick count, which tells you how many turns it has left on the board.</p>
-	</dd>
-	<dt>portalMap</dt>
-	<dd><div class="well">
-	    <samp>
-	      u'portalMap': {u'7,9': {u'2': {u'owner': 1, u'portalColor': u'orange'}}, u'9,7': {u'3': {u'owner': 1, u'portalColor': u'blue'}}}
-	    </samp>
-	  </div>
-	  <p>You can find the orange/blue portal data in the player/opponent output, but if you want to find them all in one coherent place use the portalMap.</p>
-	  <p>Keys are strings in 'x,y' format for the square that the portals are on, and values are mappings between directions (which would be opposite from the direction that you walk into the portal) facing out and the portal object. The portal object has an owner (player index) and color (either orange or blue).</p>
-	</dd>
-	<dt>trailMap</dt>
-	<dd>
-	  <div class="well">
-	    <samp>
-	      u'trailMap': {u'7,9': {u'1': {u'tick': 1, u'type': u'h'}}, u'8,10': {u'1': {u'tick': 1, u'type': u'v'}}, u'9,9': {u'1': {u'tick': 1, u'type': u'h'}}, u'10,9': {u'1': {u'tick': 1, u'type': u'h'}}, u'8,9': {u'1': {u'tick': 1, u'type': u'origin'}}
-	    </samp>
-	  </div>
-	  <p>trailMap is a JSON object that acts as a map between x, y coordinates and explosion trail squares. The keys are strings which are in 'x,y' format.</p>
-	  <p>On each square there is a mapping of player indices to trail objects. Player indices are the same as the ones given in the moveOrder and playerIndex. Explosion trail objects have <b>ticks</b>, which represent how many more turns they'll exist on the game board, and <b>types</b>, which are literally for graphical representation.</p>
-	  <p>For the purposes of creating an AI, all you really need to know is that you should avoid the squares that have objects in this trailMap for movement</p>
-	</dd>
-      </dl>
-      <a href="#toc">Back to top</a>
-  </div> -->
+    <span class="anchor" id="sampleoutput"></span>
+    <h3>Sample output</h3>
+    <pre>
+      {
+      "w": 1600,
+      "h": 600,
+      "p1": {
+      "owner": 1,
+      "income": 8900,
+      "bits": 1299711976,
+      "towers": [
+      {
+      "owner": 1,
+      "x": 600,
+      "y": 425,
+      "maxhp": 3000,
+      "hp": 3000,
+      "enum": 58
+      },
+      "nil",
+      "nil",
+
+      . . .
+      
+      "nil",
+      "nil",
+      "nil",
+      "nil"
+      ],
+      "troops": [
+      {
+      "owner": 1,
+      "x": 520,
+      "y": 475,
+      "maxhp": 75,
+      "hp": 75,
+      "enum": 2
+      },
+
+      . . .
+      
+      {
+      "owner": 1,
+      "x": 640,
+      "y": 100,
+      "maxhp": 800,
+      "hp": 800,
+      "enum": 3
+      }
+      ],
+      "mainTower": {
+      "owner": 1,
+      "x": 0,
+      "y": 280,
+      "maxhp": 10000,
+      "hp": 10000,
+      "enum": -2
+      }
+      },
+      "p2": {
+      "owner": 2,
+      "income": 5750,
+      "bits": 975845676,
+      "towers": [
+      "nil",
+
+      . . .
+
+      {
+      "owner": 2,
+      "x": 888,
+      "y": 100,
+      "maxhp": 80,
+      "hp": 80,
+      "enum": 10
+      },
+      {
+      "owner": 2,
+      "x": 810,
+      "y": 100,
+      "maxhp": 80,
+      "hp": 80,
+      "enum": 10
+      }
+      ],
+      "mainTower": {
+      "owner": 2,
+      "x": 1599,
+      "y": 280,
+      "maxhp": 10000,
+      "hp": 10000,
+      "enum": -2
+      }
+      }
+      }
+    </pre>
+    <a href="#toc">Back to top</a>
+    <span class="anchor" id="interpretingtheoutput"></span>
+    <h3>Interpreting the output</h3>
+    This may look really complicated, but it all makes sense when you break it down.
+    <dl class="dl-horizontal">
+      <dt>w, h</dt>
+      <dd>
+	<pre>
+	  "w": 1600, // width (in pixels) of game board
+	  "h": 600, // height (in pixels) of game board
+	</pre>
+	Pretty self explanatory, this is just a general game constant (don't depend on this, this may be removed just to reduce the output size by a little). The game is guaranteed at this point to be run in 1600 x 600.
+      </dd>
+      <dt>p1, p2</dt>
+      <dd>
+	<pre>
+	  "p1": {
+	  "owner": 1,
+	  "income": 8900,
+	  "bits": 1299711976,
+	  "towers": [
+	  . . .
+	  ],
+	  "troops": [
+	  . . .
+	  ],
+	  "mainTower": {
+	  . . .
+	  }
+	  },
+	  "p2": {
+	  "owner": 2,
+	  "income": 5750,
+	  "bits": 975845676,
+	  "towers": {
+	  . . .
+
+	  ],
+	  "troops": [
+	  . . .
+	  ],
+	  "mainTower": {
+	  . . .
+	  }
+	  }
+	</pre>
+	Player objects are pretty straightforward as well, they contain an "owner" property that tells you whether they are player 1 (coming from left, blue team) or player 2 (coming from right, red team). Players have income, as mentioned before, as well as bits. They also have "towers", which is an array of tower unit objects, and "troops", which is an array of troop unit objects. Players finaly have a "mainTower" JSON object that represents the main core.
+      </dd>
+      <dt>towers</dt>
+      <dd>
+	<pre>
+	  "towers": [
+	  "nil",
+
+	  . . .
+
+	  {
+	  "owner": 2,
+	  "x": 888,
+	  "y": 100,
+	  "maxhp": 80,
+	  "hp": 80,
+	  "enum": 10
+	  },
+	  {
+	  "owner": 2,
+	  "x": 810,
+	  "y": 100,
+	  "maxhp": 80,
+	  "hp": 80,
+	  "enum": 10
+	  }
+	  ]
+	</pre>
+	The ". . ." is just there to make it so that you don't have to scroll through a billion lines of sample output, but towers is an array of JSON objects guaranteed to be length 66 (one index per plot). If the player does not own a tower in a location, towers[index] = "nil", otherwise it is a JSON object that has "owner" (either player 1/2), "x"/"y" coordinates, "maxhp" and "hp" to tell you how much HP it has and has lost, and an "enum" to tell you what type of tower it is.
+      </dd>
+      <dt>troops</dt>
+      <dd>
+	<pre>
+	  "troops": [
+	  {
+	  "owner": 1,
+	  "x": 520,
+	  "y": 475,
+	  "maxhp": 75,
+	  "hp": 75,
+	  "enum": 2
+	  },
+
+	  . . .
+	  
+	  {
+	  "owner": 1,
+	  "x": 640,
+	  "y": 100,
+	  "maxhp": 800,
+	  "hp": 800,
+	  "enum": 3
+	  }
+	  ]
+	</pre>
+	Troops is also an array of JSON troop unit objects. These are similar in structure to tower unit objects -- they have x/y/owner/maxhp/hp and enum values. This array, however, is of variable length but it is guaranteed to be sorted first by y value (descending value, essentially what lane the unit is in), and then by x value (ascending order). Remember that x=0, y=0 is the bottom left corner and x=1599,y=599 is the top right corner. 
+      </dd>
+    </dl>
+    <a href="#toc">Back to top</a>
+  </div>
   <br><center>Any additional questions? Reach out! Email Darwin Ding at dingd@rpi.edu</center>
 </section>
 {{template "footer" .}}
