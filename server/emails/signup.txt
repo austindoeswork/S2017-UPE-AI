@@ -1,6 +1,6 @@
 Hi {{ name }},
 
-Thanks for signing up for the AIComp!
+Thanks for signing up for NP Compete!
 
 
--- The AIComp Team and UPE
+-- The NP Compete Team and UPE
