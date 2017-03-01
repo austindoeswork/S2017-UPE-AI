@@ -129,7 +129,14 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 		s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
 		return
 	}
-	profilePicLoc := fmt.Sprintf("./identicons/%s.png", username)
+	if !isAlpha(fullName) {
+		session.AddFlash("Name field can only contain alphabetic characters.")
+		session.Save(req, res)
+		s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
+		return
+	}
+	profilePicLoc := fmt.Sprintf("./identicons/%s.png",
+		validFilenameCharacters.ReplaceAllString(username, "_"))
 	user := &dbinterface.User{
 		Name:           fullName,
 		Email:          email,
@@ -140,6 +147,12 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		if err.Error() == "username exists" {
 			session.AddFlash(fmt.Sprintf("Username '%s' already exists.", username))
+			session.Save(req, res)
+			s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
+			return
+		}
+		if err.Error() == "email exists" {
+			session.AddFlash(fmt.Sprintf("Email '%s' already exists.", email))
 			session.Save(req, res)
 			s.ExecuteUserTemplate(res, req, "signup", Page{Title: "Signup"})
 			return

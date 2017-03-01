@@ -27,6 +27,9 @@ var isAlpha = regexp.MustCompile(`^[A-Za-z\s]+$`).MatchString
 // isAlphaNumeric checks if the given string contains only alphanumeric characters
 var isAlphaNumeric = regexp.MustCompile(`^[A-Za-z\d]+$`).MatchString
 
+// validFilenameCharacters is a regex that matches characters that are not allowed in filenames
+var validFilenameCharacters = regexp.MustCompile("[\\\\/:\"*?<>|]+")
+
 // Server handles websockets and creation of games
 // TODO create a router/handler
 // TODO game manager?? think about this
