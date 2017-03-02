@@ -281,8 +281,8 @@ func (s *Server) playConn(conn *websocket.Conn, gameName, userName string) {
 
 	connectedMsg := struct {
 		Player   int
-		UserName string
-		GameName string
+		Username string
+		Gamename string
 	}{
 		gameCtrl.Player(),
 		userName,
@@ -342,7 +342,23 @@ func (s *Server) handleWatch(res http.ResponseWriter, req *http.Request) {
 }
 
 func (s *Server) handleGame(res http.ResponseWriter, req *http.Request) {
-	s.ExecuteUserTemplate(res, req, "game", Page{Title: "Game"})
+	if cookie, err := req.Cookie("login"); err == nil {
+		if username, err := s.db.VerifyCookie(cookie); err == nil {
+			if profile, err := s.db.GetUser(username); err == nil {
+				s.ExecuteUserTemplate(res, req, "game", Page{Title: "Game", Username: username,
+					Data: profile})
+				return
+			}
+		}
+	}
+	session, err := s.store.Get(req, "flash")
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	session.AddFlash("You must login first.")
+	session.Save(req, res)
+	http.Redirect(res, req, "/login", http.StatusFound)
 }
 
 func (s *Server) handleHome(res http.ResponseWriter, req *http.Request) {
@@ -351,6 +367,10 @@ func (s *Server) handleHome(res http.ResponseWriter, req *http.Request) {
 
 func (s *Server) handleDocs(res http.ResponseWriter, req *http.Request) {
 	s.ExecuteUserTemplate(res, req, "docs", Page{Title: "Documentation"})
+}
+
+func (s *Server) handleChangelog(res http.ResponseWriter, req *http.Request) {
+	s.ExecuteUserTemplate(res, req, "changelog", Page{Title: "Changelog"})
 }
 
 // from https://godoc.org/github.com/gorilla/websocket

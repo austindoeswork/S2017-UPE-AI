@@ -12,10 +12,10 @@
     </h2>
   </div>
   <div class="panel-body" class="collapse">
-    <p class="lead">Input your devkey (found in your profile), then either enter a gamename and join that game, or simply enter matchmaking which will pair you against the next querying opponent.</p>
+    <p class="lead">Enter a gamename and join that game, or simply enter matchmaking which will pair you against the next querying opponent. Use the game controller below the display to control the ongoing match!</p>
+    
     <div class="form-group">
-      <label class="control-label" for="devkey">Devkey (required for matchmaking/room entering)</label>
-      <input class="form-control input-sm" id="devkey" type="text">
+      <span id="devkey" style="display:none;">{{.Data.Apikey}}</span>
       <label class="control-label" for="gamename">Gamename (required for room entering)</label>
       <input class="form-control input-sm" id="gamename" type="text">
     </div>
@@ -44,6 +44,14 @@ Framerate: <span id="fps">:)</span>
 	<td>Income:</td>
 	<td><span id="p1income"></span></td>
       </tr>
+      <tr>
+	<td>Territory Bounds:</td>
+	<td><span id="p1territory"></span></td>
+      </tr>
+      <tr>
+	<td>Horizon Bounds:</td>
+	<td><span id="p1horizon"></span></td>
+      </tr>
     </table>
   </div>
   <div class="col-md-6" class="panel-body">
@@ -62,6 +70,14 @@ Framerate: <span id="fps">:)</span>
       <tr>
 	<td>Income:</td>
 	<td><span id="p2income"></span></td>
+      </tr>
+      <tr>
+	<td>Territory Bounds:</td>
+	<td><span id="p2territory"></span></td>
+      </tr>
+      <tr>
+	<td>Horizon Bounds:</td>
+	<td><span id="p2horizon"></span></td>
       </tr>
     </table>
   </div>

@@ -13,17 +13,19 @@ function addListeners() {
 	};
     });
 }
+
+// TODO: remove reliance on document.getElementById (forces all relevant pages to have same page structure)
 function wsplay() {
     var wspath = "ws://" + location.hostname + ":" + location.port;
     var wsroute = "/wsplay";
-    var devkey = document.getElementById("devkey").value;
+    var devkey = document.getElementById("devkey").innerHTML;
     wsopen(wspath, wsroute, "", devkey);
 }
 function wsjoin() {
     var wspath = "ws://" + location.hostname + ":" + location.port;
     var wsroute = "/wsjoin";
     var gname = document.getElementById("gamename").value;
-    var devkey = document.getElementById("devkey").value;
+    var devkey = document.getElementById("devkey").innerHTML;
     wsopen(wspath, wsroute, gname, devkey);
 }
 function wswatch() {
@@ -72,7 +74,7 @@ function wsopen(wspath, wsroute, gname, devkey) {
 	ws = null;
     }
     ws.onmessage = function(evt) {
-	setstatus("GAME CONNECTED", "label label-success");
+	setstatus("WEBSOCKET CONNECTED", "label label-success");
 	renderGrid(evt.data);
     }
     ws.onerror = function(evt) {

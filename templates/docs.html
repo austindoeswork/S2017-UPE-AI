@@ -34,6 +34,7 @@
           <li><a href="#troops">Troops 101</a></li>
           <li><a href="#towers">Towers 101</a></li>
 	  <li><a href="#objectives">Objectives 101</a></li>
+	  <li><a href="#fogofwar">Fog of War</a></li>
 	  <li><a href="#gameconstants">Game Constants</a></li>
           <li><a href="#enginedetails">Engine Details</a></li>
 	  <li><a href="#developingyourai">Developing your AI</a></li>
@@ -1571,6 +1572,13 @@
 	</dd>
       </dl>
       <a href="#toc">Back to top</a>
+      <span class="anchor" id="fogofwar"></span>
+      <h3>Fog of War</h3>
+    <p class="lead">Fog of war is a mechanic where you can't always see the entirety of the battlefield. This adds a little layer of complexity where you'll have to fight to figure out what your opponent is doing.</p>
+    <p>To prevent games from being inevitable stalemates if a player chooses to simply mimic their opponent's moves, we've generated a fog of war that masks the areas of the battlegrounds you can't see. By default, you can always see the extent of your territory (which by default is your half of the field). You can also see as far as your furthest unit's range. It should be noted that if your furthest unit in the Top lane can see up to x = 1400 (assume that you are the left player), then you can see up to x = 1400 in all three lanes, even if your Top lane furthest unit would not normally be able to fire into the Bottom lane.</p>
+    <p>The extent of your vision range is called your <b>horizon bounds</b>. The <b>horizonMin</b> and <b>horizonMax</b> for both players are given in the output from the server.</p>
+    <p>When playing the game manually on our website, you will be able to see the fog of war visually with the slightly greyed out rectangle that moves as your fog of war changes. (Note that it's slightly inaccurate for the top two lanes, and this will be fixed).</p>
+    <p><b>Troops</b> that are outside your horizon bounds simply do not show up in the output, while <b>towers</b> outside your horizon bounds will come up as "nil" (see sample output for details)</p>
       <span class="anchor" id="gameconstants"></span>
       <h3>Game Constants</h3>
       <img src="static/img/background.png" width="100%">
@@ -1737,6 +1745,10 @@
       "h": 600,
       "p1": {
       "owner": 1,
+      "territoryMin": 0,
+      "territoryMax": 800,
+      "horizonMin": 0,
+      "horizonMax": 1200,
       "income": 8900,
       "bits": 1299711976,
       "towers": [
@@ -1779,7 +1791,7 @@
       "enum": 3
       }
       ],
-      "mainTower": {
+      "mainCore": {
       "owner": 1,
       "x": 0,
       "y": 280,
@@ -1790,6 +1802,10 @@
       },
       "p2": {
       "owner": 2,
+      "territoryMin": 800,
+      "territoryMax": 1600,
+      "horizonMin": 612,
+      "horizonMax": 1600,
       "income": 5750,
       "bits": 975845676,
       "towers": [
@@ -1814,7 +1830,7 @@
       "enum": 10
       }
       ],
-      "mainTower": {
+      "mainCore": {
       "owner": 2,
       "x": 1599,
       "y": 280,
@@ -1843,6 +1859,10 @@
 	<pre>
 	  "p1": {
 	  "owner": 1,
+	  "territoryMin": 0,
+	  "territoryMax": 800,
+	  "horizonMin": 0,
+	  "horizonMax": 1200,	  
 	  "income": 8900,
 	  "bits": 1299711976,
 	  "towers": [
@@ -1851,12 +1871,16 @@
 	  "troops": [
 	  . . .
 	  ],
-	  "mainTower": {
+	  "mainCore": {
 	  . . .
 	  }
 	  },
 	  "p2": {
 	  "owner": 2,
+	  "territoryMin": 800,
+	  "territoryMax": 1600,
+	  "horizonMin": 612,
+	  "horizonMax": 1600,
 	  "income": 5750,
 	  "bits": 975845676,
 	  "towers": {
@@ -1866,12 +1890,13 @@
 	  "troops": [
 	  . . .
 	  ],
-	  "mainTower": {
+	  "mainCore": {
 	  . . .
 	  }
 	  }
 	</pre>
-	Player objects are pretty straightforward as well, they contain an "owner" property that tells you whether they are player 1 (coming from left, blue team) or player 2 (coming from right, red team). Players have income, as mentioned before, as well as bits. They also have "towers", which is an array of tower unit objects, and "troops", which is an array of troop unit objects. Players finaly have a "mainTower" JSON object that represents the main core.
+	<p>Player objects are pretty straightforward as well, they contain an "owner" property that tells you whether they are player 1 (coming from left, blue team) or player 2 (coming from right, red team). Players have income, as mentioned before, as well as bits. They also have "towers", which is an array of tower unit objects, and "troops", which is an array of troop unit objects. Players finaly have a "mainCore" JSON object that represents the main core.</p>
+	<p>Although calculatable by the players, we've provided the horizon and territory bounds in the form of territoryMin/Max and horizonMin/Max. These are ints that show the bounds of your territory and horizon respectively. Your territory dictates which plots you can physically build towers in, and defaults to your half of the field. Your horizon is the range at which you can see. Everything else is blanketed by the fog of war (see the Fog of War section above).</p>
       </dd>
       <dt>towers</dt>
       <dd>
@@ -1899,7 +1924,8 @@
 	  }
 	  ]
 	</pre>
-	The ". . ." is just there to make it so that you don't have to scroll through a billion lines of sample output, but towers is an array of JSON objects guaranteed to be length 66 (one index per plot). If the player does not own a tower in a location, towers[index] = "nil", otherwise it is a JSON object that has "owner" (either player 1/2), "x"/"y" coordinates, "maxhp" and "hp" to tell you how much HP it has and has lost, and an "enum" to tell you what type of tower it is.
+	<p>The ". . ." is just there to make it so that you don't have to scroll through a billion lines of sample output, but towers is an array of JSON objects guaranteed to be length 66 (one index per plot). If the player does not own a tower in a location, towers[index] = "nil", otherwise it is a JSON object that has "owner" (either player 1/2), "x"/"y" coordinates, "maxhp" and "hp" to tell you how much HP it has and has lost, and an "enum" to tell you what type of tower it is.</p>
+	<p>Note that towers outside of your horizon bounds will show up as "nil" as well.</p>
       </dd>
       <dt>troops</dt>
       <dd>
@@ -1926,7 +1952,8 @@
 	  }
 	  ]
 	</pre>
-	Troops is also an array of JSON troop unit objects. These are similar in structure to tower unit objects -- they have x/y/owner/maxhp/hp and enum values. This array, however, is of variable length but it is guaranteed to be sorted first by y value (descending value, essentially what lane the unit is in), and then by x value (ascending order). Remember that x=0, y=0 is the bottom left corner and x=1599,y=599 is the top right corner. 
+	<p>Troops is also an array of JSON troop unit objects. These are similar in structure to tower unit objects -- they have x/y/owner/maxhp/hp and enum values. This array, however, is of variable length but it is guaranteed to be sorted first by y value (descending value, essentially what lane the unit is in), and then by x value (ascending order). Remember that x=0, y=0 is the bottom left corner and x=1599,y=599 is the top right corner.</p>
+	<p>Troops outside of your horizon bounds (inside the fog of war) will also not show up.</p>
       </dd>
     </dl>
     <a href="#toc">Back to top</a>

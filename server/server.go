@@ -172,6 +172,7 @@ func (s *Server) Start() {
 	http.HandleFunc("/game", s.handleGame)
 	http.HandleFunc("/watch", s.handleWatch)
 	http.HandleFunc("/leaderboard", s.handleLeaderboard)
+	http.HandleFunc("/changelog", s.handleChangelog)
 	http.HandleFunc("/signout", s.handleLogout) // ?? for some reason on my machine if this is logout it doesn't detect it...
 	http.HandleFunc("/login", s.handleLogin)
 	http.HandleFunc("/signup", s.handleSignup)

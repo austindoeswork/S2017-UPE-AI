@@ -60,6 +60,8 @@ If identicons are not working on your machine, try checking the permissions of t
 
 ## TODOLIST
 
+Replays
+
 Victory screen + stats post-game
 
 Status splash screen before game

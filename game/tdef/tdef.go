@@ -220,19 +220,20 @@ func (t *TowerDefense) Start() error {
 				t.p1cmd = nil
 				t.p2cmd = nil
 
-				//TODO send p1 & p2 fogged output
-				output := t.stateJSON()
+				// sends fogged output
+				p0minX, p0maxX := t.players[0].Horizon()
+				p1minX, p1maxX := t.players[1].Horizon()
 				select {
-				case t.p1output <- output:
+				case t.p1output <- t.stateJSON(p0minX, p0maxX):
 				default:
 				}
 				select {
-				case t.p2output <- output:
+				case t.p2output <- t.stateJSON(p1minX, p1maxX):
 				default:
 				}
 
 				//send delayed output
-				t.sendWatcher(output)
+				t.sendWatcher(t.stateJSON(0, GAMEWIDTH))
 
 				if t.demoGame == false &&
 					(!t.players[0].IsAlive() || !t.players[1].IsAlive() || t.frame == int64(t.fps*300)) {
@@ -372,13 +373,14 @@ func (t *TowerDefense) sendWatcher(m []byte) {
 
 }
 
-func (t *TowerDefense) stateJSON() []byte {
+// generates stateJSON string with limits
+func (t *TowerDefense) stateJSON(minX, maxX int) []byte {
 	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf(`{ "w": %d, "h": %d, `, t.width, t.height))
+	buffer.WriteString(fmt.Sprintf(`{"w":%d,"h":%d,`, t.width, t.height))
 	buffer.WriteString(`"p1":`)
-	t.players[0].ExportJSON(&buffer)
-	buffer.WriteString(`, "p2":`)
-	t.players[1].ExportJSON(&buffer)
+	t.players[0].ExportJSON(&buffer, minX, maxX)
+	buffer.WriteString(`,"p2":`)
+	t.players[1].ExportJSON(&buffer, minX, maxX)
 	buffer.WriteString("}")
 	return buffer.Bytes()
 }

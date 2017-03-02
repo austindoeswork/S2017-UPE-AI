@@ -38,7 +38,8 @@ if(!PIXI.utils.isWebGLSupported()){
 
 PIXI.utils.sayHello(type) // not really necessary, but could be nice for people to know
 
-//Aliases
+// Aliases
+var fogOfWar = new PIXI.Graphics();
 var Container = PIXI.Container;
 var autoDetectRenderer = PIXI.autoDetectRenderer;
 var loader = PIXI.loader;
@@ -195,6 +196,7 @@ function setup() {
     rightSteps.x = GAME_WIDTH - rightSteps.width + 10;
     rightSteps.y = 0;
     stage.addChild(rightSteps);
+    stage.addChild(fogOfWar);
     resize();
     renderer.render(stage);
     readyToDisplay = true;
@@ -229,9 +231,27 @@ function buyTower(location) {
 
 var timestamp = Date.now();
 
+var myPlayer = 0; // default 0 = spectator client, 1 = player1, 2 = player2
+var myUsername, myGamename;
+
+// TODO: handle status message at beginning of websocket (with player information), right now function assumes all messages are game board messages
 function renderGrid(data) {
     frames++;
     d = JSON.parse(data);
+
+    if (d.hasOwnProperty("Gamename")) {
+	myPlayer = d["Player"];
+	myUsername = d["Username"];
+	myGamename = d["Gamename"];
+
+	if (myPlayer == 1) {
+	    document.getElementById("p1name").innerHTML = myUsername;
+	} else {
+	    document.getElementById("p2name").innerHTML = myUsername;
+	}
+	return; // don't try to render status messages
+    }
+    
     units = d.p1.troops.concat(d.p2.troops); // TODO: make it so the top towers are drawn first, then the lane, then the bottom towers (prevents clipping weird)
     for (i = 0; i < d.p1.towers.length; i++) {
 	if (d.p1.towers[i] != 'nil') {
@@ -243,15 +263,35 @@ function renderGrid(data) {
 	    units.push(d.p2.towers[i]);
 	}
     }
-    units.push(d.p1.mainTower);
-    units.push(d.p2.mainTower);
-    document.getElementById("p1hp").innerHTML = d.p1.mainTower.hp;
-    document.getElementById("p2hp").innerHTML = d.p2.mainTower.hp;
+    units.push(d.p1.mainCore);
+    units.push(d.p2.mainCore);
+    document.getElementById("p1hp").innerHTML = d.p1.mainCore.hp;
+    document.getElementById("p2hp").innerHTML = d.p2.mainCore.hp;
     document.getElementById("p1bits").innerHTML = d.p1.bits;
     document.getElementById("p2bits").innerHTML = d.p2.bits;
     document.getElementById("p1income").innerHTML = d.p1.income;
     document.getElementById("p2income").innerHTML = d.p2.income;
+    document.getElementById("p1territory").innerHTML = d.p1.territoryMin + "," + d.p1.territoryMax;
+    document.getElementById("p2territory").innerHTML = d.p2.territoryMin + "," + d.p2.territoryMax;
+    document.getElementById("p1horizon").innerHTML = d.p1.horizonMin + "," + d.p1.horizonMax;
+    document.getElementById("p2horizon").innerHTML = d.p2.horizonMin + "," + d.p2.horizonMax;
+
     draw(units);
+
+    if (myPlayer == 1) {
+	fogOfWar.clear();
+	fogOfWar.beginFill(0xd3d3d3);
+	fogOfWar.alpha = 0.25;
+	fogOfWar.drawRect(d.p1.horizonMax, 0, 1600 - d.p1.horizonMax, 600);
+	fogOfWar.endFill();
+    } else if (myPlayer == 2) {
+	fogOfWar.clear();
+	fogOfWar.beginFill(0xd3d3d3);
+	fogOfWar.alpha = 0.25;
+	fogOfWar.drawRect(0, 0, d.p2.horizonMin, 600);
+	fogOfWar.endFill();
+    }
+
     renderer.render(stage);
     document.getElementById("fps").innerHTML = 1000/(Date.now() - timestamp);
     timestamp = Date.now();

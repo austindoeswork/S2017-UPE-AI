@@ -114,7 +114,7 @@ func (ub *UnitBase) Owner() int {
 	return ub.owner
 }
 func (ub *UnitBase) ExportJSON(buffer *bytes.Buffer) { // rest of information is not really important to front-end
-	buffer.WriteString(fmt.Sprintf(`{"owner": %d, "x": %d, "y": %d, "maxhp": %d, "hp": %d, "enum": %d}`, ub.owner, ub.x, ub.y, ub.maxhp, ub.hp, ub.enum))
+	buffer.WriteString(fmt.Sprintf(`{"owner":%d,"x":%d,"y":%d,"maxhp":%d,"hp":%d,"enum":%d}`, ub.owner, ub.x, ub.y, ub.maxhp, ub.hp, ub.enum))
 }
 func (ub *UnitBase) Enum() int {
 	return ub.enum

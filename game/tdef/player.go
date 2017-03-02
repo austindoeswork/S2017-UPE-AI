@@ -14,6 +14,9 @@ type Player struct {
 	income int // X coins per second
 	bits   int // total number of coins
 
+	territoryMinX int // X value of left bound of territory
+	territoryMaxX int // X value of right bound of territory
+
 	MainTower Unit // if this dies you die
 
 	Top    []Unit         // list of top lane units
@@ -64,6 +67,38 @@ func (p *Player) Bits() int {
 func (p *Player) SetBits(bits int) {
 	p.bits = bits
 }
+func (p *Player) Territory() (int, int) { // territory is where you can build
+	return p.territoryMinX, p.territoryMaxX
+}
+func (p *Player) Horizon() (int, int) { // horizon is how far you can see
+	var minX, maxX int
+	if p.owner == 1 {
+		minX = 0
+		maxX = p.territoryMaxX
+		if len(p.Top) > 0 && p.Top[len(p.Top) - 1].X() + p.Top[len(p.Top) - 1].Reach() > maxX {
+			maxX = p.Top[len(p.Top) - 1].X() + p.Top[len(p.Top) - 1].Reach()
+		}
+		if len(p.Mid) > 0 && p.Mid[len(p.Mid) - 1].X() + p.Mid[len(p.Mid) - 1].Reach() > maxX {
+			maxX = p.Mid[len(p.Mid) - 1].X() + p.Mid[len(p.Mid) - 1].Reach()
+		}
+		if len(p.Bot) > 0 && p.Bot[len(p.Bot) - 1].X() + p.Bot[len(p.Bot) - 1].Reach() > maxX {
+			maxX = p.Bot[len(p.Bot) - 1].X() + p.Bot[len(p.Bot) - 1].Reach()
+		}
+	} else {
+		minX = p.territoryMinX
+		maxX = GAMEWIDTH
+		if len(p.Top) > 0 && p.Top[0].X() - p.Top[0].Reach() < minX {
+			minX = p.Top[0].X() - p.Top[0].Reach() 
+		}
+		if len(p.Mid) > 0 && p.Mid[0].X() - p.Mid[0].Reach() < minX {
+			minX = p.Mid[0].X() - p.Mid[0].Reach()
+		}
+		if len(p.Bot) > 0 && p.Bot[0].X() - p.Bot[0].Reach() < minX {
+			minX = p.Bot[0].X() - p.Bot[0].Reach()
+		}
+	}
+	return minX, maxX
+}
 
 // returns true if player can afford unit, false otherwise
 func (p *Player) BuyTroop(lane, enum int, opponent *Player) bool {
@@ -105,7 +140,7 @@ func (p *Player) BuyTroop(lane, enum int, opponent *Player) bool {
 
 // checks to see if a tower plot is within the player's territory
 func (p *Player) isPlotInTerritory(x, y int) bool {
-	if (p.owner == 1 && x >= GAMEWIDTH/2) || (p.owner == 2 && x <= GAMEWIDTH/2) { // out of territory
+	if x <= p.territoryMinX || x >= p.territoryMaxX { // out of territory
 		return false
 	}
 	return true
@@ -143,14 +178,18 @@ func (p *Player) AddUnit(unit Unit) {
 }
 
 func NewPlayer(owner int, demoGame bool) *Player {
-	var corex, objx int
+	var corex, objx, territoryMinX, territoryMaxX int
 	switch owner {
 	case 1:
 		corex = 0
 		objx = XOFFSET
+		territoryMinX = 0
+		territoryMaxX = GAMEWIDTH/2
 	case 2:
 		corex = GAMEWIDTH - 1
 		objx = GAMEWIDTH - 1 - XOFFSET
+		territoryMinX = GAMEWIDTH/2
+		territoryMaxX = GAMEWIDTH
 	}
 	var mainTower Unit
 	var bits, income int
@@ -168,6 +207,8 @@ func NewPlayer(owner int, demoGame bool) *Player {
 		income:    income,
 		bits:      bits,
 		MainTower: mainTower,
+		territoryMinX: territoryMinX,
+		territoryMaxX: territoryMaxX,
 		Top:       []Unit{NewObjective(objx, TOPY, owner)}, // inits lane objectives
 		Mid:       []Unit{NewObjective(objx, MIDY, owner)},
 		Bot:       []Unit{NewObjective(objx, BOTY, owner)},
@@ -287,11 +328,14 @@ func (p *Player) FindClosestUnit(unit Unit) (Unit, float64) {
 }
 
 // generates a JSON object in string form that is used for display purposes
-func (p *Player) ExportJSON(buffer *bytes.Buffer) { // used for exporting to screen
-	buffer.WriteString(fmt.Sprintf(`{"owner": %d, "income": %d, "bits": %d, `, p.owner, p.income, p.bits))
-	buffer.WriteString(`"towers": [`)
+// only puts in objects from minX to maxX (for spectators that is 0 to GAMEWIDTH, for players that's territory)
+func (p *Player) ExportJSON(buffer *bytes.Buffer, minX int, maxX int) { // used for exporting to screen
+	horizonMin, horizonMax := p.Horizon()
+	buffer.WriteString(fmt.Sprintf(`{"owner":%d,"income":%d,"bits":%d,"horizonMin":%d,"horizonMax":%d,"territoryMin":%d,"territoryMax":%d,`,
+		p.owner, p.income, p.bits, horizonMin, horizonMax, p.territoryMinX, p.territoryMaxX))
+	buffer.WriteString(`"towers":[`)
 	for index, element := range p.Towers {
-		if element == nil {
+		if element == nil || element.X() < minX || element.X() > maxX {
 			buffer.WriteString(`"nil"`)
 		} else {
 			element.ExportJSON(buffer)
@@ -300,21 +344,45 @@ func (p *Player) ExportJSON(buffer *bytes.Buffer) { // used for exporting to scr
 			buffer.WriteString(",")
 		}
 	}
-	buffer.WriteString(`], "troops": [`)
-	totalSize := len(p.Top) + len(p.Mid) + len(p.Bot)
-	for i := 0; i < totalSize; i++ {
-		if i < len(p.Top) {
-			p.Top[i].ExportJSON(buffer)
-		} else if i-len(p.Top) < len(p.Mid) {
-			p.Mid[i-len(p.Top)].ExportJSON(buffer)
-		} else {
-			p.Bot[i-len(p.Top)-len(p.Mid)].ExportJSON(buffer)
-		}
-		if i != totalSize-1 {
-			buffer.WriteString(",")
+	buffer.WriteString(`],"troops":[`)
+	totalSize := len(p.Top) + len(p.Mid) + len(p.Bot) // BECAUSE OF VARIABLE ARRAY SIZE, we need to preprocess the length 
+	var writeSize int
+	if minX == 0 && maxX == GAMEWIDTH {
+		writeSize = totalSize
+	} else {
+		writeSize = 0 // not all troops will be written
+		for i := 0; i < totalSize; i++ {
+			var unit Unit
+			if i < len(p.Top) {
+				unit = p.Top[i]
+			} else if i-len(p.Top) < len(p.Mid) {
+				unit = p.Mid[i-len(p.Top)]
+			} else {
+				unit = p.Bot[i-len(p.Top)-len(p.Mid)]
+			}
+			if unit.X() >= minX && unit.X() <= maxX {
+				writeSize++
+			}
 		}
 	}
-	buffer.WriteString(`], "mainTower": `)
+	for i := 0; i < totalSize; i++ {
+		var unit Unit
+		if i < len(p.Top) {
+			unit = p.Top[i]
+		} else if i-len(p.Top) < len(p.Mid) {
+			unit = p.Mid[i-len(p.Top)]
+		} else {
+			unit = p.Bot[i-len(p.Top)-len(p.Mid)]
+		}
+		if unit.X() >= minX && unit.X() <= maxX {
+			unit.ExportJSON(buffer)
+			if writeSize > 1 {
+				buffer.WriteString(",")
+				writeSize--
+			}
+		}
+	}
+	buffer.WriteString(`],"mainCore":`)
 	p.MainTower.ExportJSON(buffer)
 	buffer.WriteString("}")
 }
