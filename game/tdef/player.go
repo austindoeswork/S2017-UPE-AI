@@ -75,25 +75,25 @@ func (p *Player) Horizon() (int, int) { // horizon is how far you can see
 	if p.owner == 1 {
 		minX = 0
 		maxX = p.territoryMaxX
-		if len(p.Top) > 0 && p.Top[len(p.Top) - 1].X() + p.Top[len(p.Top) - 1].Reach() > maxX {
-			maxX = p.Top[len(p.Top) - 1].X() + p.Top[len(p.Top) - 1].Reach()
+		if len(p.Top) > 0 && p.Top[len(p.Top)-1].X()+p.Top[len(p.Top)-1].Reach() > maxX {
+			maxX = p.Top[len(p.Top)-1].X() + p.Top[len(p.Top)-1].Reach()
 		}
-		if len(p.Mid) > 0 && p.Mid[len(p.Mid) - 1].X() + p.Mid[len(p.Mid) - 1].Reach() > maxX {
-			maxX = p.Mid[len(p.Mid) - 1].X() + p.Mid[len(p.Mid) - 1].Reach()
+		if len(p.Mid) > 0 && p.Mid[len(p.Mid)-1].X()+p.Mid[len(p.Mid)-1].Reach() > maxX {
+			maxX = p.Mid[len(p.Mid)-1].X() + p.Mid[len(p.Mid)-1].Reach()
 		}
-		if len(p.Bot) > 0 && p.Bot[len(p.Bot) - 1].X() + p.Bot[len(p.Bot) - 1].Reach() > maxX {
-			maxX = p.Bot[len(p.Bot) - 1].X() + p.Bot[len(p.Bot) - 1].Reach()
+		if len(p.Bot) > 0 && p.Bot[len(p.Bot)-1].X()+p.Bot[len(p.Bot)-1].Reach() > maxX {
+			maxX = p.Bot[len(p.Bot)-1].X() + p.Bot[len(p.Bot)-1].Reach()
 		}
 	} else {
 		minX = p.territoryMinX
 		maxX = GAMEWIDTH
-		if len(p.Top) > 0 && p.Top[0].X() - p.Top[0].Reach() < minX {
-			minX = p.Top[0].X() - p.Top[0].Reach() 
+		if len(p.Top) > 0 && p.Top[0].X()-p.Top[0].Reach() < minX {
+			minX = p.Top[0].X() - p.Top[0].Reach()
 		}
-		if len(p.Mid) > 0 && p.Mid[0].X() - p.Mid[0].Reach() < minX {
+		if len(p.Mid) > 0 && p.Mid[0].X()-p.Mid[0].Reach() < minX {
 			minX = p.Mid[0].X() - p.Mid[0].Reach()
 		}
-		if len(p.Bot) > 0 && p.Bot[0].X() - p.Bot[0].Reach() < minX {
+		if len(p.Bot) > 0 && p.Bot[0].X()-p.Bot[0].Reach() < minX {
 			minX = p.Bot[0].X() - p.Bot[0].Reach()
 		}
 	}
@@ -184,11 +184,11 @@ func NewPlayer(owner int, demoGame bool) *Player {
 		corex = 0
 		objx = XOFFSET
 		territoryMinX = 0
-		territoryMaxX = GAMEWIDTH/2
+		territoryMaxX = GAMEWIDTH / 2
 	case 2:
 		corex = GAMEWIDTH - 1
 		objx = GAMEWIDTH - 1 - XOFFSET
-		territoryMinX = GAMEWIDTH/2
+		territoryMinX = GAMEWIDTH / 2
 		territoryMaxX = GAMEWIDTH
 	}
 	var mainTower Unit
@@ -203,17 +203,17 @@ func NewPlayer(owner int, demoGame bool) *Player {
 		income = 500
 	}
 	return &Player{
-		owner:     owner,
-		income:    income,
-		bits:      bits,
-		MainTower: mainTower,
+		owner:         owner,
+		income:        income,
+		bits:          bits,
+		MainTower:     mainTower,
 		territoryMinX: territoryMinX,
 		territoryMaxX: territoryMaxX,
-		Top:       []Unit{NewObjective(objx, TOPY, owner)}, // inits lane objectives
-		Mid:       []Unit{NewObjective(objx, MIDY, owner)},
-		Bot:       []Unit{NewObjective(objx, BOTY, owner)},
-		Towers:    [NUMPLOTS]Unit{},
-		demoGame:  demoGame,
+		Top:           []Unit{NewObjective(objx, TOPY, owner)}, // inits lane objectives
+		Mid:           []Unit{NewObjective(objx, MIDY, owner)},
+		Bot:           []Unit{NewObjective(objx, BOTY, owner)},
+		Towers:        [NUMPLOTS]Unit{},
+		demoGame:      demoGame,
 	}
 }
 
@@ -345,7 +345,7 @@ func (p *Player) ExportJSON(buffer *bytes.Buffer, minX int, maxX int) { // used 
 		}
 	}
 	buffer.WriteString(`],"troops":[`)
-	totalSize := len(p.Top) + len(p.Mid) + len(p.Bot) // BECAUSE OF VARIABLE ARRAY SIZE, we need to preprocess the length 
+	totalSize := len(p.Top) + len(p.Mid) + len(p.Bot) // BECAUSE OF VARIABLE ARRAY SIZE, we need to preprocess the length
 	var writeSize int
 	if minX == 0 && maxX == GAMEWIDTH {
 		writeSize = totalSize

@@ -11,11 +11,13 @@ S2017-UPE-AI
 aicomp
 balance.txt
 
+// ignore compiled ais
+examples/c++/ai
+
 // ignore used key files
 dbinterface/words/used/*.txt
-dbinterface/CREDENTIALS
+
+// ignore credentials file
 npc.conf
 
-node_modules
 identicons
-test.png

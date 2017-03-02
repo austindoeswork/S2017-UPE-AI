@@ -40,6 +40,10 @@ go build
 ./S2017-UPE-AI
 ```
 
+## DEVELOPMENT TIDBITS
+
+There is now dynamic template reloading! This project uses fsnotify to watch the templates folder for any changes. This way, you can see changes after you edit *.html files in the templates folder without having to manually restart the server. If you are using emacs, be sure to disable interlocking by adding "(setq create-lockfiles nil)" to your ~/.emacs.d/init.el file, otherwise the TemplateWaiter will crash upon reloading the folder. (There may be a better workaround than this)
+
 ## FOLDER SPECIFICS
 
 /dbinterface = Acts as a wrapper around the MySQL driver

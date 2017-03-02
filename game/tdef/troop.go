@@ -889,7 +889,7 @@ func NewGandhi(x, y, owner int) Unit {
 		enum:     8,
 		x:        x,
 		y:        y,
-		speed:    1, // right now, the blackhat has to act each turn in order to make sure it's constantly disabling the enemy
+		speed:    1,
 		damage:   0,
 		hp:       50,
 		maxhp:    50,

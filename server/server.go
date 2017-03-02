@@ -19,6 +19,10 @@ import (
 	"github.com/austindoeswork/S2017-UPE-AI/dbinterface"
 	"github.com/austindoeswork/S2017-UPE-AI/gamemanager"
 	"github.com/gorilla/sessions"
+
+	// following imports used for dynamic template reloading
+	"github.com/fsnotify/fsnotify" // adds watchers to watch for template change
+	"sync"                         // mutex to prevent people from accessing templates during change
 )
 
 // isAlpha checks if the given string contains only alphabetic characters
@@ -31,16 +35,15 @@ var isAlphaNumeric = regexp.MustCompile(`^[A-Za-z\d]+$`).MatchString
 var validFilenameCharacters = regexp.MustCompile("[\\\\/:\"*?<>|]+")
 
 // Server handles websockets and creation of games
-// TODO create a router/handler
-// TODO game manager?? think about this
+// TODO: simplify server class? or just document better
 type Server struct {
 	port      string
 	staticDir string
 	db        *dbinterface.DB
 	gm        *gamemanager.GameManager
 	store     *sessions.CookieStore
-	templates *template.Template
 	mailer    *Mailer
+	tw        *TemplateWaiter // dynamic template reloading and serving
 }
 
 // TODO MOVE FROM THIS FILE
@@ -163,14 +166,13 @@ func New(port, staticDir string, db *dbinterface.DB) *Server {
 		gm:        gamemanager.New(),
 		store:     sessions.NewCookieStore([]byte("secret")),
 		mailer:    m,
+		tw:        NewTemplateWaiter(),
 	}
 	go s.CreateSampleGameTV()
 	return &s
 }
 
 func (s *Server) Start() {
-	s.templates = template.Must(template.ParseGlob("./templates/*.html")) // dynamically load all templates with .html ending
-
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.staticDir))))
 	http.HandleFunc("/game", s.handleGame)
 	http.HandleFunc("/watch", s.handleWatch)
@@ -196,10 +198,10 @@ func (s *Server) Start() {
 
 // This data is passed into templates so that we can have dynamic information
 type Page struct {
-	Title    string
-	Flash    []string
-	Username string
-	Data     interface{}
+	Title    string      // title of page
+	Flash    []string    // flash message
+	Username string      // username of user
+	Data     interface{} // any additional data
 }
 
 // TODO does it break the server if there is no login cookie? this should be tested
@@ -222,8 +224,62 @@ func (s *Server) ExecuteUserTemplate(res http.ResponseWriter, req *http.Request,
 	}
 	session.Save(req, res)
 	data.Flash = flashes
-	err = s.templates.ExecuteTemplate(res, template, data)
+	err = s.tw.ExecuteTemplate(res, template, data)
 	if err != nil {
 		log.Fatal("Cannot Get View ", err)
 	}
+}
+
+// TemplateWaiter holds all of the templates, ready to be served.
+type TemplateWaiter struct {
+	templates *template.Template
+	mutex     sync.RWMutex
+	watcher   *fsnotify.Watcher
+}
+
+func NewTemplateWaiter() *TemplateWaiter {
+	tw := TemplateWaiter{
+		templates: template.Must(template.ParseGlob("./templates/*.html")),
+		watcher:   nil,
+	}
+	tw.Watch()
+	return &tw
+}
+
+func (tw *TemplateWaiter) Watch() {
+	go func() {
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer watcher.Close()
+		err = watcher.Add("./templates/")
+		if err != nil {
+			log.Fatal(err)
+		}
+		tw.watcher = watcher
+
+		for {
+			select {
+			case event := <-tw.watcher.Events:
+				// log.Println("event:", event)
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					log.Println("modified file:", event.Name)
+					tw.mutex.Lock()
+					tw.templates = template.Must(template.ParseGlob("./templates/*.html"))
+					tw.mutex.Unlock()
+				}
+			case err := <-tw.watcher.Errors:
+				if err != nil {
+					log.Println("error:", err)
+				}
+			}
+		}
+	}()
+}
+
+func (tw *TemplateWaiter) ExecuteTemplate(res http.ResponseWriter, template string, data Page) error {
+	tw.mutex.Lock()
+	defer tw.mutex.Unlock()
+	return tw.templates.ExecuteTemplate(res, template, data)
 }
