@@ -1,0 +1,136 @@
+{
+    "Towers": [
+        {
+            "Cost": 0,
+			"Income": 0,
+            "Damage": 30,
+            "Enum": -2,
+            "Hp": 10000,
+            "Maxhp": 10000,
+            "Name": "Core",
+            "Reach": 300,
+            "Speed": 20
+        },
+        {
+            "Cost": 0,
+			"Income": 0,
+            "Damage": 30,
+            "Enum": -1,
+            "Hp": 1000,
+            "Maxhp": 1000,
+            "Name": "Objective",
+            "Reach": 150,
+            "Speed": 15
+        },
+        {
+            "Cost": 500,
+			"Income": -100,
+            "Damage": 10,
+            "Enum": 50,
+            "Hp": 200,
+            "Maxhp": 200,
+            "Name": "Peashooter",
+            "Reach": 300,
+            "Speed": 5
+        },
+        {
+            "Cost": 1000,
+			"Income": -150,
+            "Damage": 10,
+            "Enum": 51,
+            "Hp": 3000,
+            "Maxhp": 3000,
+            "Name": "Firewall",
+            "Reach": 300,
+            "Speed": 5
+        },
+        {
+            "Cost": 5000,
+			"Income": -300,
+            "Damage": 30,
+            "Enum": 52,
+            "Hp": 600,
+            "Maxhp": 600,
+            "Name": "Guardian",
+            "Reach": 250,
+            "Speed": 3
+        },
+        {
+            "Cost": 1000,
+			"Income": 100,
+            "Damage": 0,
+            "Enum": 53,
+            "Hp": 500,
+            "Maxhp": 500,
+            "Name": "Bank",
+            "Reach": 1,
+            "Speed": 60
+        },
+        {
+            "Cost": 1000,
+			"Income": 0,
+            "Damage": 0,
+            "Enum": 54,
+            "Hp": 300,
+            "Maxhp": 300,
+            "Name": "Junkyard",
+            "Reach": 500,
+            "Speed": 3
+        },
+        {
+            "Cost": 3000,
+			"Income": 100,
+            "Damage": 0,
+            "Enum": 55,
+            "Hp": 400,
+            "Maxhp": 400,
+            "Name": "StartUp",
+            "Reach": 300,
+            "Speed": 60
+        },
+        {
+            "Name": "Corporation",
+            "Cost": 25000,
+			"Income": 200,
+            "Damage": 0,
+            "Enum": 56,
+            "Hp": 1000,
+            "Maxhp": 1000,
+            "Reach": 300,
+            "Speed": 3
+        },
+        {
+            "Name": "WarpDrive",
+            "Cost": 1000,
+			"Income": 0,
+            "Damage": 0,
+            "Enum": 57,
+            "Hp": 400,
+            "Maxhp": 400,
+            "Reach": 0,
+            "Speed": 1
+        },
+        {
+            "Name": "JammingStation",
+            "Cost": 3000,
+			"Income": -150,
+            "Damage": 0,
+            "Enum": 58,
+            "Hp": 3000,
+            "Maxhp": 3000,
+            "Reach": 200,
+            "Speed": 30
+        },
+        {
+            "Name": "Hotspot",
+            "Cost": 10000,
+			"Income": -500,
+            "Damage": 0,
+            "Enum": 59,
+            "Hp": 400,
+            "Maxhp": 400,
+            "Reach": 50,
+            "Speed": 10
+        }
+    ]
+}

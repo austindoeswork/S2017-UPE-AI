@@ -9,6 +9,7 @@
 // ignore binary
 S2017-UPE-AI
 aicomp
+balance.txt
 
 // ignore used key files
 dbinterface/words/used/*.txt

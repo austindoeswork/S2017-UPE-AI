@@ -186,7 +186,8 @@ func (s *Server) Start() {
 	http.HandleFunc("/wswatch", s.handleWatchWS)
 	http.HandleFunc("/", s.handleHome)
 
-	http.ListenAndServe(s.port, nil)
+	err := http.ListenAndServe(s.port, nil)
+	log.Panic(err)
 }
 
 //

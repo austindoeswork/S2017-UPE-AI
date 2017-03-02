@@ -1,0 +1,136 @@
+{
+    "Troops": [
+        {
+            "Damage": 10,
+			"Cost": 200,
+            "Enum": 0,
+            "Hp": 100,
+            "Maxhp": 100,
+            "Name": "Nut",
+            "Reach": 120,
+            "Speed": 5,
+            "Stride": 10
+        },
+        {
+            "Damage": 0,
+			"Cost": 400,
+            "Enum": 1,
+            "Hp": 300,
+            "Maxhp": 300,
+            "Name": "Bolt",
+            "Reach": 100,
+            "Speed": 8,
+            "Stride": 15
+        },
+        {
+            "Damage": 0,
+			"Cost": 300,
+            "Enum": 2,
+            "Hp": 75,
+            "Maxhp": 75,
+            "Name": "GreaseMonkey",
+            "Reach": 200,
+            "Speed": 5,
+            "Stride": 10
+        },
+        {
+            "Damage": 5,
+			"Cost": 800,
+            "Enum": 3,
+            "Hp": 800,
+            "Maxhp": 800,
+            "Name": "Walker",
+            "Reach": 200,
+            "Speed": 2,
+            "Stride": 10
+        },
+        {
+            "Damage": 100,
+			"Cost": 3000,
+            "Enum": 4,
+            "Hp": 100,
+            "Maxhp": 100,
+            "Name": "Aimbot",
+            "Reach": 700,
+            "Speed": 60,
+            "Stride": 5
+        },
+        {
+            "Damage": 50,
+			"Cost": 2500,
+            "Enum": 5,
+            "Hp": 500,
+            "Maxhp": 500,
+            "Name": "HardDrive",
+            "Reach": 50,
+            "Speed": 5,
+            "Stride": 5
+        },
+        {
+            "Damage": 8,
+			"Cost": 9000,
+            "Enum": 6,
+            "Hp": 9000,
+            "Maxhp": 9000,
+            "Name": "Scrapheap",
+            "Reach": 120,
+            "Speed": 5,
+            "Stride": 5
+        },
+        {
+            "Damage": 0,
+			"Cost": 10000,
+            "Enum": 7,
+            "Hp": 10000,
+            "Maxhp": 10000,
+            "Name": "GasGuzzler",
+            "Reach": 50,
+            "Speed": 5,
+            "Stride": 5
+        },
+        {
+            "Damage": 100,
+			"Cost": 8000,
+            "Enum": 8,
+            "Hp": 80,
+            "Maxhp": 80,
+            "Name": "Terminator",
+            "Reach": 120,
+            "Speed": 5,
+            "Stride": 6
+        },
+        {
+            "Damage": 0,
+			"Cost": 2500,
+            "Enum": 9,
+            "Hp": 50,
+            "Maxhp": 50,
+            "Name": "Blackhat",
+            "Reach": 50,
+            "Speed": 1,
+            "Stride": 6
+        },
+        {
+            "Damage": 30,
+			"Cost": 6000,
+            "Enum": 10,
+            "Hp": 80,
+            "Maxhp": 80,
+            "Name": "Malware",
+            "Reach": 200,
+            "Speed": 5,
+            "Stride": 4
+        },
+        {
+            "Damage": 0,
+			"Cost": 500000,
+            "Enum": 11,
+            "Hp": 50,
+            "Maxhp": 50,
+            "Name": "Gandhi",
+            "Reach": 50,
+            "Speed": 1,
+            "Stride": 6
+        }
+    ]
+}

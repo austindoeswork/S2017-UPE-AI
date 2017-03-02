@@ -207,14 +207,6 @@ func (t *TowerDefense) Start() error {
 				}
 				t.frame++
 				t.updateInputs()
-
-				/* if t.p1cmd != nil {
-					log.Println("1", t.p1cmd)
-				}
-				if t.p2cmd != nil {
-					log.Println("2", t.p2cmd)
-				} */
-
 				t.updateGame()
 
 				t.p1cmd = nil
@@ -241,6 +233,9 @@ func (t *TowerDefense) Start() error {
 				}
 
 				if !t.players[0].IsAlive() || !t.players[1].IsAlive() {
+					t.sendWatcher(t.stateJSON(0, GAMEWIDTH))
+					t.sendWatcher(t.stateJSON(0, GAMEWIDTH))
+					t.sendWatcher(t.stateJSON(0, GAMEWIDTH))
 					for i := 0; i < 500; i++ {
 						t.oq.Push(nil)
 					}
@@ -250,6 +245,7 @@ func (t *TowerDefense) Start() error {
 							t.sendWatcher(fr)
 						}
 					}
+					time.Sleep(time.Second)
 					t.status = DONE
 					log.Println("GAME DIED OF NATURAL CAUSES")
 					close(t.output)
