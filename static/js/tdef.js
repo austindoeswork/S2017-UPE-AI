@@ -240,16 +240,16 @@ function renderGrid(data) {
     d = JSON.parse(data);
 
     if (d.hasOwnProperty("Gamename")) {
-	myPlayer = d["Player"];
-	myUsername = d["Username"];
-	myGamename = d["Gamename"];
+			myPlayer = d["Player"];
+			myUsername = d["Username"];
+			myGamename = d["Gamename"];
 
-	if (myPlayer == 1) {
-	    document.getElementById("p1name").innerHTML = myUsername;
-	} else {
-	    document.getElementById("p2name").innerHTML = myUsername;
-	}
-	return; // don't try to render status messages
+			if (myPlayer == 1) {
+				document.getElementById("p1name").innerHTML = myUsername;
+			} else {
+				document.getElementById("p2name").innerHTML = myUsername;
+			}
+			return; // don't try to render status messages
     }
     
     units = d.p1.troops.concat(d.p2.troops); // TODO: make it so the top towers are drawn first, then the lane, then the bottom towers (prevents clipping weird)
@@ -282,13 +282,36 @@ function renderGrid(data) {
 	fogOfWar.clear();
 	fogOfWar.beginFill(0xd3d3d3);
 	fogOfWar.alpha = 0.25;
-	fogOfWar.drawRect(d.p1.horizonMax, 0, 1600 - d.p1.horizonMax, 600);
+    p1extra = d.p1.horizonMax - 760;
+    p1scale = p1extra * 0.55;
+    fogOfWar.drawPolygon([
+			800 + p1scale, 0,
+			800 + p1extra, 600,
+			1600, 600, // bottom right
+		    1600, 0, //top right
+			800 + p1scale, 0,
+	]);
+
+
+	// fogOfWar.drawRect(d.p1.horizonMax, 0, 1600 - d.p1.horizonMax, 600);
+	// fogOfWar.drawRect(d.p1.horizonMax, 0, 1600 - d.p1.horizonMax, 600);
 	fogOfWar.endFill();
     } else if (myPlayer == 2) {
 	fogOfWar.clear();
 	fogOfWar.beginFill(0xd3d3d3);
 	fogOfWar.alpha = 0.25;
-	fogOfWar.drawRect(0, 0, d.p2.horizonMin, 600);
+	// fogOfWar.drawRect(0, 0, d.p2.horizonMin, 600);
+
+    p2extra = 840 - d.p2.horizonMin;
+    p2scale = p2extra * 0.55;
+    fogOfWar.drawPolygon([
+			800 - p2scale, 0,
+			800 - p2extra, 600,
+			0, 600, // bottom left
+		    0, 0, //top left
+			800 - p2scale, 0,
+	]);
+
 	fogOfWar.endFill();
     }
 
