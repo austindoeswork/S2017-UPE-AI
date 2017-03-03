@@ -2,8 +2,18 @@
 {{template "header" .}}
 
 <h1>Watch</h1>
-<p class="lead">Select one of the games from the ongoing matches going on below! Lobby games and matchmaking games will all show up there!</p>
-<p>Note that there is a 20 second delay for watchers, in order to discourage cheating our fog of war (yet to be implemented). If you're experiencing abnormally long wait times to watch a game, you might be trying to connect to a game that just started!</p>
+<h3>Ongoing games: select one to watch!</h3>
+<p class="lead">Fun fact: any game names below that are long strings of random numbers are likely matchmaking games!</p>
+<p>Note that there is a 20 second delay for watchers, in order to discourage cheating our fog of war. If you're experiencing abnormally long wait times to watch a game, you might be trying to connect to a game that just started!</p>
+<table class="table table-striped">
+  {{range .Data}} <!-- iterate thru all elements -->
+  <tr>
+    <td>
+      <button class="btn btn-primary" onclick="watchGame({{.}})"><h4>{{.}}</h4></button>
+    </td>
+  </tr>
+  {{end}}
+</table>
 
 <p><span class="label label-danger" id="status">STATUS: Not connected.</span></p>
 <p>Framerate: <span id="fps">:)</span></p>
@@ -81,17 +91,5 @@
   }
   }
 </script>
-<h3>Ongoing games: select one to watch!</h3>
-<p class="lead">Fun fact: any game names below that are long strings of random numbers are likely matchmaking games!</p>
-<table class="table table-striped">
-  {{range .Data}} <!-- iterate thru all elements -->
-  <tr>
-    <td>
-      <button class="btn btn-primary" onclick="watchGame({{.}})"><h4>{{.}}</h4></button>
-    </td>
-  </tr>
-  {{end}}
-</table>
-
 {{template "footer" .}}
 {{end}}
