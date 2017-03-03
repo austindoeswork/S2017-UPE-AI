@@ -206,15 +206,18 @@ function setup() {
 window.addEventListener("resize", resize);
 
 // called by frontend troop buttons
-function buyTroop(location) {
-    var radioButtons = document.getElementsByName('troopEnum');
-    var enumVal;
+function buyTroop(troopEnum) {
+    var radioButtons = document.getElementsByName('laneRadio');
+    var laneEnum;
     for(var i = 0; i < radioButtons.length; i++){
-	if(radioButtons[i].checked){
-            enumVal = radioButtons[i].value;
-	}
+		if(radioButtons[i].checked){
+            laneEnum = radioButtons[i].value;
+			// console.log(laneEnum);
+		}
     }
-    send('b' + enumVal + ' ' + location)
+	input = 'b'+troopEnum +' '+laneEnum;
+	// console.log(input);
+    send(input);
 }
 
 // called by frontend tower buttons
@@ -271,10 +274,6 @@ function renderGrid(data) {
     document.getElementById("p2bits").innerHTML = d.p2.bits;
     document.getElementById("p1income").innerHTML = d.p1.income;
     document.getElementById("p2income").innerHTML = d.p2.income;
-    document.getElementById("p1territory").innerHTML = d.p1.territoryMin + "," + d.p1.territoryMax;
-    document.getElementById("p2territory").innerHTML = d.p2.territoryMin + "," + d.p2.territoryMax;
-    document.getElementById("p1horizon").innerHTML = d.p1.horizonMin + "," + d.p1.horizonMax;
-    document.getElementById("p2horizon").innerHTML = d.p2.horizonMin + "," + d.p2.horizonMax;
 
     draw(units);
 
@@ -291,17 +290,11 @@ function renderGrid(data) {
 		    1600, 0, //top right
 			800 + p1scale, 0,
 	]);
-
-
-	// fogOfWar.drawRect(d.p1.horizonMax, 0, 1600 - d.p1.horizonMax, 600);
-	// fogOfWar.drawRect(d.p1.horizonMax, 0, 1600 - d.p1.horizonMax, 600);
 	fogOfWar.endFill();
     } else if (myPlayer == 2) {
 	fogOfWar.clear();
 	fogOfWar.beginFill(0xd3d3d3);
 	fogOfWar.alpha = 0.25;
-	// fogOfWar.drawRect(0, 0, d.p2.horizonMin, 600);
-
     p2extra = 840 - d.p2.horizonMin;
     p2scale = p2extra * 0.55;
     fogOfWar.drawPolygon([
@@ -311,9 +304,12 @@ function renderGrid(data) {
 		    0, 0, //top left
 			800 - p2scale, 0,
 	]);
-
 	fogOfWar.endFill();
     }
+
+	if (d.p1.mainCore.hp < 0) {
+		ws.close()
+	}
 
     renderer.render(stage);
     document.getElementById("fps").innerHTML = 1000/(Date.now() - timestamp);
