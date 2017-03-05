@@ -132,6 +132,9 @@ func (gm *GameManager) ControlGame(gameName string, userName string, quit chan b
 		return nil, err
 	}
 
+	fmt.Println("setting player name", controller.Player(), userName)
+	gw.SetPlayerName(controller.Player(), userName)
+
 	go func() {
 		select {
 		case <-quit:

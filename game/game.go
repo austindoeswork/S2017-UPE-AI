@@ -32,6 +32,7 @@ type Game interface {
 	Quit()
 
 	Status() int
+	SetPlayerName(int, string) error
 	MinPlayers() int
 }
 

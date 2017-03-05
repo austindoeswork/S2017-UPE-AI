@@ -11,6 +11,7 @@ import (
 // GAMES ONLY DEAL WITH INTERNAL GAME LOGIC
 type Player struct {
 	owner  int // who owns this, player 1 or 2?
+	name   string
 	income int // X coins per second
 	bits   int // total number of coins
 
@@ -27,6 +28,10 @@ type Player struct {
 	// special unit things
 	madeGandhi bool // true if Gandhi has been made (player cannot make another gandhi), false otherwise
 	demoGame   bool
+}
+
+func (p *Player) SetName(name string) {
+	p.name = name
 }
 
 // Determine's a player's tiebreak score in the event of time running out
@@ -180,7 +185,7 @@ func (p *Player) AddUnit(unit Unit) {
 	}
 }
 
-func NewPlayer(owner int, demoGame bool) *Player {
+func NewPlayer(owner int, name string, demoGame bool) *Player {
 	var corex, objx, territoryMinX, territoryMaxX int
 	switch owner {
 	case 1:
@@ -207,6 +212,7 @@ func NewPlayer(owner int, demoGame bool) *Player {
 	}
 	return &Player{
 		owner:         owner,
+		name:          name,
 		income:        income,
 		bits:          bits,
 		MainTower:     mainTower,
@@ -334,8 +340,8 @@ func (p *Player) FindClosestUnit(unit Unit) (Unit, float64) {
 // only puts in objects from minX to maxX (for spectators that is 0 to GAMEWIDTH, for players that's territory)
 func (p *Player) ExportJSON(buffer *bytes.Buffer, minX int, maxX int) { // used for exporting to screen
 	horizonMin, horizonMax := p.Horizon()
-	buffer.WriteString(fmt.Sprintf(`{"owner":%d,"income":%d,"bits":%d,"horizonMin":%d,"horizonMax":%d,"territoryMin":%d,"territoryMax":%d,`,
-		p.owner, p.income, p.bits, horizonMin, horizonMax, p.territoryMinX, p.territoryMaxX))
+	buffer.WriteString(fmt.Sprintf(`{"owner":%d,"name":"%s","income":%d,"bits":%d,"horizonMin":%d,"horizonMax":%d,"territoryMin":%d,"territoryMax":%d,`,
+		p.owner, p.name, p.income, p.bits, horizonMin, horizonMax, p.territoryMinX, p.territoryMaxX))
 	buffer.WriteString(`"towers":[`)
 	for index, element := range p.Towers {
 		if element == nil || element.X() < minX || element.X() > maxX {

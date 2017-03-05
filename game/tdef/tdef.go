@@ -135,8 +135,8 @@ type TowerDefense struct {
 
 func New(width, height, fps int, demoGame bool) (*TowerDefense, []*Controller, <-chan []byte) {
 	outputChan := make(chan []byte)
-	p1 := NewPlayer(1, demoGame)
-	p2 := NewPlayer(2, demoGame)
+	p1 := NewPlayer(1, "", demoGame)
+	p2 := NewPlayer(2, "", demoGame)
 	p1input := make(chan []byte, 5)
 	p2input := make(chan []byte, 5)
 	p1output := make(chan []byte, 5)
@@ -188,6 +188,14 @@ func (t *TowerDefense) DetermineWinner() {
 	}
 }
 
+func (t *TowerDefense) SetPlayerName(num int, name string) error {
+	if num <= 0 || num >= 3 {
+		return fmt.Errorf("invalid player num")
+	}
+	t.players[num-1].SetName(name)
+	return nil
+}
+
 func (t *TowerDefense) Start() error {
 	if t.status == RUNNING {
 		return fmt.Errorf("ERR game already running")
@@ -232,7 +240,7 @@ func (t *TowerDefense) Start() error {
 					t.DetermineWinner()
 				}
 
-				if !t.players[0].IsAlive() || !t.players[1].IsAlive() {
+				if !t.players[0].IsAlive() || !t.players[1].IsAlive() || t.Winner() != -1 {
 					t.sendWatcher(t.stateJSON(0, GAMEWIDTH))
 					t.sendWatcher(t.stateJSON(0, GAMEWIDTH))
 					t.sendWatcher(t.stateJSON(0, GAMEWIDTH))
