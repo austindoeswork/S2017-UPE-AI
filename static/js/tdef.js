@@ -39,12 +39,17 @@ PIXI.utils.sayHello(type) // not really necessary, but could be nice for people 
 // Aliases
 var fogOfWar = new PIXI.Graphics();
 var healthBars = new PIXI.Graphics();
+var p1hp = new PIXI.Text("", {font:"10px Roboto", fill:"white", align:"left"});
+var p2hp = new PIXI.Text("", {font:"10px Roboto", fill:"white", align:"right"});
+p1hp.x = 10;
+p2hp.x = GAME_WIDTH - 10;
+
 var p1info = new PIXI.Text("P1\nBits\nIncome", {font:"25px Roboto", fill:"#343435", align:"left"});
 var p2info = new PIXI.Text("P2\nBits\nIncome", {font:"25px Roboto", fill:"#343435", align:"right"});
 p1info.x = 10;
 p1info.y = 30;
 p2info.anchor.x = 1;
-p2info.x = 1600;
+p2info.x = GAME_WIDTH - 10;
 p2info.y = 30;
 var Container = PIXI.Container;
 var autoDetectRenderer = PIXI.autoDetectRenderer;
@@ -62,7 +67,7 @@ var rendererOptions = {
 var renderer = autoDetectRenderer(GAME_WIDTH, GAME_HEIGHT, rendererOptions);
 renderer.backgroundColor = 0xCCEBF1; // baby blue
 document.getElementById('gameTV').appendChild(renderer.view);
-var stage = new Container(); // TODO: make into particlecontainer?
+var stage = new Container();
 
 function resize() { // autoresizes gameTV depending on size of window (which determines size of main container)
     // Determine which screen dimension is most constrained
@@ -219,13 +224,13 @@ function buyTroop(troopEnum) {
     var radioButtons = document.getElementsByName('laneRadio');
     var laneEnum;
     for(var i = 0; i < radioButtons.length; i++){
-		if(radioButtons[i].checked){
+	if(radioButtons[i].checked){
             laneEnum = radioButtons[i].value;
-			// console.log(laneEnum);
-		}
+	    // console.log(laneEnum);
+	}
     }
-	input = 'b'+troopEnum +' '+laneEnum;
-	// console.log(input);
+    input = 'b'+troopEnum +' '+laneEnum;
+    // console.log(input);
     send(input);
 }
 
@@ -252,16 +257,16 @@ function renderGrid(data) {
     d = JSON.parse(data);
 
     if (d.hasOwnProperty("Gamename")) {
-			myPlayer = d["Player"];
-			myUsername = d["Username"];
-			myGamename = d["Gamename"];
+	myPlayer = d["Player"];
+	myUsername = d["Username"];
+	myGamename = d["Gamename"];
 
-			if (myPlayer == 1) {
-				document.getElementById("p1name").innerHTML = myUsername;
-			} else {
-				document.getElementById("p2name").innerHTML = myUsername;
-			}
-			return; // don't try to render status messages
+	if (myPlayer == 1) {
+	    document.getElementById("p1name").innerHTML = myUsername;
+	} else {
+	    document.getElementById("p2name").innerHTML = myUsername;
+	}
+	return; // don't try to render status messages
     }
     
     units = d.p1.troops.concat(d.p2.troops); // TODO: make it so the top towers are drawn first, then the lane, then the bottom towers (prevents clipping weird)
@@ -278,8 +283,8 @@ function renderGrid(data) {
     units.push(d.p1.mainCore);
     units.push(d.p2.mainCore);
 
-    p1info.text = "Username\nBits: " + d.p1.bits + "\nIncome: " + d.p1.income;
-    p2info.text = "Username\nBits: " + d.p2.bits + "\nIncome: " + d.p2.income;
+    p1info.text = "P1\nBits: " + d.p1.bits + "\nIncome: " + d.p1.income;
+    p2info.text = "P2\nBits: " + d.p2.bits + "\nIncome: " + d.p2.income;
     draw(units);
 
     if (myPlayer == 1) {
@@ -311,9 +316,52 @@ function renderGrid(data) {
 	]);
 	fogOfWar.endFill();
     }
+    
+    if (d.p1.mainCore.hp <= 0) {
+	ws.close();
+	var resultScreen = new PIXI.Graphics();
+	resultScreen.alpha = .5;
+	resultScreen.beginFill(0x441416);
+	resultScreen.drawRect(0, 0, 1600, 600);
+	stage.addChild(resultScreen);
+	var resultText = new PIXI.Text("RED WINS!", {font:"50px Roboto", fill:"white", align:"center"});
+	resultText.anchor.x = 0.5;
+	resultText.x = 800;
+	resultText.anchor.y = 0.5;
+	resultText.y = 300;
+	stage.addChild(resultText);
 
-    if (d.p1.mainCore.hp < 0) {
-	ws.close()
+	for (var i = 0; i < 12; i++) {
+	    var newMob = new Sprite(
+		TextureCache['' + i + '-red']
+	    );
+	    newMob.x = 250 + i * 100;
+	    newMob.y = 400 - newMob.height;
+	    stage.addChild(newMob);
+	}
+    }
+    else if (d.p2.mainCore.hp > 0) {
+	ws.close();
+	var resultScreen = new PIXI.Graphics();
+	resultScreen.alpha = .5;
+	resultScreen.beginFill(0x13223a);
+	resultScreen.drawRect(0, 0, 1600, 600);
+	stage.addChild(resultScreen);
+	var resultText = new PIXI.Text("BLUE WINS!", {font:"50px Roboto", fill:"white", align:"center"});
+	resultText.anchor.x = 0.5;
+	resultText.x = 800;
+	resultText.anchor.y = 0.5;
+	resultText.y = 300;
+	stage.addChild(resultText);
+
+	for (var i = 0; i < 12; i++) {
+	    var newMob = new Sprite(
+		TextureCache['' + i + '-blue']
+	    );
+	    newMob.x = 250 + i * 100;
+	    newMob.y = 400 - newMob.height;
+	    stage.addChild(newMob);
+	}
     }
 
     healthBars.clear();
@@ -324,9 +372,10 @@ function renderGrid(data) {
     healthBars.beginFill(0x441416);
     healthBars.drawRect(1000, 0, 600, 20);
     healthBars.beginFill(0xb2373b);
-    healthBars.drawRect(1600 - 600 * d.p2.mainCore.hp / d.p2.mainCore.maxhp, 0, 600 * d.p2.mainCore.hp / d.p2.mainCore.maxhp, 20);
+    healthBars.drawRect(1600 - 600 * d.p2.mainCore.hp / d.p2.mainCore.maxhp, 0, 600 * d.p2.mainCore.hp / d.p2.mainCore.maxhp, 20);	
+
     renderer.render(stage);
-    document.getElementById("fps").innerHTML = 1000/(Date.now() - timestamp);
+    // document.getElementById("fps").innerHTML = 1000/(Date.now() - timestamp);
     timestamp = Date.now();
 }
 

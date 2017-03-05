@@ -112,6 +112,9 @@ func (p *Player) BuyTroop(lane, enum int, opponent *Player) bool {
 		x = GAMEWIDTH - 1
 	}
 	troop := NewTroop(x, lane, p.owner, enum)
+	if troop == nil {
+		return false
+	}
 	for _, element := range p.Towers {
 		if element == nil {
 			continue

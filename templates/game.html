@@ -22,46 +22,6 @@
 </div>
 <span class="label label-danger" id="status">STATUS: Not connected.</span><span id="fps">:)</span>
 <div id="gameTV"></div>
-<div id="score">
-  <div class="col-md-6" class="panel-body">
-    <table class="table col-md-6">
-      <tr>
-	<td>Player 1: <span id="p1name"></span></td> <!-- TODO: implement with identification from server -->
-      </tr>
-      <tr>
-	<td>Core HP:</td>
-	<td><span id="p1hp"></span></td>
-      </tr>
-      <tr>
-	<td>Bits:</td>
-	<td><span id="p1bits"></span></td>
-      </tr>
-      <tr>
-	<td>Income:</td>
-	<td><span id="p1income"></span></td>
-      </tr>
-    </table>
-  </div>
-  <div class="col-md-6" class="panel-body">
-    <table class="table">
-      <tr>
-	<td>Player 2: <span id="p2name"></span></td>
-      </tr>
-      <tr>
-	<td>Core HP:</td>
-	<td><span id="p2hp"></span></td>
-      </tr>
-      <tr>
-	<td>Bits:</td>
-	<td><span id="p2bits"></span></td>
-      </tr>
-      <tr>
-	<td>Income:</td>
-	<td><span id="p2income"></span></td>
-      </tr>
-    </table>
-  </div>
-</div>
 <div id="gameController" class="panel panel-warning col-md-12">
   <h5>Buy Troops</h5>
   <table style="width:100%">
@@ -76,60 +36,60 @@
     <input type="radio" name="laneRadio" value='03'> Lane 03
   </label>
 </div>
+<tr>
+</button>
+<td><button class="btn btn-warning" onclick="buyTroop('00')">Nut</button>([200] Basic Troop)</button></td>
+<td><button class="btn btn-warning" onclick="buyTroop('04')">Aimbot</button>([3000] Sniper)</button></td>
+<td><button class="btn btn-warning" onclick="buyTroop('08')">Terminator</button>([8000] Super Soldier)</button></td>
+</tr>
+<tr>
+  <td><button class="btn btn-warning" onclick="buyTroop('01')">Bolt</button>([400] Basic Troop)</button></td>
+<td><button class="btn btn-warning" onclick="buyTroop('05')">Hard Drive</button>([2500] Bulky Fighter)</button></td>
+<td><button class="btn btn-warning" onclick="buyTroop('09')">Blackhat</button>([2500] Tiny Instant Killer)</button></td>
+</tr>
+<tr>
+  <td><button class="btn btn-warning" onclick="buyTroop('02')">Grease Monkey</button>([300] Healer)</button></td>
+<td><button class="btn btn-warning" onclick="buyTroop('06')">Scrapheap</button>([9000] Trojan Horse)</button></td>
+<td><button class="btn btn-warning" onclick="buyTroop('10')">Malware</button>([6000] Necromancer)</button></td>
+</tr>
   <tr>
-	  </button>
-	  <td><button class="btn btn-warning" onclick="buyTroop('00')">Nut</button>([200] Basic Troop)</button></td>
-	  <td><button class="btn btn-warning" onclick="buyTroop('04')">Aimbot</button>([3000] Sniper)</button></td>
-      <td><button class="btn btn-warning" onclick="buyTroop('08')">Terminator</button>([8000] Super Soldier)</button></td>
-  </tr>
-  <tr>
-	  <td><button class="btn btn-warning" onclick="buyTroop('01')">Bolt</button>([400] Basic Troop)</button></td>
-      <td><button class="btn btn-warning" onclick="buyTroop('05')">Hard Drive</button>([2500] Bulky Fighter)</button></td>
-      <td><button class="btn btn-warning" onclick="buyTroop('09')">Blackhat</button>([2500] Tiny Instant Killer)</button></td>
-  </tr>
-  <tr>
-	  <td><button class="btn btn-warning" onclick="buyTroop('02')">Grease Monkey</button>([300] Healer)</button></td>
-  	  <td><button class="btn btn-warning" onclick="buyTroop('06')">Scrapheap</button>([9000] Trojan Horse)</button></td>
-      <td><button class="btn btn-warning" onclick="buyTroop('10')">Malware</button>([6000] Necromancer)</button></td>
-  </tr>
-  <tr>
-	  <td><button class="btn btn-warning" onclick="buyTroop('03')">Walker</button>([800] Fast)</button></td>
-      <td><button class="btn btn-warning" onclick="buyTroop('07')">Gas Guzzler</button>([10000] Fatass Killer)</button></td>
-      <td><button class="btn btn-warning" onclick="buyTroop('11')">Gandhi</button>([500000] Pacifist)</button></td>
-  </tr>
-  <tr>
-  </tr>
+    <td><button class="btn btn-warning" onclick="buyTroop('03')">Walker</button>([800] Fast)</button></td>
+<td><button class="btn btn-warning" onclick="buyTroop('07')">Gas Guzzler</button>([10000] Fatass Killer)</button></td>
+<td><button class="btn btn-warning" onclick="buyTroop('11')">Gandhi</button>([500000] Pacifist)</button></td>
+</tr>
+<tr>
+</tr>
 </table>
-    </div>
-    <h5>Buy Tower</h5>
-    <div>
-      <table class="table">
-	<tr>
-	  <td>
-	    <p>Select tower to buy:</p>
-	  </td>
-	</tr>
-	<tr>
-	  <td>
-	    <INPUT TYPE="Radio" Name="towerEnum" Value="50" checked="checked">Peashooter
-	    <INPUT TYPE="Radio" Name="towerEnum" Value="51">Firewall
-	    <INPUT TYPE="Radio" Name="towerEnum" Value="52">Guardian
-	    <INPUT TYPE="Radio" Name="towerEnum" Value="53">Bank
-	    <INPUT TYPE="Radio" Name="towerEnum" Value="54">Junkyard
-	    <INPUT TYPE="Radio" Name="towerEnum" Value="55">Start Up
-	    <INPUT TYPE="Radio" Name="towerEnum" Value="56">Corporation
-	    <INPUT TYPE="Radio" Name="towerEnum" Value="57">Warp Drive
-	    <INPUT TYPE="Radio" Name="towerEnum" Value="58">Jamming Tower
-	    <INPUT TYPE="Radio" Name="towerEnum" Value="59">Hotspot
-	  </td>
-	</tr>
-	<tr><td><p>Select a plot to drop it in:</p></td></tr>
+</div>
+<h5>Buy Tower</h5>
+<div>
+  <table class="table">
+    <tr>
+      <td>
+	<p>Select tower to buy:</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<INPUT TYPE="Radio" Name="towerEnum" Value="50" checked="checked">Peashooter
+	<INPUT TYPE="Radio" Name="towerEnum" Value="51">Firewall
+	<INPUT TYPE="Radio" Name="towerEnum" Value="52">Guardian
+	<INPUT TYPE="Radio" Name="towerEnum" Value="53">Bank
+	<INPUT TYPE="Radio" Name="towerEnum" Value="54">Junkyard
+	<INPUT TYPE="Radio" Name="towerEnum" Value="55">Start Up
+	<INPUT TYPE="Radio" Name="towerEnum" Value="56">Corporation
+	<INPUT TYPE="Radio" Name="towerEnum" Value="57">Warp Drive
+	<INPUT TYPE="Radio" Name="towerEnum" Value="58">Jamming Tower
+	<INPUT TYPE="Radio" Name="towerEnum" Value="59">Hotspot
+      </td>
+    </tr>
+    <tr><td><p>Select a plot to drop it in:</p></td></tr>
 	<tr>
 	  <td><div id="towerController"></div></td>
 	</tr>
-      </table>
-    </div>
-  </div>
+  </table>
+</div>
+</div>
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.2.2/pixi.min.js"></script>
