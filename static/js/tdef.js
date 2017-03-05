@@ -1,5 +1,3 @@
-// TODO turn this into a generalized gameTV creator that can make smaller windows (i.e. for the main page)
-
 function buttonPress(button) {
     buyTower(button.id);
 }
@@ -40,6 +38,14 @@ PIXI.utils.sayHello(type) // not really necessary, but could be nice for people 
 
 // Aliases
 var fogOfWar = new PIXI.Graphics();
+var healthBars = new PIXI.Graphics();
+var p1info = new PIXI.Text("P1\nBits\nIncome", {font:"25px Roboto", fill:"#343435", align:"left"});
+var p2info = new PIXI.Text("P2\nBits\nIncome", {font:"25px Roboto", fill:"#343435", align:"right"});
+p1info.x = 10;
+p1info.y = 30;
+p2info.anchor.x = 1;
+p2info.x = 1600;
+p2info.y = 30;
 var Container = PIXI.Container;
 var autoDetectRenderer = PIXI.autoDetectRenderer;
 var loader = PIXI.loader;
@@ -197,6 +203,9 @@ function setup() {
     rightSteps.y = 0;
     stage.addChild(rightSteps);
     stage.addChild(fogOfWar);
+    stage.addChild(healthBars);
+    stage.addChild(p1info);
+    stage.addChild(p2info);
     resize();
     renderer.render(stage);
     readyToDisplay = true;
@@ -268,49 +277,54 @@ function renderGrid(data) {
     }
     units.push(d.p1.mainCore);
     units.push(d.p2.mainCore);
-    document.getElementById("p1hp").innerHTML = d.p1.mainCore.hp;
-    document.getElementById("p2hp").innerHTML = d.p2.mainCore.hp;
-    document.getElementById("p1bits").innerHTML = d.p1.bits;
-    document.getElementById("p2bits").innerHTML = d.p2.bits;
-    document.getElementById("p1income").innerHTML = d.p1.income;
-    document.getElementById("p2income").innerHTML = d.p2.income;
 
+    p1info.text = "Username\nBits: " + d.p1.bits + "\nIncome: " + d.p1.income;
+    p2info.text = "Username\nBits: " + d.p2.bits + "\nIncome: " + d.p2.income;
     draw(units);
 
     if (myPlayer == 1) {
 	fogOfWar.clear();
 	fogOfWar.beginFill(0xd3d3d3);
 	fogOfWar.alpha = 0.25;
-    p1extra = d.p1.horizonMax - 760;
-    p1scale = p1extra * 0.55;
-    fogOfWar.drawPolygon([
-			800 + p1scale, 0,
-			800 + p1extra, 600,
-			1600, 600, // bottom right
-		    1600, 0, //top right
-			800 + p1scale, 0,
+	p1extra = d.p1.horizonMax - 760;
+	p1scale = p1extra * 0.55;
+	fogOfWar.drawPolygon([
+	    800 + p1scale, 0,
+	    800 + p1extra, 600,
+	    1600, 600, // bottom right
+	    1600, 0, //top right
+	    800 + p1scale, 0,
 	]);
 	fogOfWar.endFill();
     } else if (myPlayer == 2) {
 	fogOfWar.clear();
 	fogOfWar.beginFill(0xd3d3d3);
 	fogOfWar.alpha = 0.25;
-    p2extra = 840 - d.p2.horizonMin;
-    p2scale = p2extra * 0.55;
-    fogOfWar.drawPolygon([
-			800 - p2scale, 0,
-			800 - p2extra, 600,
-			0, 600, // bottom left
-		    0, 0, //top left
-			800 - p2scale, 0,
+	p2extra = 840 - d.p2.horizonMin;
+	p2scale = p2extra * 0.55;
+	fogOfWar.drawPolygon([
+	    800 - p2scale, 0,
+	    800 - p2extra, 600,
+	    0, 600, // bottom left
+	    0, 0, //top left
+	    800 - p2scale, 0,
 	]);
 	fogOfWar.endFill();
     }
 
-	if (d.p1.mainCore.hp < 0) {
-		ws.close()
-	}
+    if (d.p1.mainCore.hp < 0) {
+	ws.close()
+    }
 
+    healthBars.clear();
+    healthBars.beginFill(0x13223a); // dark blue
+    healthBars.drawRect(0, 0, 600, 20);
+    healthBars.beginFill(0x4286f4); // light blue
+    healthBars.drawRect(0, 0, 600 * d.p1.mainCore.hp / d.p1.mainCore.maxhp, 20);
+    healthBars.beginFill(0x441416);
+    healthBars.drawRect(1000, 0, 600, 20);
+    healthBars.beginFill(0xb2373b);
+    healthBars.drawRect(1600 - 600 * d.p2.mainCore.hp / d.p2.mainCore.maxhp, 0, 600 * d.p2.mainCore.hp / d.p2.mainCore.maxhp, 20);
     renderer.render(stage);
     document.getElementById("fps").innerHTML = 1000/(Date.now() - timestamp);
     timestamp = Date.now();
