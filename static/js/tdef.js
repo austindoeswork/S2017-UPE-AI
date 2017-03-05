@@ -340,7 +340,7 @@ function renderGrid(data) {
 	    stage.addChild(newMob);
 	}
     }
-    else if (d.p2.mainCore.hp > 0) {
+    else if (d.p2.mainCore.hp <= 0) {
 	ws.close();
 	var resultScreen = new PIXI.Graphics();
 	resultScreen.alpha = .5;
