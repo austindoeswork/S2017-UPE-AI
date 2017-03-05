@@ -9,71 +9,14 @@
   {{range .Data}} <!-- iterate thru all elements -->
   <tr>
     <td>
-      <button class="btn btn-primary" onclick="watchGame({{.}})"><h4>{{.}}</h4></button>
+		<button class="btn btn-primary" onclick="watchGame({{.Name}})"><h4>{{.Name}} -- {{.Players}}</h4></button>
     </td>
   </tr>
   {{end}}
 </table>
 
 <p><span class="label label-danger" id="status">STATUS: Not connected.</span></p>
-<p>Framerate: <span id="fps">:)</span></p>
 <div id="gameTV"></div>
-<div id="score">
-  <div class="col-md-6" class="panel-body">
-    <table class="table col-md-6">
-      <tr>
-	<td>Player 1: <span id="p1name"></span></td> <!-- TODO: implement with identification from server -->
-      </tr>
-      <tr>
-	<td>Core HP:</td>
-	<td><span id="p1hp"></span></td>
-      </tr>
-      <tr>
-	<td>Bits:</td>
-	<td><span id="p1bits"></span></td>
-      </tr>
-      <tr>
-	<td>Income:</td>
-	<td><span id="p1income"></span></td>
-      </tr>
-      <tr>
-	<td>Territory Bounds:</td>
-	<td><span id="p1territory"></span></td>
-      </tr>
-      <tr>
-	<td>Horizon Bounds:</td>
-	<td><span id="p1horizon"></span></td>
-      </tr>
-    </table>
-  </div>
-  <div class="col-md-6" class="panel-body">
-    <table class="table">
-      <tr>
-	<td>Player 2: <span id="p2name"></span></td>
-      </tr>
-      <tr>
-	<td>Core HP:</td>
-	<td><span id="p2hp"></span></td>
-      </tr>
-      <tr>
-	<td>Bits:</td>
-	<td><span id="p2bits"></span></td>
-      </tr>
-      <tr>
-	<td>Income:</td>
-	<td><span id="p2income"></span></td>
-      </tr>
-      <tr>
-	<td>Territory Bounds:</td>
-	<td><span id="p2territory"></span></td>
-      </tr>
-      <tr>
-	<td>Horizon Bounds:</td>
-	<td><span id="p2horizon"></span></td>
-      </tr>
-    </table>
-  </div>
-</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.2.2/pixi.min.js"></script>
 <script src="/static/js/ws.js"></script>
