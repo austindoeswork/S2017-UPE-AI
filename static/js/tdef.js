@@ -260,12 +260,6 @@ function renderGrid(data) {
 	myPlayer = d["Player"];
 	myUsername = d["Username"];
 	myGamename = d["Gamename"];
-
-	if (myPlayer == 1) {
-	    document.getElementById("p1name").innerHTML = myUsername;
-	} else {
-	    document.getElementById("p2name").innerHTML = myUsername;
-	}
 	return; // don't try to render status messages
     }
     

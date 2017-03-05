@@ -588,7 +588,7 @@
 	    Gas Guzzler
 	  </p>
 	  <p>
-	    <b>Gas Guzzlers</b> are large units that start with a massive amount of HP, do damage equal to their HP and walk incredibly slowly with a very low range. Decently expensive and also costs a little bit of income, but is also a must-deal-with threat.
+	    <b>Gas Guzzlers</b> are large units that start with a massive amount of HP, do damage equal to their HP and walk incredibly slowly with a very low range. Decently expensive and also costs a little bit of income, but is also a must-deal-with threat. Note that when Gas Guzzlers die, you get back the income you paid for it.
 	  </p>
 	  <p>
 	    Gas Guzzlers move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
@@ -936,6 +936,7 @@
       <span class="anchor" id="towers"></span>
       <h3>Towers 101</h3>
     <p class="lead">Your colony can't just thrive on troops, however! You'll be placing towers in the plots alongside each lane to supplement your army.</p>
+    <p>Towers typically cost income as well as a raw bit value. Note that the income you spend on towers is returned to you when the tower dies (the bits are not, though).</p>
     <p>Towers have each of the following characteristics that you'll need to worry about:</p>
     <ul>
       <li><b>X, Y</b>: Pretty self explanatory. Towers also have X, Y just like troops, although they are stationary and can only be spawned in very specific plots. There is a side-lane of plots 50px above and 50px below each troop lane. Plots are 100 pixels wide and go from 300 pixels to 1300 pixels in each side-lane. (As a result, there's 11 plots per side-lane, two side-lanes per lane, six total side-lanes and 66 total plots).
@@ -946,7 +947,7 @@
       <li><b>Speed</b>: This tower acts every (30/speed) frames. Higher speed means it moves more frequently.</li>
     </ul>
     <p>
-      Just like with troops, you submit a buy action for a tower in a specific plot. Note that you can only build plots within your territory, which will be explained later. After the tower is created, it'll run on its own AI, so you don't have to worry about coding one for it!
+      Just like with troops, you submit a buy action for a tower in a specific plot. Note that you can only build plots within your territory, which will be explained later. After the tower is created, it'll run on its own AI, so you don't have to worry about coding one for it! 
     </p>
     <p>Now for what you were waiting for: the tower selection!
       <dl class="dl-horizontal">
