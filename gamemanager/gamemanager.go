@@ -108,11 +108,17 @@ func (gm *GameManager) NewOpenGame() (string, error) {
 	return rstr, nil
 }
 
-func (gm *GameManager) ListGames() []string {
-	list := []string{}
+type GameInfo struct {
+	Name    string
+	Players []string
+}
+
+func (gm *GameManager) ListGames() []*GameInfo {
+	list := []*GameInfo{}
 	for name, g := range gm.games {
 		if g.Status() == game.RUNNING {
-			list = append(list, name)
+			ginfo := &GameInfo{name, g.PlayerNames()}
+			list = append(list, ginfo)
 		}
 	}
 	return list
@@ -207,6 +213,14 @@ func NewGameWrapper(isdemo bool) *GameWrapper {
 
 	go gw.multiplex() // start sending output to listeners
 	return gw
+}
+
+func (gw *GameWrapper) PlayerNames() []string {
+	res := []string{}
+	for _, name := range gw.gameControllerMap {
+		res = append(res, name)
+	}
+	return res
 }
 
 func (gw *GameWrapper) multiplex() {
