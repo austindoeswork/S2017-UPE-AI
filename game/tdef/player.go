@@ -200,6 +200,28 @@ func (p *Player) BuyTroop(lane, enum int, opponent *Player) bool {
 	return false
 }
 
+// there is a singular "line of scrimmage" that occurs between the territories in the lanes that neither player can build on
+// this helper function checks x,y coordinates to see if they're on the line of scrimmage. this is used pretty much only in player.go's exportjson
+func (p *Player) isPlotOwnedByEitherPlayer(x, y int) bool {
+	if intAbsDiff(y, TOPY) <= 50 {
+		if (p.owner == 1 && x == p.territoryTopMaxX) ||
+			(p.owner == 2 && x == p.territoryTopMinX) {
+			return false
+		}
+	} else if intAbsDiff(y, MIDY) <= 50 {
+		if (p.owner == 1 && x == p.territoryMidMaxX) ||
+			(p.owner == 2 && x == p.territoryMidMinX) {
+			return false
+		}
+	} else if intAbsDiff(y, BOTY) <= 50 {
+		if (p.owner == 1 && x == p.territoryBotMaxX) ||
+			(p.owner == 2 && x == p.territoryBotMinX) {
+			return false
+		}
+	}
+	return true
+}
+
 // checks to see if a tower plot is within the player's territory
 func (p *Player) isPlotInTerritory(x, y int) bool {
 	if intAbsDiff(y, TOPY) <= 50 && (x <= p.territoryTopMinX || x >= p.territoryTopMaxX) {
@@ -407,10 +429,17 @@ func (p *Player) ExportJSON(buffer *bytes.Buffer, minX int, maxX int) { // used 
 	buffer.WriteString(`"towers":[`)
 	for index, element := range p.Towers {
 		if element == nil || element.X() < minX || element.X() > maxX {
-			if p.isPlotInTerritory(getPlotPosition(index)) {
+			plotx, ploty := getPlotPosition(index)
+			if p.isPlotInTerritory(plotx, ploty) {
 				buffer.WriteString(fmt.Sprintf(`{"owner":%d,"enum":-3}`, p.owner))
+			} else if p.isPlotOwnedByEitherPlayer(plotx, ploty) {
+				if p.owner == 1 {
+					buffer.WriteString(`{"owner":2,"enum":-3}`)
+				} else {
+					buffer.WriteString(`{"owner":1,"enum":-3}`)
+				}
 			} else {
-				buffer.WriteString(fmt.Sprintf(`{"owner":%d,"enum":-3}`, (p.owner + 1)))
+				buffer.WriteString(`{"owner":0,"enum":-3}`)
 			}
 		} else {
 			element.ExportJSON(buffer)

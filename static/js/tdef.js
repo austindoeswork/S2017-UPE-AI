@@ -251,10 +251,10 @@ var timestamp = Date.now();
 var myPlayer = 0; // default 0 = spectator client, 1 = player1, 2 = player2
 var myUsername, myGamename;
 
-// TODO: handle status message at beginning of websocket (with player information), right now function assumes all messages are game board messages
 function renderGrid(data) {
     frames++;
     d = JSON.parse(data);
+    console.log(d.p1.towers);
     
     if (d.hasOwnProperty("Gamename")) {
 	myPlayer = d["Player"];
@@ -265,7 +265,6 @@ function renderGrid(data) {
     
     units = d.p1.troops.concat(d.p2.troops); // TODO: make it so the top towers are drawn first, then the lane, then the bottom towers (prevents clipping weird)
     for (i = 0; i < d.p1.towers.length; i++) {
-	console.log(d.p1.towers[i].enum);
 	if (d.p1.towers[i].enum != -3) { // ignore empty plots
 	    units.push(d.p1.towers[i]);
 	}
