@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/austindoeswork/S2017-UPE-AI/game"
@@ -23,12 +24,14 @@ type GM interface {
 }
 
 type GameManager struct {
+	mux       *sync.Mutex
 	games     map[string]*GameWrapper
 	opengames []string
 }
 
 func New() *GameManager {
 	gm := &GameManager{
+		mux:       &sync.Mutex{},
 		games:     make(map[string]*GameWrapper),
 		opengames: []string{},
 	}
@@ -45,23 +48,29 @@ func (gm *GameManager) Janitor() {
 		case <-clk.C:
 			total := len(gm.games)
 			count := 0
+			gm.mux.Lock()
 			for gameName, gw := range gm.games {
 				if gw.Status() == game.DONE {
 					count++
 					delete(gm.games, gameName)
 				}
 			}
+			gm.mux.Unlock()
 			log.Printf("janitor: cleaned %d/%d games yo.", count, total)
 		}
 	}
 }
 
 func (gm *GameManager) HasGame(gameName string) bool {
+	gm.mux.Lock()
 	_, exists := gm.games[gameName]
+	gm.mux.Unlock()
 	return exists
 }
 
 func (gm *GameManager) NewGame(gameName string, demoGame bool) error {
+	gm.mux.Lock()
+	defer gm.mux.Unlock()
 	if _, exists := gm.games[gameName]; exists {
 		return fmt.Errorf("ERR game already exists")
 	}
@@ -85,7 +94,9 @@ func (gm *GameManager) PopOpenGame() (string, error) {
 	}
 	name := gm.opengames[0]
 
-	// TODO austin add a mutex
+	gm.mux.Lock()
+	defer gm.mux.Unlock()
+
 	gm.opengames = append(gm.opengames[:0], gm.opengames[1:]...)
 	if _, ok := gm.games[name]; !ok {
 		return "", fmt.Errorf("error opening game")
@@ -115,6 +126,8 @@ type GameInfo struct {
 
 func (gm *GameManager) ListGames() []*GameInfo {
 	list := []*GameInfo{}
+	gm.mux.Lock()
+	defer gm.mux.Unlock()
 	for name, g := range gm.games {
 		if g.Status() == game.RUNNING {
 			ginfo := &GameInfo{name, g.PlayerNames()}
@@ -125,6 +138,9 @@ func (gm *GameManager) ListGames() []*GameInfo {
 }
 
 func (gm *GameManager) ControlGame(gameName string, userName string, quit chan bool) (game.Controller, error) {
+	gm.mux.Lock()
+	defer gm.mux.Unlock()
+
 	gw, exists := gm.games[gameName]
 	if !exists {
 		return nil, fmt.Errorf("ERR no such game")
@@ -158,6 +174,8 @@ func (gm *GameManager) ControlGame(gameName string, userName string, quit chan b
 }
 
 func (gm *GameManager) WatchGame(gameName string, quit chan bool) (<-chan []byte, error) {
+	gm.mux.Lock()
+	defer gm.mux.Unlock()
 	gw, exists := gm.games[gameName]
 	if !exists {
 		return nil, fmt.Errorf("ERR no such game")
@@ -182,6 +200,8 @@ func (gm *GameManager) WatchGame(gameName string, quit chan bool) (<-chan []byte
 	log.Printf("game: %s watcher GIVEN", gameName)
 	return output, nil
 }
+
+//////////////////////////////////
 
 type GameWrapper struct {
 	game.Game
