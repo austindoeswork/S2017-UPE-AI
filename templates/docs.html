@@ -558,6 +558,14 @@
 	    </tr>
 	    <tr>
 	      <td>
+		<b>Damage to self</b>
+	      </td>
+	      <td>
+		30 every time it moves
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
 		<b>HP/MaxHP</b>
 	      </td>
 	      <td>
@@ -1860,6 +1868,7 @@
 	<pre>
 	  "p1": {
 	  "owner": 1,
+	  "name": "HAL 9000",
 	  "territoryMin": 0,
 	  "territoryMax": 800,
 	  "horizonMin": 0,
@@ -1878,6 +1887,7 @@
 	  },
 	  "p2": {
 	  "owner": 2,
+	  "name": "Deep Blue",
 	  "territoryMin": 800,
 	  "territoryMax": 1600,
 	  "horizonMin": 612,
@@ -1896,7 +1906,7 @@
 	  }
 	  }
 	</pre>
-	<p>Player objects are pretty straightforward as well, they contain an "owner" property that tells you whether they are player 1 (coming from left, blue team) or player 2 (coming from right, red team). Players have income, as mentioned before, as well as bits. They also have "towers", which is an array of tower unit objects, and "troops", which is an array of troop unit objects. Players finaly have a "mainCore" JSON object that represents the main core.</p>
+	<p>Player objects are pretty straightforward as well, they contain an "owner" property that tells you whether they are player 1 (coming from left, blue team) or player 2 (coming from right, red team). Players have income, as mentioned before, as well as bits. They also have "towers", which is an array of tower unit objects, and "troops", which is an array of troop unit objects. Players finally have a "mainCore" JSON object that represents the main core. The "name" field is the player's username.</p>
 	<p>Although calculatable by the players, we've provided the horizon and territory bounds in the form of territoryMin/Max and horizonMin/Max. These are ints that show the bounds of your territory and horizon respectively. Your territory dictates which plots you can physically build towers in, and defaults to your half of the field. Your horizon is the range at which you can see. Everything else is blanketed by the fog of war (see the Fog of War section above).</p>
       </dd>
       <dt>towers</dt>

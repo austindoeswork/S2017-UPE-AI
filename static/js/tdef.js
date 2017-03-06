@@ -255,7 +255,7 @@ var myUsername, myGamename;
 function renderGrid(data) {
     frames++;
     d = JSON.parse(data);
-
+    
     if (d.hasOwnProperty("Gamename")) {
 	myPlayer = d["Player"];
 	myUsername = d["Username"];
@@ -277,8 +277,8 @@ function renderGrid(data) {
     units.push(d.p1.mainCore);
     units.push(d.p2.mainCore);
 
-    p1info.text = "P1\nBits: " + d.p1.bits + "\nIncome: " + d.p1.income;
-    p2info.text = "P2\nBits: " + d.p2.bits + "\nIncome: " + d.p2.income;
+    p1info.text = d.p1.name + "\nBits: " + d.p1.bits + "\nIncome: " + d.p1.income;
+    p2info.text = d.p2.name + "\nBits: " + d.p2.bits + "\nIncome: " + d.p2.income;
     draw(units);
 
     if (myPlayer == 1) {

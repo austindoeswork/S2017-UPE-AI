@@ -93,7 +93,7 @@ func (s *Server) CreateSampleGameTV() {
 		}
 	}
 	quitIn1 := make(chan bool)
-	gameCtrl1, err := s.gm.ControlGame(gameName, "mainpageAI1", quitIn1)
+	gameCtrl1, err := s.gm.ControlGame(gameName, "HAL 9000", quitIn1)
 	if err != nil {
 		log.Println("ERR: could not add controller", err)
 		return
@@ -118,7 +118,7 @@ func (s *Server) CreateSampleGameTV() {
 	}()
 
 	quitIn2 := make(chan bool)
-	gameCtrl2, err := s.gm.ControlGame(gameName, "mainpageAI2", quitIn2)
+	gameCtrl2, err := s.gm.ControlGame(gameName, "Deep Blue", quitIn2)
 	if err != nil {
 		log.Println("ERR: could not add controller", err)
 		return
