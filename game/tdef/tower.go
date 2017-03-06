@@ -134,7 +134,12 @@ func (u *Core) Iterate(owner *Player, opponent *Player) {
 }
 
 func (u *Core) Birth(owner *Player, opponent *Player) {}
-func (u *Core) Die(owner *Player, opponent *Player)   {} // player will be able to detect game loss itself
+
+// objectives are basically cores, so they inherit from cores
+func (u *Core) Die(owner *Player, opponent *Player) {
+	owner.RetreatTerritory(u.y)
+	opponent.AdvanceTerritory(u.y)
+}
 
 func NewCore(x, y, owner int) Unit {
 	return &Core{UnitBase{

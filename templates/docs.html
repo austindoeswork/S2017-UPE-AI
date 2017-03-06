@@ -35,6 +35,7 @@
           <li><a href="#towers">Towers 101</a></li>
 	  <li><a href="#objectives">Objectives 101</a></li>
 	  <li><a href="#fogofwar">Fog of War</a></li>
+	  <li><a href="#territory">Territory</a></li>
 	  <li><a href="#gameconstants">Game Constants</a></li>
           <li><a href="#enginedetails">Engine Details</a></li>
 	  <li><a href="#developingyourai">Developing your AI</a></li>
@@ -1581,13 +1582,19 @@
 	</dd>
       </dl>
       <a href="#toc">Back to top</a>
+      <span class="anchor" id="territory"></span>
+      <h3>Territory</h3>
+    <p class="lead">Your towers can only be constructed within your territory, which shifts as the game goes on.</p>
+    <p>You have three territory ranges, one for each lane. These default to half of the lane for each player. Note that there are 11 plots in each lane, but by default no one can build in the middle plot (effectively there can only be 10 towers out at any point in time).</p>
+    <p>Your territory in a lane increases by 200 pixels when you kill your opponent's lane objective, and decreases when yours is destroyed. If both objective towers are gone, both players will again share half the lane. Note that if your lane objective is destroyed and you still have a tower standing in territory you will be losing, those towers will be instantly destroyed.</p>
+    <p>You don't have to calculate your plots, because we actually pass you the plots you can build in. This is explained better in the Sample Output, but this information is contained in the "towers" field in the player objects.</p>
       <span class="anchor" id="fogofwar"></span>
       <h3>Fog of War</h3>
     <p class="lead">Fog of war is a mechanic where you can't always see the entirety of the battlefield. This adds a little layer of complexity where you'll have to fight to figure out what your opponent is doing.</p>
     <p>To prevent games from being inevitable stalemates if a player chooses to simply mimic their opponent's moves, we've generated a fog of war that masks the areas of the battlegrounds you can't see. By default, you can always see the extent of your territory (which by default is your half of the field). You can also see as far as your furthest unit's range. It should be noted that if your furthest unit in the Top lane can see up to x = 1400 (assume that you are the left player), then you can see up to x = 1400 in all three lanes, even if your Top lane furthest unit would not normally be able to fire into the Bottom lane.</p>
     <p>The extent of your vision range is called your <b>horizon bounds</b>. The <b>horizonMin</b> and <b>horizonMax</b> for both players are given in the output from the server.</p>
     <p>When playing the game manually on our website, you will be able to see the fog of war visually with the slightly greyed out rectangle that moves as your fog of war changes. (Note that it's slightly inaccurate for the top two lanes, and this will be fixed).</p>
-    <p><b>Troops</b> that are outside your horizon bounds simply do not show up in the output, while <b>towers</b> outside your horizon bounds will come up as "nil" (see sample output for details)</p>
+    <p><b>Troops</b> that are outside your horizon bounds simply do not show up in the output, while <b>towers</b> outside your horizon bounds will come up as JSON objects with enum -3 and owner equal to your opponent's player value (see sample output for details)</p>
       <span class="anchor" id="gameconstants"></span>
       <h3>Game Constants</h3>
       <img src="static/img/background.png" width="100%">
@@ -1769,15 +1776,33 @@
       "hp": 3000,
       "enum": 58
       },
-      "nil",
-      "nil",
+      {
+      "owner": 1,
+      "enum": -3
+      },
+      {
+      "owner": 1,
+      "enum": -3
+      },
 
       . . .
       
-      "nil",
-      "nil",
-      "nil",
-      "nil"
+      {
+      "owner": 2,
+      "enum": -3
+      },
+      {
+      "owner": 2,
+      "enum": -3
+      },
+      {
+      "owner": 2,
+      "enum": -3
+      },
+      {
+      "owner": 2,
+      "enum": -3
+      }
       ],
       "troops": [
       {
@@ -1818,7 +1843,10 @@
       "income": 5750,
       "bits": 975845676,
       "towers": [
-      "nil",
+      {
+      "owner": 1,
+      "enum": -3
+      },
 
       . . .
 
@@ -1913,7 +1941,10 @@
       <dd>
 	<pre>
 	  "towers": [
-	  "nil",
+	  {
+	  "owner": 1,
+	  "enum": -3,
+	  },
 
 	  . . .
 
@@ -1935,8 +1966,8 @@
 	  }
 	  ]
 	</pre>
-	<p>The ". . ." is just there to make it so that you don't have to scroll through a billion lines of sample output, but towers is an array of JSON objects guaranteed to be length 66 (one index per plot). If the player does not own a tower in a location, towers[index] = "nil", otherwise it is a JSON object that has "owner" (either player 1/2), "x"/"y" coordinates, "maxhp" and "hp" to tell you how much HP it has and has lost, and an "enum" to tell you what type of tower it is.</p>
-	<p>Note that towers outside of your horizon bounds will show up as "nil" as well.</p>
+	<p>The ". . ." is just there to make it so that you don't have to scroll through a billion lines of sample output, but towers is an array of JSON objects guaranteed to be length 66 (one index per plot). If the player does not own a tower in a location, towers[index] = {"owner": (player that can build in this plot), "enum": -3}, otherwise it is a JSON object that has "owner" (either player 1/2), "x"/"y" coordinates, "maxhp" and "hp" to tell you how much HP it has and has lost, and an "enum" to tell you what type of tower it is.</p>
+	<p>Note that towers outside of your horizon bounds will show up as empty as well.</p>
       </dd>
       <dt>troops</dt>
       <dd>

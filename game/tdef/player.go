@@ -15,8 +15,10 @@ type Player struct {
 	income int // X coins per second
 	bits   int // total number of coins
 
-	territoryMinX int // X value of left bound of territory
-	territoryMaxX int // X value of right bound of territory
+	// territory bounds for all the lanes
+	territoryTopMinX, territoryTopMaxX int
+	territoryMidMinX, territoryMidMaxX int
+	territoryBotMinX, territoryBotMaxX int
 
 	MainTower Unit // if this dies you die
 
@@ -72,14 +74,60 @@ func (p *Player) Bits() int {
 func (p *Player) SetBits(bits int) {
 	p.bits = bits
 }
-func (p *Player) Territory() (int, int) { // territory is where you can build
-	return p.territoryMinX, p.territoryMaxX
+
+// called when enemy objective tower dies
+func (p *Player) AdvanceTerritory(y int) {
+	if p.owner == 1 {
+		if y == TOPY {
+			p.territoryTopMaxX += 200
+		} else if y == MIDY {
+			p.territoryMidMaxX += 200
+		} else { // BOTY
+			p.territoryBotMaxX += 200
+		}
+	} else { // p.owner == 2
+		if y == TOPY {
+			p.territoryTopMinX -= 200
+		} else if y == MIDY {
+			p.territoryMidMinX -= 200
+		} else { // BOTY
+			p.territoryBotMinX -= 200
+		}
+	}
 }
+
+// called whenever your objective tower dies
+func (p *Player) RetreatTerritory(y int) {
+	if p.owner == 1 {
+		if y == TOPY {
+			p.territoryTopMaxX -= 200
+		} else if y == MIDY {
+			p.territoryMidMaxX -= 200
+		} else if y == BOTY {
+			p.territoryBotMaxX -= 200
+		}
+	} else { // p.owner == 2
+		if y == TOPY {
+			p.territoryTopMinX += 200
+		} else if y == MIDY {
+			p.territoryMidMinX += 200
+		} else if y == BOTY {
+			p.territoryBotMinX += 200
+		}
+	}
+}
+
 func (p *Player) Horizon() (int, int) { // horizon is how far you can see
 	var minX, maxX int
 	if p.owner == 1 {
 		minX = 0
-		maxX = p.territoryMaxX
+		maxX = p.territoryTopMaxX
+		if p.territoryMidMaxX > maxX {
+			maxX = p.territoryMidMaxX
+		}
+		if p.territoryBotMaxX > maxX {
+			maxX = p.territoryBotMaxX
+		}
 		if len(p.Top) > 0 && p.Top[len(p.Top)-1].X()+p.Top[len(p.Top)-1].Reach() > maxX {
 			maxX = p.Top[len(p.Top)-1].X() + p.Top[len(p.Top)-1].Reach()
 		}
@@ -90,7 +138,13 @@ func (p *Player) Horizon() (int, int) { // horizon is how far you can see
 			maxX = p.Bot[len(p.Bot)-1].X() + p.Bot[len(p.Bot)-1].Reach()
 		}
 	} else {
-		minX = p.territoryMinX
+		minX = p.territoryTopMinX
+		if p.territoryMidMinX < minX {
+			minX = p.territoryMidMinX
+		}
+		if p.territoryBotMinX < minX {
+			minX = p.territoryBotMinX
+		}
 		maxX = GAMEWIDTH
 		if len(p.Top) > 0 && p.Top[0].X()-p.Top[0].Reach() < minX {
 			minX = p.Top[0].X() - p.Top[0].Reach()
@@ -148,7 +202,11 @@ func (p *Player) BuyTroop(lane, enum int, opponent *Player) bool {
 
 // checks to see if a tower plot is within the player's territory
 func (p *Player) isPlotInTerritory(x, y int) bool {
-	if x <= p.territoryMinX || x >= p.territoryMaxX { // out of territory
+	if intAbsDiff(y, TOPY) <= 50 && (x <= p.territoryTopMinX || x >= p.territoryTopMaxX) {
+		return false
+	} else if intAbsDiff(y, MIDY) <= 50 && (x <= p.territoryMidMinX || x >= p.territoryMidMaxX) {
+		return false
+	} else if intAbsDiff(y, BOTY) <= 50 && (x <= p.territoryBotMinX || x >= p.territoryBotMaxX) {
 		return false
 	}
 	return true
@@ -211,18 +269,22 @@ func NewPlayer(owner int, name string, demoGame bool) *Player {
 		income = 500
 	}
 	return &Player{
-		owner:         owner,
-		name:          name,
-		income:        income,
-		bits:          bits,
-		MainTower:     mainTower,
-		territoryMinX: territoryMinX,
-		territoryMaxX: territoryMaxX,
-		Top:           []Unit{NewObjective(objx, TOPY, owner)}, // inits lane objectives
-		Mid:           []Unit{NewObjective(objx, MIDY, owner)},
-		Bot:           []Unit{NewObjective(objx, BOTY, owner)},
-		Towers:        [NUMPLOTS]Unit{},
-		demoGame:      demoGame,
+		owner:            owner,
+		name:             name,
+		income:           income,
+		bits:             bits,
+		MainTower:        mainTower,
+		territoryTopMinX: territoryMinX,
+		territoryTopMaxX: territoryMaxX,
+		territoryMidMinX: territoryMinX,
+		territoryMidMaxX: territoryMaxX,
+		territoryBotMinX: territoryMinX,
+		territoryBotMaxX: territoryMaxX,
+		Top:              []Unit{NewObjective(objx, TOPY, owner)}, // inits lane objectives
+		Mid:              []Unit{NewObjective(objx, MIDY, owner)},
+		Bot:              []Unit{NewObjective(objx, BOTY, owner)},
+		Towers:           [NUMPLOTS]Unit{},
+		demoGame:         demoGame,
 	}
 }
 
@@ -340,12 +402,16 @@ func (p *Player) FindClosestUnit(unit Unit) (Unit, float64) {
 // only puts in objects from minX to maxX (for spectators that is 0 to GAMEWIDTH, for players that's territory)
 func (p *Player) ExportJSON(buffer *bytes.Buffer, minX int, maxX int) { // used for exporting to screen
 	horizonMin, horizonMax := p.Horizon()
-	buffer.WriteString(fmt.Sprintf(`{"owner":%d,"name":"%s","income":%d,"bits":%d,"horizonMin":%d,"horizonMax":%d,"territoryMin":%d,"territoryMax":%d,`,
-		p.owner, p.name, p.income, p.bits, horizonMin, horizonMax, p.territoryMinX, p.territoryMaxX))
+	buffer.WriteString(fmt.Sprintf(`{"owner":%d,"name":"%s","income":%d,"bits":%d,"horizonMin":%d,"horizonMax":%d,`,
+		p.owner, p.name, p.income, p.bits, horizonMin, horizonMax))
 	buffer.WriteString(`"towers":[`)
 	for index, element := range p.Towers {
 		if element == nil || element.X() < minX || element.X() > maxX {
-			buffer.WriteString(`"nil"`)
+			if p.isPlotInTerritory(getPlotPosition(index)) {
+				buffer.WriteString(fmt.Sprintf(`{"owner":%d,"enum":-3}`, p.owner))
+			} else {
+				buffer.WriteString(fmt.Sprintf(`{"owner":%d,"enum":-3}`, (p.owner + 1)))
+			}
 		} else {
 			element.ExportJSON(buffer)
 		}
@@ -511,7 +577,7 @@ func (p *Player) UnitCleanup(other *Player) {
 		if element == nil { // note that Towers is an array that will always be of size NUMPLOTS, not a slice
 			continue
 		}
-		if element.HP() < 0 {
+		if element.HP() < 0 || !p.isPlotInTerritory(element.X(), element.Y()) {
 			element.Die(p, other)
 			p.Towers[index] = nil
 		}

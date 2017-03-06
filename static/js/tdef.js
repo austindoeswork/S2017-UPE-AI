@@ -265,12 +265,13 @@ function renderGrid(data) {
     
     units = d.p1.troops.concat(d.p2.troops); // TODO: make it so the top towers are drawn first, then the lane, then the bottom towers (prevents clipping weird)
     for (i = 0; i < d.p1.towers.length; i++) {
-	if (d.p1.towers[i] != 'nil') {
+	console.log(d.p1.towers[i].enum);
+	if (d.p1.towers[i].enum != -3) { // ignore empty plots
 	    units.push(d.p1.towers[i]);
 	}
     }
     for (i = 0; i < d.p2.towers.length; i++) {
-	if (d.p2.towers[i] != 'nil') {
+	if (d.p2.towers[i].enum != -3) { // ignore empty plots
 	    units.push(d.p2.towers[i]);
 	}
     }
@@ -310,7 +311,8 @@ function renderGrid(data) {
 	]);
 	fogOfWar.endFill();
     }
-    
+
+    // results screens
     if (d.p1.mainCore.hp <= 0) {
 	ws.close();
 	var resultScreen = new PIXI.Graphics();
@@ -401,7 +403,7 @@ function draw(units){
     
     // draw units
     for (var i = 0; i < units.length; i++) {
-	if (units[i].enum == -2) {
+	if (units[i].enum == -2) { // don't draw main core
 	    continue;
 	}
 	var thisUnit;
