@@ -180,7 +180,7 @@ type Peashooter struct {
 }
 
 func (u *Peashooter) CheckBuyable(income, bits int) bool {
-	return income >= 100 && bits >= 500
+	return income >= 50 && bits >= 500
 }
 func (u *Peashooter) ReceiveDamage(damage int) {
 	u.hp -= damage
@@ -199,10 +199,10 @@ func (u *Peashooter) Iterate(owner *Player, opponent *Player) {
 
 func (u *Peashooter) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 500)
-	owner.SetIncome(owner.Income() - 100)
+	owner.SetIncome(owner.Income() - 50)
 }
 func (u *Peashooter) Die(owner *Player, opponent *Player) {
-	owner.SetIncome(owner.Income() + 100)
+	owner.SetIncome(owner.Income() + 50)
 }
 
 func NewPeashooter(x, y, owner int) Unit {
@@ -213,7 +213,7 @@ func NewPeashooter(x, y, owner int) Unit {
 		owner:    owner,
 		damage:   10,
 		maxhp:    200,
-		hp:       200,
+		hp:       500,
 		speed:    5,
 		stride:   0,
 		reach:    300,
@@ -431,7 +431,7 @@ func NewJunkyard(x, y, owner int) Unit {
 		hp:       300,
 		speed:    3,
 		stride:   0,
-		reach:    500,
+		reach:    300,
 		enabled:  true,
 		infected: false,
 	}}
@@ -457,8 +457,8 @@ func (u *StartUp) ReceiveDamage(damage int) {
 func (u *StartUp) Prep(owner *Player, opponent *Player) {}
 
 func (u *StartUp) Iterate(owner *Player, opponent *Player) {
-	if u.income < 500 && u.enabled == true {
-		u.income += 4
+	if u.income < 1000 && u.enabled == true {
+		u.income += 10
 		owner.SetIncome(owner.Income() + 4)
 	}
 }
@@ -492,7 +492,7 @@ func NewStartUp(x, y, owner int) Unit {
 			damage:   10,
 			maxhp:    400,
 			hp:       400,
-			speed:    60,
+			speed:    30,
 			stride:   0,
 			reach:    300,
 			enabled:  true,
@@ -532,7 +532,7 @@ func (u *Corporation) Iterate(owner *Player, opponent *Player) {
 			corpCount++
 		}
 	}
-	newValue := corpCount * corpCount * 200
+	newValue := corpCount * 200
 	if u.income != newValue {
 		owner.SetIncome(owner.Income() - u.income + newValue)
 		u.income = newValue

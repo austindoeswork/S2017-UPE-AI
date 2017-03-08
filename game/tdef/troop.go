@@ -118,7 +118,7 @@ func (u *Bolt) Die(owner *Player, opponent *Player) {
 		}
 		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
 			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
-			opponent.SetBits(opponent.Bits() + 500)
+			opponent.SetBits(opponent.Bits() + 50)
 		}
 	}
 }
@@ -214,7 +214,7 @@ func (u *GreaseMonkey) Die(owner *Player, opponent *Player) {
 		}
 		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
 			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
-			opponent.SetBits(opponent.Bits() + 500)
+			opponent.SetBits(opponent.Bits() + 50)
 		}
 	}
 }
@@ -285,7 +285,7 @@ func (u *Walker) Die(owner *Player, opponent *Player) {
 		}
 		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
 			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
-			opponent.SetBits(opponent.Bits() + 500)
+			opponent.SetBits(opponent.Bits() + 50)
 		}
 	}
 }
@@ -353,7 +353,7 @@ func (u *Aimbot) Die(owner *Player, opponent *Player) {
 		}
 		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
 			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
-			opponent.SetBits(opponent.Bits() + 500)
+			opponent.SetBits(opponent.Bits() + 50)
 		}
 	}
 }
@@ -364,7 +364,7 @@ func NewAimbot(x, y, owner int) Unit {
 		enum:     4,
 		x:        x,
 		y:        y,
-		speed:    60,
+		speed:    15,
 		damage:   100,
 		hp:       100,
 		maxhp:    100,
@@ -425,7 +425,7 @@ func (u *HardDrive) Die(owner *Player, opponent *Player) {
 		}
 		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
 			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
-			opponent.SetBits(opponent.Bits() + 500)
+			opponent.SetBits(opponent.Bits() + 50)
 		}
 	}
 }
@@ -437,11 +437,11 @@ func NewHardDrive(x, y, owner int) Unit {
 		x:        x,
 		y:        y,
 		speed:    5,
-		damage:   50,
-		hp:       500,
-		maxhp:    500,
+		damage:   80,
+		hp:       600,
+		maxhp:    600,
 		stride:   5,
-		reach:    50,
+		reach:    75,
 		enabled:  true,
 		infected: false,
 	}}
@@ -485,10 +485,10 @@ func (u *Scrapheap) Birth(owner *Player, opponent *Player) {
 	owner.SetBits(owner.Bits() - 9000)
 }
 func (u *Scrapheap) Die(owner *Player, opponent *Player) { // stagger the units slightly to make it visually make more sense
-	owner.AddUnit(NewNut(u.x-8, u.y, owner.Owner()))
-	owner.AddUnit(NewNut(u.x-4, u.y, owner.Owner()))
-	owner.AddUnit(NewBolt(u.x+4, u.y, owner.Owner()))
-	owner.AddUnit(NewBolt(u.x+8, u.y, owner.Owner()))
+	for i := -2; i < 3; i++ { // -2 -1 0 1 2 is 5 iterations
+		owner.AddUnit(NewNut(u.x+i, u.y, owner.Owner()))
+		owner.AddUnit(NewBolt(u.x+i, u.y, owner.Owner()))
+	}
 	if u.infected == true {
 		opponent.AddUnit(NewMalware(u.x, u.y, opponent.Owner()))
 	}
@@ -498,7 +498,7 @@ func (u *Scrapheap) Die(owner *Player, opponent *Player) { // stagger the units 
 		}
 		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
 			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
-			opponent.SetBits(opponent.Bits() + 500)
+			opponent.SetBits(opponent.Bits() + 50)
 		}
 	}
 }
@@ -567,7 +567,7 @@ func (u *GasGuzzler) Die(owner *Player, opponent *Player) {
 		}
 		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
 			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
-			opponent.SetBits(opponent.Bits() + 500)
+			opponent.SetBits(opponent.Bits() + 50)
 		}
 	}
 }
@@ -616,6 +616,10 @@ func (u *Terminator) Iterate(owner *Player, opponent *Player) {
 		} else {
 			u.x -= u.stride
 		}
+		u.hp += 10
+		if u.hp > u.maxhp {
+			u.maxhp = u.hp
+		}
 		// HOPEFULLY NO NEED TO CHECK IF u.x < 0 or > GAMEWIDTH, BECAUSE WE SHOULD BE ATTACKING CORE
 	}
 }
@@ -632,7 +636,7 @@ func (u *Terminator) Die(owner *Player, opponent *Player) {
 		}
 		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
 			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
-			opponent.SetBits(opponent.Bits() + 500)
+			opponent.SetBits(opponent.Bits() + 50)
 		}
 	}
 }
@@ -645,7 +649,7 @@ func NewTerminator(x, y, owner int) Unit {
 		y:        y,
 		speed:    5,
 		damage:   100,
-		hp:       80,
+		hp:       10,
 		maxhp:    80,
 		stride:   6,
 		reach:    120,
@@ -678,7 +682,7 @@ func (u *Blackhat) Prep(owner *Player, opponent *Player) {
 		if element == nil {
 			continue
 		}
-		if intAbsDiff(element.Y(), u.y) <= 150 {
+		if intAbsDiff(element.X(), u.x) <= 300 && intAbsDiff(element.Y(), u.y) <= 50 {
 			element.SetEnabled(opponent, false)
 		}
 	}
@@ -708,7 +712,7 @@ func (u *Blackhat) Die(owner *Player, opponent *Player) {
 		}
 		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
 			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
-			opponent.SetBits(opponent.Bits() + 500)
+			opponent.SetBits(opponent.Bits() + 50)
 		}
 	}
 }
@@ -778,7 +782,7 @@ func (u *Malware) Die(owner *Player, opponent *Player) {
 		}
 		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
 			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
-			opponent.SetBits(opponent.Bits() + 500)
+			opponent.SetBits(opponent.Bits() + 50)
 		}
 	}
 }
@@ -878,7 +882,7 @@ func (u *Gandhi) Die(owner *Player, opponent *Player) {
 		}
 		if element.Enum() == 54 && intAbsDiff(element.X(), u.x) <= element.Reach() &&
 			intAbsDiff(element.Y(), u.y) <= element.Reach() { // junkyard change for killing unit
-			opponent.SetBits(opponent.Bits() + 500)
+			opponent.SetBits(opponent.Bits() + 50)
 		}
 	}
 }
@@ -893,7 +897,7 @@ func NewGandhi(x, y, owner int) Unit {
 		damage:   0,
 		hp:       50,
 		maxhp:    50,
-		stride:   6,
+		stride:   3,
 		reach:    50,
 		enabled:  true,
 		infected: false,

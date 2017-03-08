@@ -226,11 +226,9 @@ function buyTroop(troopEnum) {
     for(var i = 0; i < radioButtons.length; i++){
 	if(radioButtons[i].checked){
             laneEnum = radioButtons[i].value;
-	    // console.log(laneEnum);
 	}
     }
     input = 'b'+troopEnum +' '+laneEnum;
-    // console.log(input);
     send(input);
 }
 

@@ -18,7 +18,7 @@
       <p>
         <h1>Documentation</h1>
 	<p class="lead">We're still updating the game as we add new features, so this documentation might change up a little as we balance numbers and tweak values!</p>
-      Last edited: Wed, Mar 1
+      Last edited: Wed, Mar 8 <b>(MAJOR BALANCE PATCH: Wed, Mar 8)</b>
       </p>
     </div>
   </div>
@@ -54,7 +54,8 @@
 	  <li>If you haven't already, create an account and find a team (of up to four people)! Sign up in the top right corner of the screen.</li>
 	  <li>Go to your Profile, which can be found after logging in by clicking on your name in the top right in the dropdown.</li>
 	  <li>There you should find your developer key (which you should NOT share with anyone), and your current matchmaking rating. You will need your dev key for testing your AI on our server.</li>
-	  <li>If anything doesn't make sense, please email Darwin Ding (<b>dingd@rpi.edu</b>) with any questions you may have!</li>
+	  <li>Pick your favorite language of choice, and go to the Sample AI section in <a href="#developingyourai">Developing your AI</a> to get started!</li>
+	  <li>Join the Discord channel <a href="https://discordapp.com/channels/252911389717430272/252911389717430272">here</a> to get the latest NPCOMPETE news, ask questions, discuss strats and more!</li>
 	</ul>
       </h5>
     </p>
@@ -169,7 +170,7 @@
 	    Bolt
 	  </p>
 	  <p>
-	    <b>Bolts</b> have worse speed/reach than Nuts, but above average HP. Bolts deal damage as a percent of enemy HP as opposed to a standard fixed damage amount. On average, Bolts do better versus large opponents than Nuts, but are worse versus smaller opponents than Nuts. Bolts cost a little more than Nuts.
+	    <b>Bolts</b> have worse speed/reach than Nuts, but above average HP. Bolts deal damage as a percent of enemy HP as opposed to a standard fixed damage amount. As a result, Bolts are extremely cost efficient versus tanky units. Bolts cost a little more than Nuts.
 	  </p>
 	  <p>
 	    Bolts move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
@@ -239,7 +240,7 @@
 	    Grease Monkey
 	  </p>
 	  <p>
-	    <b>Grease Monkeys</b> are healer troops that heal all friendly troops by a fixed amount in a small range around it.
+	    <b>Grease Monkeys</b> are healer troops that heal all friendly troops by a fixed amount in a small range around it. They do best when moving with large groups of units.
 	  </p>
 	  <p>
 	    Grease Monkeys don't really attack, but they will either choose to heal or move on any given step. They will always choose to heal if there is a damaged (HP < MaxHP) troop within its range. Healing can never take a unit above its Max HP.
@@ -309,7 +310,7 @@
 	    Walker
 	  </p>
 	  <p>
-	    <b>Walkers</b> are speedy (high speed, stride) and durable (high HP) troop that can be quickly deployed to contribute to ongoing fights. Has pretty low DPS, but its mobility, above-average reach and very reasonable cost helps compensate for this.
+	    <b>Walkers</b> are speedy (high speed, stride) and durable (high HP) troop that can be quickly deployed to contribute to ongoing fights. Has pretty low DPS, but its mobility, above-average reach and very reasonable cost helps compensate for this. Their range allows them to supplement neighboring lanes, but their damage leaves something to be desired.
 	  </p>
 	  <p>
 	    Walkers move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
@@ -406,7 +407,7 @@
 		<b>Speed</b>
 	      </td>
 	      <td>
-		.5
+		2
 	      </td>
 	    </tr>
 	    <tr>
@@ -449,7 +450,7 @@
 	    Hard Drive
 	  </p>
 	  <p>
-	    <b>Hard Drives</b> are bulky melee fighters with above-average (but not totally cost efficient) HP, low speed, high damage and high cost. Additionally they have a caveat that a single instance of damage can only deal up to 20 damage to a Hard Drive. Perfect for breaking through high damage areas, but is countered by high DPS troops.
+	    <b>Hard Drives</b> are bulky melee fighters with above-average (but not totally cost efficient) HP, low speed, high damage and high cost. Additionally they have a caveat that a single instance of damage can only deal up to 20 damage to a Hard Drive. Perfect for breaking through high damage areas, but is countered by troops that shoot at a high frequency.
 	  </p>
 	  <p>
 	    Hard Drives move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
@@ -484,7 +485,7 @@
 		<b>Damage</b>
 	      </td>
 	      <td>
-		50
+		80
 	      </td>
 	    </tr>
 	    <tr>
@@ -492,7 +493,7 @@
 		<b>HP/MaxHP</b>
 	      </td>
 	      <td>
-		500
+		600
 	      </td>
 	    </tr>
 	    <tr>
@@ -508,7 +509,7 @@
 		<b>Reach</b>
 	      </td>
 	      <td>
-		50
+		75
 	      </td>
 	    </tr>
 	  </table>
@@ -519,7 +520,7 @@
 	    Scrapheap
 	  </p>
 	  <p>
-	    <b>Scrapheaps</b> are bulky and pricey melee fighters with ridiculous HP that damage themselves over time. They have low damage and are a little slow in terms of speed, but otherwise are similar in stats to a Nut. When they die they create two Nuts and two Bolts in their stead. This unit is heavily a defensive one.
+	    <b>Scrapheaps</b> are bulky and pricey melee fighters with ridiculous HP that damage themselves over time. They have low damage and are a little slow in terms of speed, but otherwise are similar in stats to a Nut. When they die they create five Nuts and five Bolts in their stead. This unit is heavily a defensive one.
 	  </p>
 	  <p>
 	    Scrapheaps move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
@@ -667,7 +668,7 @@
 	    Terminator
 	  </p>
 	  <p>
-	    <b>Terminators</b> are super-soldier troops that have incredibly high DPS and below-average health, but otherwise have comparable stats to Nuts. Terminators are extremely expensive.
+	    <b>Terminators</b> are super-soldier troops that have incredibly high DPS and extremely low health, but otherwise have comparable stats to Nuts. Whenever they choose to move, however, they gain 10 HP. This HP gain will also increase their Max HP if it surpasses it. Terminators are extremely expensive.
 	  </p>
 	  <p>
 	    Terminators move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
@@ -710,7 +711,15 @@
 		<b>HP/MaxHP</b>
 	      </td>
 	      <td>
-		80
+		10
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>HP gain per movement</b>
+	      </td>
+	      <td>
+		10
 	      </td>
 	    </tr>
 	    <tr>
@@ -737,7 +746,7 @@
 	    Blackhat
 	  </p>
 	  <p>
-	    <b>Blackhats</b> are somewhat expensive assassins that instantly kill troops with very high speed, very low range, and low HP. Blackhats disable enemy towers within the lane they operate while they're out. Disabled towers will not attack or generate money. Note that Blackhats will not disable objective towers or the main core.
+	    <b>Blackhats</b> are somewhat expensive assassins that instantly kill troops with very high speed, very low range, and low HP. Blackhats disable enemy towers within the lane they operate while they're out at a large range. Disabled towers will not attack or generate money. Note that Blackhats will not disable objective towers or the main core.
 	  </p>
 	  <p>
 	    Blackhats move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
@@ -793,10 +802,18 @@
 	    </tr>
 	    <tr>
 	      <td>
-		<b>Reach</b>
+		<b>Reach for Instant-Kill</b>
 	      </td>
 	      <td>
 		50
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		<b>Reach for Tower Disable</b>
+	      </td>
+	      <td>
+		300 (can only be within same lane)
 	      </td>
 	    </tr>
 	  </table>
@@ -807,7 +824,7 @@
 	    Malware
 	  </p>
 	  <p>
-	    <b>Malware</b> are viruses that have pretty low HP and average reach/speed/stride, but above average damage. They infect troops that they attack. When infected troops die, another Malware will spawn.
+	    <b>Malware</b> are viruses that have pretty low HP and average reach/speed/stride, but above average damage. They infect troops that they attack. When infected troops die, another Malware will spawn. Malware are amazing against large groups of low HP units, because they will quickly multiply. They do very poorly against beefier ones, though.
 	  </p>
 	  <p>
 	    Malware move super simply -- each step they try to find a target in range to shoot, and move otherwise. If they have a valid target that is neither dead nor out of range, they will shoot it. They will always prioritize the closest tower or troop it sees first.
@@ -985,7 +1002,7 @@
 		<b>Cost</b>
 	      </td>
 	      <td>
-		500 bits, 100 income
+		500 bits, 50 income
 	      </td>
 	    </tr>
 	    <tr>
@@ -1009,7 +1026,7 @@
 		<b>HP/MaxHP</b>
 	      </td>
 	      <td>
-		200
+		500
 	      </td>
 	    </tr>
 	    <tr>
@@ -1224,7 +1241,7 @@
 		<b>Income Boost</b>
 	      </td>
 	      <td>
-		500 bits per unit that dies within range
+		50 bits per unit that dies within range
 	      </td>
 	    </tr>
 	    <tr>
@@ -1275,7 +1292,7 @@
 		<b>Income Boost</b>
 	      </td>
 	      <td>
-		100 income, which increases linearly at a rate of 4 income every 30 frames until a max value of 500 income
+		100 income, which increases linearly at a rate of 10 income every 30 frames until a max value of 1000 income
 	      </td>
 	    </tr>
 	  </table>
@@ -1286,7 +1303,7 @@
 	    Corporation
 	  </p>
 	  <p>
-	    <b>Corporations</b> are expensive banks that increase your income by a fixed amount that is multiplied exponentially by the number of how many of these towers you own.
+	    <b>Corporations</b> are expensive banks that increase your income by a fixed amount that is multiplied by the number of how many of these towers you own. Your resultant income boost from corporations increases at an exponential rate.
 	  </p>
 	  <table class="table">
 	    <tr>
@@ -1318,7 +1335,7 @@
 		<b>Income Boost</b>
 	      </td>
 	      <td>
-		200 income * (number of corporations owned by you squared)
+		200 income * (number of corporations owned by you)
 	      </td>
 	    </tr>
 	  </table>
@@ -1329,7 +1346,7 @@
 	    Warp Drive
 	  </p>
 	  <p>
-	    Friendly troops in a <b>Warp Drive</b>’s lane spawn from the Warp Drive instead of from the original core. Decently cheap, but are fragile targets.
+	    Friendly troops in a <b>Warp Drive</b>’s lane spawn from the Warp Drive instead of from the original core. Decently cheap, but are fragile targets. These are great for quick deploying of units and surprising enemies.
 	  </p>
 	  <p>
 	    Having multiple Warp Drives in a single lane (either above or below) will simply make the unit spawn from the furthest out Warp Drive.
