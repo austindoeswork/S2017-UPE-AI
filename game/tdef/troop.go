@@ -364,7 +364,7 @@ func NewAimbot(x, y, owner int) Unit {
 		enum:     4,
 		x:        x,
 		y:        y,
-		speed:    15,
+		speed:    30,
 		damage:   100,
 		hp:       100,
 		maxhp:    100,
