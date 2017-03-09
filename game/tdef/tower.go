@@ -459,7 +459,7 @@ func (u *StartUp) Prep(owner *Player, opponent *Player) {}
 func (u *StartUp) Iterate(owner *Player, opponent *Player) {
 	if u.income < 1000 && u.enabled == true {
 		u.income += 10
-		owner.SetIncome(owner.Income() + 4)
+		owner.SetIncome(owner.Income() + 10)
 	}
 }
 
@@ -567,7 +567,7 @@ func NewCorporation(x, y, owner int) Unit {
 			damage:   10,
 			maxhp:    1000,
 			hp:       1000,
-			speed:    3,
+			speed:    1,
 			stride:   0,
 			reach:    300,
 			enabled:  true,
