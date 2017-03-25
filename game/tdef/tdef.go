@@ -389,7 +389,7 @@ func (t *TowerDefense) sendWatcher(m []byte) {
 // generates stateJSON string with limits
 func (t *TowerDefense) stateJSON(minX, maxX int) []byte {
 	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf(`{"w":%d,"h":%d,`, t.width, t.height))
+	buffer.WriteString(fmt.Sprintf(`{"w":%d,"h":%d,"f":%d,`, t.width, t.height, t.frame))
 	buffer.WriteString(`"p1":`)
 	t.players[0].ExportJSON(&buffer, minX, maxX)
 	buffer.WriteString(`,"p2":`)
