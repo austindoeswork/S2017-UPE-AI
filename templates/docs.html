@@ -1776,6 +1776,7 @@
       {
       "w": 1600,
       "h": 600,
+      "f": 123,
       "p1": {
       "owner": 1,
       "territoryMin": 0,
@@ -1900,11 +1901,12 @@
     <h3>Interpreting the output</h3>
     This may look really complicated, but it all makes sense when you break it down.
     <dl class="dl-horizontal">
-      <dt>w, h</dt>
+      <dt>w, h, f</dt>
       <dd>
 	<pre>
 	  "w": 1600, // width (in pixels) of game board
 	  "h": 600, // height (in pixels) of game board
+	  "f": 123, // frame number, game ends at 9000
 	</pre>
 	Pretty self explanatory, this is just a general game constant (don't depend on this, this may be removed just to reduce the output size by a little). The game is guaranteed at this point to be run in 1600 x 600.
       </dd>

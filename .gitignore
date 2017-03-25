@@ -17,6 +17,9 @@ examples/c++/ai
 // ignore used key files
 dbinterface/words/used/*.txt
 
+// ignore replay files
+dbinterface/replays
+
 // ignore credentials file
 npc.conf
 
