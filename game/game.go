@@ -36,9 +36,8 @@ type Game interface {
 	MinPlayers() int
 }
 
-func NewTowerDef(isdemo bool) (*tdef.TowerDefense, []*tdef.Controller, <-chan []byte) {
-	p, inArr, out := tdef.New(1600, 600, 30, isdemo)
-	return p, inArr, out
+func NewTowerDef(isdemo bool) (*tdef.TowerDefense, []*tdef.Controller, <-chan []byte, <-chan []byte) {
+	return tdef.New(1600, 600, 30, isdemo)
 }
 
 // uncomment and change in gamemanager.go to test with pong.go

@@ -8,7 +8,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/austindoeswork/S2017-UPE-AI/dbinterface"
 	"github.com/austindoeswork/S2017-UPE-AI/game"
+
+	// used for writing to replay files
+	"os"
 )
 
 type GM interface {
@@ -27,13 +31,15 @@ type GameManager struct {
 	mux       *sync.Mutex
 	games     map[string]*GameWrapper
 	opengames []string
+	db        *dbinterface.DB
 }
 
-func New() *GameManager {
+func New(db *dbinterface.DB) *GameManager {
 	gm := &GameManager{
 		mux:       &sync.Mutex{},
 		games:     make(map[string]*GameWrapper),
 		opengames: []string{},
+		db:        db,
 	}
 	go func() {
 		gm.Janitor()
@@ -68,13 +74,20 @@ func (gm *GameManager) HasGame(gameName string) bool {
 	return exists
 }
 
+// note that "mainpagegame" is a reserved keyname for the automated game that takes place on the main page
 func (gm *GameManager) NewGame(gameName string, demoGame bool) error {
 	gm.mux.Lock()
 	defer gm.mux.Unlock()
 	if _, exists := gm.games[gameName]; exists {
 		return fmt.Errorf("ERR game already exists")
 	}
-	gw := NewGameWrapper(demoGame)
+
+	t := time.Now()
+	gw := NewGameWrapper(demoGame, "dbinterface/replays/", t.Format("Jan_2-150405-")+gameName)
+	if !demoGame { // not a demo game, let's save it to the DB
+		gm.db.AddGame(t.Format("Jan_2-150405-") + gameName)
+	}
+
 	gm.games[gameName] = gw
 
 	go func() {
@@ -110,6 +123,10 @@ func (gm *GameManager) PopOpenGame() (string, error) {
 func (gm *GameManager) NewOpenGame() (string, error) {
 	rint := rand.Int()
 	rstr := strconv.Itoa(rint)
+	for gm.HasGame(rstr) { // continue reiterating in case there's duplicates
+		rint = rand.Int()
+		rstr = strconv.Itoa(rint)
+	}
 
 	err := gm.NewGame(rstr, false)
 	if err != nil {
@@ -210,12 +227,17 @@ type GameWrapper struct {
 	gameControllerMap map[game.Controller]string
 	activeControllers int
 	gameOutput        <-chan []byte
+	replayOutput      <-chan []byte
 	listenerMap       map[chan []byte]bool
+
+	saveReplay     bool   // true for anything not mainpagegame
+	replayFilename string // e.g. gamename
+	replayFolder   string // e.g. dbinterface/replays/
 }
 
 // TODO allow creation of different games (pong, scrabble, whatever)
-func NewGameWrapper(isdemo bool) *GameWrapper {
-	g, controllers, output := game.NewTowerDef(isdemo)
+func NewGameWrapper(isdemo bool, replayFolder string, replayFilename string) *GameWrapper {
+	g, controllers, replay, output := game.NewTowerDef(isdemo)
 	gameControllerMap := make(map[game.Controller]string)
 	listenerMap := make(map[chan []byte]bool)
 
@@ -228,10 +250,15 @@ func NewGameWrapper(isdemo bool) *GameWrapper {
 		gameControllerMap,
 		0,
 		output,
+		replay,
 		listenerMap,
+		!isdemo,
+		replayFilename,
+		replayFolder,
 	}
 
-	go gw.multiplex() // start sending output to listeners
+	go gw.writeReplay() // start writing input to replay
+	go gw.multiplex()   // start sending output to listeners
 	return gw
 }
 
@@ -243,6 +270,42 @@ func (gw *GameWrapper) PlayerNames() []string {
 	return res
 }
 
+// write inputs to replay file
+func (gw *GameWrapper) writeReplay() {
+	if gw.saveReplay {
+		replayPath := gw.replayFolder + gw.replayFilename
+		if _, err := os.Stat(replayPath); os.IsNotExist(err) {
+			_, err = os.Create(replayPath)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		f, err := os.OpenFile(replayPath, os.O_APPEND|os.O_WRONLY, 0600)
+		if err != nil {
+			panic(err)
+		}
+
+		defer f.Close()
+
+		for {
+			select {
+			case msg, more := <-gw.replayOutput:
+				// fmt.Println(gw.replayFilename + ": " + string(msg))
+				if more {
+					if _, err := f.Write(msg); err != nil {
+						panic(err)
+					}
+				} else {
+					log.Println("stopping replay write to " + replayPath)
+					return
+				}
+			}
+		}
+	}
+}
+
+// here we write out the game output to available listeners
 func (gw *GameWrapper) multiplex() {
 	for {
 		select {

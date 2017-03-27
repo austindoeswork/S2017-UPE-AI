@@ -39,10 +39,13 @@ PIXI.utils.sayHello(type) // not really necessary, but could be nice for people 
 // Aliases
 var fogOfWar = new PIXI.Graphics();
 var healthBars = new PIXI.Graphics();
-var p1hp = new PIXI.Text("", {font:"10px Roboto", fill:"white", align:"left"});
-var p2hp = new PIXI.Text("", {font:"10px Roboto", fill:"white", align:"right"});
+var p1hp = new PIXI.Text("", {font:"14px Roboto", fill:"white", align:"left"});
+var p2hp = new PIXI.Text("", {font:"14px Roboto", fill:"white", align:"right"});
 p1hp.x = 10;
+p1hp.y = 5;
 p2hp.x = GAME_WIDTH - 10;
+p2hp.y = 5;
+p2hp.anchor.x = 1;
 
 var p1info = new PIXI.Text("P1\nBits\nIncome", {font:"25px Roboto", fill:"#343435", align:"left"});
 var p2info = new PIXI.Text("P2\nBits\nIncome", {font:"25px Roboto", fill:"#343435", align:"right"});
@@ -209,6 +212,8 @@ function setup() {
     stage.addChild(rightSteps);
     stage.addChild(fogOfWar);
     stage.addChild(healthBars);
+    stage.addChild(p1hp);
+    stage.addChild(p2hp);
     stage.addChild(p1info);
     stage.addChild(p2info);
     resize();
@@ -246,18 +251,19 @@ function buyTower(location) {
 
 var timestamp = Date.now();
 
+var frames = 0;
 var myPlayer = 0; // default 0 = spectator client, 1 = player1, 2 = player2
 var myUsername, myGamename;
 
 function renderGrid(data) {
     frames++;
     d = JSON.parse(data);
-    console.log(d.p1.towers);
     
     if (d.hasOwnProperty("Gamename")) {
 	myPlayer = d["Player"];
 	myUsername = d["Username"];
 	myGamename = d["Gamename"];
+	console.log(myGamename);
 	return; // don't try to render status messages
     }
     
@@ -272,9 +278,9 @@ function renderGrid(data) {
 	    units.push(d.p2.towers[i]);
 	}
     }
-    units.push(d.p1.mainCore);
-    units.push(d.p2.mainCore);
 
+    p1hp.text = d.p1.mainCore.hp + "/" + d.p1.mainCore.maxhp;
+    p2hp.text = d.p2.mainCore.hp + "/" + d.p2.mainCore.maxhp;
     p1info.text = d.p1.name + "\nBits: " + d.p1.bits + "\nIncome: " + d.p1.income;
     p2info.text = d.p2.name + "\nBits: " + d.p2.bits + "\nIncome: " + d.p2.income;
     draw(units);
@@ -356,7 +362,7 @@ function renderGrid(data) {
 	    stage.addChild(newMob);
 	}
     }
-
+    
     healthBars.clear();
     healthBars.beginFill(0x13223a); // dark blue
     healthBars.drawRect(0, 0, 600, 20);

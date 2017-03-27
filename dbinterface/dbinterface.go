@@ -60,6 +60,12 @@ func NewDB(dbaddr, dbname, dbuser, dbpass string) *DB {
 		panic(err)
 	}
 
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS replays(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+createdAt DATETIME, gameName VARCHAR(100), username1 VARCHAR(50), username2 VARCHAR(50));`)
+	if err != nil {
+		panic(err)
+	}
+
 	return &DB{
 		db: db,
 		sc: securecookie.New(GenerateKey(true, true, true, true), nil), // uses keygen from same pkg
@@ -286,4 +292,47 @@ func (d *DB) UpdateELO(username1, username2 string, winner int) (*float64, *floa
 		return nil, nil, err
 	}
 	return &newELO1, &newELO2, nil
+}
+
+/*
+REPLAY RELATED FUNCTIONALITY
+*/
+
+// adding a new game into the replay database
+func (d *DB) AddGame(gamename string) {
+	now := time.Now()
+	_, err := d.db.Exec(`INSERT INTO replays(createdAt, gameName) VALUES(?, ?)`, now, gamename)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+// User represents the all of the data stored about a user, less their password
+type Replay struct {
+	GameName string
+	Time     string
+	// Username1 string // TODO: ADD
+	// Username2 string
+}
+
+// get all replays in reverse chronological
+func (d *DB) GetReplays() ([]Replay, error) {
+	replays := []Replay{}
+	rows, err := d.db.Query("SELECT createdAt, gameName FROM replays ORDER BY STR_TO_DATE(`createdAt`,'%Y-%m-%d %h:%i:%s') DESC")
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var createdAt string
+		var name string
+		err = rows.Scan(&createdAt, &name)
+		if err != nil {
+			return nil, err
+		}
+		replays = append(replays, Replay{
+			Time:     createdAt,
+			GameName: name,
+		})
+	}
+	return replays, nil
 }

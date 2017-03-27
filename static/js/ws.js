@@ -34,6 +34,12 @@ function wswatch() {
     var gname = document.getElementById("gamename").value;
     wsopen(wspath, wsroute, gname, "");
 }
+function wsreplay(gname) {
+    var wspath = "ws://" + location.hostname + ":" + location.port;
+    var wsroute = "/wsreplay"
+    // var gname = document.getElementById("gamename").value;
+    wsopen(wspath, wsroute, gname, "");
+}
 function wsmainpagewatch() {
     var wspath = "ws://" + location.hostname + ":" + location.port;
     var wsroute = "/wswatch"
@@ -57,7 +63,7 @@ function wsopen(wspath, wsroute, gname, devkey) {
     }
 
     ws.onopen = function(evt) {
-	if (wsroute != "/wswatch") {
+	if (wsroute != "/wswatch" && wsroute != "/wsreplay") {
 	    if (devkey != "") {
 		send(devkey);
 		setstatus("Sent devkey to server", "label label-info");
