@@ -130,11 +130,20 @@ type TowerDefense struct {
 	fps    int
 	frame  int64
 
-	winner   int
-	demoGame bool
+	winner int
+
+	demoGame bool // is this a demo game? if so, make core invincible etc etc
+	isReplay bool // is this a replay? if so, don't save another replay, that's silly
 }
 
-func New(width, height, fps int, demoGame bool) (*TowerDefense, []*Controller, <-chan []byte, <-chan []byte) {
+func New(width, height, fps int, demoGame bool, isReplay bool) (*TowerDefense, []*Controller, <-chan []byte, <-chan []byte) {
+	var oqMinPop int
+	if isReplay { // output queue size is 0 for replays (no delay for watchers)
+		oqMinPop = 0
+	} else { // output queue is 600 for regular games (delay 20 seconds)
+		oqMinPop = 500
+	}
+
 	outputChan := make(chan []byte)
 	replayChan := make(chan []byte)
 	p1 := NewPlayer(1, "", demoGame)
@@ -160,7 +169,7 @@ func New(width, height, fps int, demoGame bool) (*TowerDefense, []*Controller, <
 		p2output: p2output,
 		output:   outputChan,
 		replay:   replayChan,
-		oq:       NewOutputQueue(600, 500),
+		oq:       NewOutputQueue(600, oqMinPop),
 		quit:     make(chan bool),
 		status:   READY,
 		players:  [2]*Player{p1, p2},
@@ -170,6 +179,7 @@ func New(width, height, fps int, demoGame bool) (*TowerDefense, []*Controller, <
 		frame:    0,
 		winner:   -1,
 		demoGame: demoGame,
+		isReplay: isReplay,
 	}, []*Controller{p1controller, p2controller}, replayChan, outputChan
 }
 
@@ -220,14 +230,16 @@ func (t *TowerDefense) Start() error {
 				t.updateInputs()
 				t.updateGame()
 
-				var buffer bytes.Buffer
-				buffer.Write(t.p1cmd)
-				buffer.WriteString("\n")
-				buffer.Write(t.p2cmd)
-				buffer.WriteString("\n")
-				select { // send p1cmd/p2cmd to replay stream
-				case t.replay <- buffer.Bytes():
-				default:
+				if !t.isReplay { // don't save replays if this is a replay
+					var buffer bytes.Buffer
+					buffer.Write(t.p1cmd)
+					buffer.WriteString("\n")
+					buffer.Write(t.p2cmd)
+					buffer.WriteString("\n")
+					select { // send p1cmd/p2cmd to replay stream
+					case t.replay <- buffer.Bytes():
+					default:
+					}
 				}
 
 				t.p1cmd = nil
