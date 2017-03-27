@@ -117,7 +117,8 @@ type TowerDefense struct {
 
 	p1cmd  []byte
 	p2cmd  []byte
-	output chan []byte //pushes gamestate at framerate
+	replay chan []byte // pushes player inputs at framerate
+	output chan []byte // pushes gamestate at framerate
 	oq     *OutputQueue
 	quit   chan bool
 	status int
@@ -133,8 +134,9 @@ type TowerDefense struct {
 	demoGame bool
 }
 
-func New(width, height, fps int, demoGame bool) (*TowerDefense, []*Controller, <-chan []byte) {
+func New(width, height, fps int, demoGame bool) (*TowerDefense, []*Controller, <-chan []byte, <-chan []byte) {
 	outputChan := make(chan []byte)
+	replayChan := make(chan []byte)
 	p1 := NewPlayer(1, "", demoGame)
 	p2 := NewPlayer(2, "", demoGame)
 	p1input := make(chan []byte, 5)
@@ -157,6 +159,7 @@ func New(width, height, fps int, demoGame bool) (*TowerDefense, []*Controller, <
 		p1output: p1output,
 		p2output: p2output,
 		output:   outputChan,
+		replay:   replayChan,
 		oq:       NewOutputQueue(600, 500),
 		quit:     make(chan bool),
 		status:   READY,
@@ -167,7 +170,7 @@ func New(width, height, fps int, demoGame bool) (*TowerDefense, []*Controller, <
 		frame:    0,
 		winner:   -1,
 		demoGame: demoGame,
-	}, []*Controller{p1controller, p2controller}, outputChan
+	}, []*Controller{p1controller, p2controller}, replayChan, outputChan
 }
 
 func (t *TowerDefense) DetermineWinner() {
@@ -216,6 +219,16 @@ func (t *TowerDefense) Start() error {
 				t.frame++
 				t.updateInputs()
 				t.updateGame()
+
+				var buffer bytes.Buffer
+				buffer.Write(t.p1cmd)
+				buffer.WriteString("\n")
+				buffer.Write(t.p2cmd)
+				buffer.WriteString("\n")
+				select { // send p1cmd/p2cmd to replay stream
+				case t.replay <- buffer.Bytes():
+				default:
+				}
 
 				t.p1cmd = nil
 				t.p2cmd = nil
@@ -290,10 +303,8 @@ func (t *TowerDefense) updateGame() {
 		}
 	}
 	// First, get player's commands and interpret them
-	p1string := string(t.p1cmd)
-	p2string := string(t.p2cmd)
-	controlPlayer(t, p1string, 1)
-	controlPlayer(t, p2string, 2)
+	controlPlayer(t, string(t.p1cmd), 1)
+	controlPlayer(t, string(t.p2cmd), 2)
 	// Then, prepare each player for the coming frame
 	for _, player := range t.players {
 		player.PrepPlayer()

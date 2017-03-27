@@ -84,6 +84,15 @@ func (s *Server) handleLeaderboard(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func (s *Server) handleReplayList(res http.ResponseWriter, req *http.Request) {
+	data, err := s.db.GetReplays()
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		fmt.Println(data)
+	}
+}
+
 // TODO should this be replaced with a try catch block?
 // called by /profile
 func (s *Server) handleProfile(res http.ResponseWriter, req *http.Request) {
@@ -173,6 +182,106 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, "/profile", http.StatusFound)
 }
 
+// this function does not belong in handler.go, move
+func (s *Server) playReplayGame(gameName, name1, name2 string) {
+	quitIn1 := make(chan bool)
+	gameCtrl1, err := s.gm.ControlGame(gameName, name1, quitIn1)
+	if err != nil {
+		log.Println("ERR: could not add controller", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitIn1 <- true:
+		default:
+		}
+	}()
+	quitOut1 := make(chan bool)
+	_, err = s.gm.WatchGame(gameName, quitOut1)
+	if err != nil {
+		log.Println("ERR: could not add watcher", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitOut1 <- true:
+		default:
+		}
+	}()
+
+	quitIn2 := make(chan bool)
+	gameCtrl2, err := s.gm.ControlGame(gameName, name2, quitIn2)
+	if err != nil {
+		log.Println("ERR: could not add controller", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitIn2 <- true:
+		default:
+		}
+	}()
+
+	quitOut2 := make(chan bool)
+	_, err = s.gm.WatchGame(gameName, quitOut2)
+	if err != nil {
+		log.Println("ERR: could not add watcher", err)
+		return
+	}
+	defer func() {
+		select {
+		case quitOut2 <- true:
+		default:
+		}
+	}()
+
+	for {
+		if !s.gm.HasGame(gameName) { // with the invincibleCore, this should never end, but just in case??
+			return
+		}
+		time.Sleep(1000) // how expensive is this? maybe replace with something else?
+		gameCtrl1.Input() <- generateSampleGameMove()
+		gameCtrl2.Input() <- generateSampleGameMove()
+	}
+}
+
+func (s *Server) handleReplayWS(w http.ResponseWriter, r *http.Request) {
+	replayName := r.FormValue("game")
+	if len(replayName) <= 0 {
+		w.Write([]byte("ERR: no replayName provided"))
+		return
+	}
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("ERR: upgrading websocket", err)
+		return
+	}
+	defer conn.Close()
+
+	gameName, err := s.gm.NewOpenGame()
+	if err != nil {
+		log.Println("ERR: creating game", err)
+		return
+	}
+	go s.playReplayGame(gameName, "test1", "test2")
+
+	quit := make(chan bool)
+	gameOutput, err := s.gm.WatchGame(gameName, quit)
+	if err != nil {
+		log.Println("ERR: could not add watcher", err)
+		return
+	}
+	defer func() {
+		select {
+		case quit <- true:
+		default:
+		}
+	}()
+
+	// handle output
+	chanToWS(gameOutput, conn)
+}
+
 func (s *Server) handleWatchWS(w http.ResponseWriter, r *http.Request) {
 	gameName := r.FormValue("game")
 	if len(gameName) <= 0 {
@@ -209,6 +318,7 @@ func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ERR: no gameName provided"))
 		return
 	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("ERR: upgrading websocket", err)
