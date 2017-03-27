@@ -61,7 +61,7 @@ func NewDB(dbaddr, dbname, dbuser, dbpass string) *DB {
 	}
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS replays(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
-createdAt DATETIME, gameName VARCHAR(100), username1 VARCHAR(50), username2 VARCHAR(50));`)
+createdAt DATETIME, gameName VARCHAR(100), fullReplayName VARCHAR(150), username1 VARCHAR(50), username2 VARCHAR(50));`)
 	if err != nil {
 		panic(err)
 	}
@@ -299,39 +299,86 @@ REPLAY RELATED FUNCTIONALITY
 */
 
 // adding a new game into the replay database
-func (d *DB) AddGame(gamename string) {
-	now := time.Now()
-	_, err := d.db.Exec(`INSERT INTO replays(createdAt, gameName) VALUES(?, ?)`, now, gamename)
+func (d *DB) AddGame(replayname, gamename string) {
+	_, err := d.db.Exec(`INSERT INTO replays(createdAt, gameName, fullReplayName, username1, username2) VALUES(?, ?, ?, ?, ?)`,
+		time.Now(), gamename, replayname, "", "")
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 
+// adding the first player to a game (important for replays)
+func (d *DB) AddPlayerOne(replayName string, username string) {
+	_, err := d.db.Exec("UPDATE replays SET username1=? WHERE fullReplayName=?", username, replayName)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// same with second
+func (d *DB) AddPlayerTwo(replayName string, username string) {
+	_, err := d.db.Exec("UPDATE replays SET username2=? WHERE fullReplayName=?", username, replayName)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // User represents the all of the data stored about a user, less their password
 type Replay struct {
-	GameName string
-	Time     string
-	// Username1 string // TODO: ADD
-	// Username2 string
+	GameName       string
+	FullReplayName string
+	Time           string
+	Username1      string
+	Username2      string
+}
+
+func (d *DB) GetReplay(replay string) (*Replay, error) {
+	var createdAt string
+	var name string
+	var fullReplayName string
+	var username1 string
+	var username2 string
+	err := d.db.QueryRow(`SELECT createdAt, gameName, fullReplayName, username1, username2 FROM replays WHERE fullReplayName=?`,
+		replay).Scan(&createdAt, &name, &fullReplayName, &username1, &username2)
+	if err != nil {
+		return nil, err
+	}
+	return &Replay{
+		Time:           createdAt,
+		GameName:       name,
+		FullReplayName: fullReplayName,
+		Username1:      username1,
+		Username2:      username2,
+	}, nil
 }
 
 // get all replays in reverse chronological
+
+// TODO: games that are not started because only one player entered will be added to the database
+// but they will not be displayed on the frontend because the template automatically checks for this fortunately
 func (d *DB) GetReplays() ([]Replay, error) {
 	replays := []Replay{}
-	rows, err := d.db.Query("SELECT createdAt, gameName FROM replays ORDER BY STR_TO_DATE(`createdAt`,'%Y-%m-%d %h:%i:%s') DESC")
+	rows, err := d.db.Query(`SELECT createdAt, gameName, fullReplayName, username1, username2 
+FROM replays ORDER BY id DESC LIMIT 0, 50`) // returns the last 50 games
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		var createdAt string
 		var name string
-		err = rows.Scan(&createdAt, &name)
+		var fullReplayName string
+		var username1 string
+		var username2 string
+		err = rows.Scan(&createdAt, &name, &fullReplayName, &username1, &username2)
 		if err != nil {
 			return nil, err
 		}
 		replays = append(replays, Replay{
-			Time:     createdAt,
-			GameName: name,
+			Time:           createdAt,
+			GameName:       name,
+			FullReplayName: fullReplayName,
+			Username1:      username1,
+			Username2:      username2,
 		})
 	}
 	return replays, nil

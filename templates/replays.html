@@ -1,0 +1,38 @@
+{{define "replays"}}
+{{template "header" .}}
+
+<h1>Replays</h1>
+<h3>Recent games: click one to replay!</h3>
+<style>
+  .panel:hover {background-color: #808182;}
+</style>
+
+<p><span class="label label-danger" id="status">STATUS: Not connected.</span></p>
+<div id="gameTV"></div>
+
+<h4>Recent games:</h4>
+<table class="table table-striped">
+  {{range .Data}} <!-- iterate thru all elements -->
+  {{if ne .Username2 ""}} <!-- ignores games that never started (username2 will be nil) -->
+  <tr>
+    <td>
+      <div class="panel" onclick="wsreplay({{.FullReplayName}})">
+	<div class="panel-heading">
+	  Game name: <h3 class="panel-title">{{.GameName}}</h3>
+	</div>
+	<div class="panel-body">
+	  <b>{{.Username1}} vs. {{.Username2}}</b>
+	  <br>Created at: {{.Time}}
+	</div>
+      </div>
+    </td>
+  </tr>
+  {{end}}
+  {{end}}
+</table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.2.2/pixi.min.js"></script>
+<script src="/static/js/ws.js?1"></script>
+<script src="/static/js/tdef.js?1"></script>
+{{template "footer" .}}
+{{end}}

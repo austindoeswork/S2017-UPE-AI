@@ -18,7 +18,7 @@ import (
 type GM interface {
 	// NewGame creates a new game object and starts it when it has
 	// enough controllers
-	NewGame(gameName string, demoGame bool) error
+	NewGame(gameName string, demoGame bool, isReplay bool) error
 
 	// ControlGame returns the input channel to a game if it exists
 	ControlGame(gameName string, quit chan bool) (chan<- []byte, error)
@@ -75,7 +75,7 @@ func (gm *GameManager) HasGame(gameName string) bool {
 }
 
 // note that "mainpagegame" is a reserved keyname for the automated game that takes place on the main page
-func (gm *GameManager) NewGame(gameName string, demoGame bool) error {
+func (gm *GameManager) NewGame(gameName string, demoGame bool, isReplay bool) error {
 	gm.mux.Lock()
 	defer gm.mux.Unlock()
 	if _, exists := gm.games[gameName]; exists {
@@ -83,9 +83,9 @@ func (gm *GameManager) NewGame(gameName string, demoGame bool) error {
 	}
 
 	t := time.Now()
-	gw := NewGameWrapper(demoGame, "dbinterface/replays/", t.Format("Jan_2-150405-")+gameName)
-	if !demoGame { // not a demo game, let's save it to the DB
-		gm.db.AddGame(t.Format("Jan_2-150405-") + gameName)
+	gw := NewGameWrapper(demoGame, isReplay, "dbinterface/replays/", t.Format("Jan_2-150405-")+gameName)
+	if !demoGame && !isReplay { // not a demo game, let's save it to the DB
+		gm.db.AddGame(t.Format("Jan_2-150405-")+gameName, gameName) // dbinterface will appent the dash itself
 	}
 
 	gm.games[gameName] = gw
@@ -120,7 +120,9 @@ func (gm *GameManager) PopOpenGame() (string, error) {
 	return name, nil
 }
 
-func (gm *GameManager) NewOpenGame() (string, error) {
+// note that when we generate a new replay, we're basically creating a new matchmaking game
+// so we pass in whether the game is a replay in here
+func (gm *GameManager) NewOpenGame(isReplay bool) (string, error) {
 	rint := rand.Int()
 	rstr := strconv.Itoa(rint)
 	for gm.HasGame(rstr) { // continue reiterating in case there's duplicates
@@ -128,7 +130,7 @@ func (gm *GameManager) NewOpenGame() (string, error) {
 		rstr = strconv.Itoa(rint)
 	}
 
-	err := gm.NewGame(rstr, false)
+	err := gm.NewGame(rstr, false, isReplay)
 	if err != nil {
 		return "", err
 	}
@@ -172,6 +174,14 @@ func (gm *GameManager) ControlGame(gameName string, userName string, quit chan b
 	}
 
 	fmt.Println("setting player name", controller.Player(), userName)
+	if gw.saveReplay {
+		if gw.activeControllers == 1 {
+			gm.db.AddPlayerOne(gw.replayFilename, userName)
+		} else {
+			gm.db.AddPlayerTwo(gw.replayFilename, userName)
+		}
+	}
+
 	gw.SetPlayerName(controller.Player(), userName)
 
 	go func() {
@@ -230,14 +240,15 @@ type GameWrapper struct {
 	replayOutput      <-chan []byte
 	listenerMap       map[chan []byte]bool
 
-	saveReplay     bool   // true for anything not mainpagegame
-	replayFilename string // e.g. gamename
+	isReplay       bool   // is this game a replay?
+	saveReplay     bool   // true for anything not mainpagegame, and other replays
+	replayFilename string // e.g. timestamp-gamename
 	replayFolder   string // e.g. dbinterface/replays/
 }
 
 // TODO allow creation of different games (pong, scrabble, whatever)
-func NewGameWrapper(isdemo bool, replayFolder string, replayFilename string) *GameWrapper {
-	g, controllers, replay, output := game.NewTowerDef(isdemo)
+func NewGameWrapper(isdemo bool, isreplay bool, replayFolder string, replayFilename string) *GameWrapper {
+	g, controllers, replay, output := game.NewTowerDef(isdemo, isreplay)
 	gameControllerMap := make(map[game.Controller]string)
 	listenerMap := make(map[chan []byte]bool)
 
@@ -253,12 +264,15 @@ func NewGameWrapper(isdemo bool, replayFolder string, replayFilename string) *Ga
 		replay,
 		listenerMap,
 		!isdemo,
+		!(isdemo || isreplay),
 		replayFilename,
 		replayFolder,
 	}
 
-	go gw.writeReplay() // start writing input to replay
-	go gw.multiplex()   // start sending output to listeners
+	if !(isdemo || isreplay) {
+		go gw.writeReplay() // start writing input to replay
+	}
+	go gw.multiplex() // start sending output to listeners
 	return gw
 }
 

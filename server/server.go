@@ -87,7 +87,7 @@ func generateSampleGameMove() []byte {
 func (s *Server) CreateSampleGameTV() {
 	gameName := "mainpagegame"
 	if !s.gm.HasGame(gameName) {
-		err := s.gm.NewGame(gameName, true)
+		err := s.gm.NewGame(gameName, true, false)
 		if err != nil {
 			log.Println("ERR: creating game", err)
 		}
@@ -177,7 +177,7 @@ func (s *Server) Start() {
 	http.HandleFunc("/game", s.handleGame)
 	http.HandleFunc("/watch", s.handleWatch)
 	http.HandleFunc("/leaderboard", s.handleLeaderboard)
-	http.HandleFunc("/replays", s.handleReplayList)
+	http.HandleFunc("/replays", s.handleReplays)
 	http.HandleFunc("/changelog", s.handleChangelog)
 	http.HandleFunc("/signout", s.handleLogout) // ?? for some reason on my machine if this is logout it doesn't detect it...
 	http.HandleFunc("/login", s.handleLogin)

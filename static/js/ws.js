@@ -34,11 +34,12 @@ function wswatch() {
     var gname = document.getElementById("gamename").value;
     wsopen(wspath, wsroute, gname, "");
 }
-function wsreplay(gname) {
+function wsreplay(replay) {
+    console.log(replay);
     var wspath = "ws://" + location.hostname + ":" + location.port;
     var wsroute = "/wsreplay"
     // var gname = document.getElementById("gamename").value;
-    wsopen(wspath, wsroute, gname, "");
+    wsopen(wspath, wsroute, replay, "");
 }
 function wsmainpagewatch() {
     var wspath = "ws://" + location.hostname + ":" + location.port;

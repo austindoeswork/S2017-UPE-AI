@@ -10,6 +10,10 @@ import (
 
 	"fmt"
 
+	// below imports used for replaying replays from file (move to another file?)
+	"bufio"
+	"os"
+
 	"github.com/austindoeswork/S2017-UPE-AI/dbinterface"
 )
 
@@ -81,15 +85,6 @@ func (s *Server) handleLeaderboard(res http.ResponseWriter, req *http.Request) {
 			data[index].ProfilePicture, _ = LoadIdenticon(data[index].ProfilePicture)
 		}
 		s.ExecuteUserTemplate(res, req, "leaderboard", Page{Title: "Leaderboard", Data: data})
-	}
-}
-
-func (s *Server) handleReplayList(res http.ResponseWriter, req *http.Request) {
-	data, err := s.db.GetReplays()
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		fmt.Println(data)
 	}
 }
 
@@ -183,7 +178,7 @@ func (s *Server) handleSignup(res http.ResponseWriter, req *http.Request) {
 }
 
 // this function does not belong in handler.go, move
-func (s *Server) playReplayGame(gameName, name1, name2 string) {
+func (s *Server) playReplayGame(gameName, fullReplayName, name1, name2 string) {
 	quitIn1 := make(chan bool)
 	gameCtrl1, err := s.gm.ControlGame(gameName, name1, quitIn1)
 	if err != nil {
@@ -235,13 +230,35 @@ func (s *Server) playReplayGame(gameName, name1, name2 string) {
 		}
 	}()
 
+	file, err := os.Open("dbinterface/replays/" + fullReplayName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	// ALSO MIGHT BE VERY SLIGHTLY OFF BECAUSE OF 29 INSTEAD OF 30 CLOCK SPEED (NOTE: AT 30 IT'S INCONSISTENT)
+	frameNS := time.Duration(int(1e9) / 29) // hard coded, TODO: make not hardcoded
+	clk := time.NewTicker(frameNS)
 	for {
-		if !s.gm.HasGame(gameName) { // with the invincibleCore, this should never end, but just in case??
-			return
+		select {
+		case <-clk.C:
+			if scanner.Scan() {
+				command := scanner.Text()
+				// fmt.Println("1:" + command)
+				gameCtrl1.Input() <- []byte(command)
+			}
+			if scanner.Scan() {
+				command := scanner.Text()
+				// fmt.Println("2:" + command)
+				gameCtrl2.Input() <- []byte(command)
+			}
 		}
-		time.Sleep(1000) // how expensive is this? maybe replace with something else?
-		gameCtrl1.Input() <- generateSampleGameMove()
-		gameCtrl2.Input() <- generateSampleGameMove()
+
+		if err := scanner.Err(); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -258,12 +275,18 @@ func (s *Server) handleReplayWS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	gameName, err := s.gm.NewOpenGame()
+	replay, err := s.db.GetReplay(replayName) // at this point, we've verified that the game exists
+	if err != nil {
+		log.Println("ERR: no such replay " + replayName + ", err: " + err.Error())
+		return
+	}
+
+	gameName, err := s.gm.NewOpenGame(true) // the true here indicates that the game is a replay and should not save its own replay
 	if err != nil {
 		log.Println("ERR: creating game", err)
 		return
 	}
-	go s.playReplayGame(gameName, "test1", "test2")
+	go s.playReplayGame(gameName, replay.FullReplayName, replay.Username1, replay.Username2)
 
 	quit := make(chan bool)
 	gameOutput, err := s.gm.WatchGame(gameName, quit)
@@ -334,7 +357,7 @@ func (s *Server) handleJoinWS(w http.ResponseWriter, r *http.Request) {
 
 	// MAKE GAME IF DNE
 	if !s.gm.HasGame(gameName) {
-		err = s.gm.NewGame(gameName, false)
+		err = s.gm.NewGame(gameName, false, false)
 		if err != nil {
 			log.Println("ERR: creating game", err)
 		}
@@ -359,7 +382,7 @@ func (s *Server) handlePlayWS(w http.ResponseWriter, r *http.Request) {
 
 	gameName, err := s.gm.PopOpenGame()
 	if err != nil {
-		gameName, err = s.gm.NewOpenGame()
+		gameName, err = s.gm.NewOpenGame(false)
 		if err != nil {
 			log.Println("ERR: creating game", err)
 			return
@@ -462,6 +485,15 @@ func chanToWS(gameOutput <-chan []byte, conn *websocket.Conn) {
 
 func (s *Server) handleWatch(res http.ResponseWriter, req *http.Request) {
 	s.ExecuteUserTemplate(res, req, "watch", Page{Title: "Watch", Data: s.gm.ListGames()})
+}
+
+func (s *Server) handleReplays(res http.ResponseWriter, req *http.Request) {
+	data, err := s.db.GetReplays()
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		s.ExecuteUserTemplate(res, req, "replays", Page{Title: "Replays", Data: data})
+	}
 }
 
 func (s *Server) handleGame(res http.ResponseWriter, req *http.Request) {
